@@ -91,6 +91,19 @@ async def forecast_history(t):
     t.eq(await t.js("state.forecast.history.length"), 0, "clearing the Forecast history (two clicks)")
 
 @scenario
+async def forecast_orders(t):
+    H = 3600e3
+    await t.js(f"()=>{{state.misc.orders=[{{id:'o1',at:Date.now(),name:'Venture',type:32880,qty:2,status:'running',startedAt:Date.now()-{H},cost:6e6,value:10e6,materials:[],jobs:[],route:{{span:2*86400,moves:[],locs:{{}}}}}},{{id:'o2',at:Date.now(),name:'Rifter',type:587,qty:1,status:'planned',cost:4e6,value:5e6,materials:[],jobs:[],route:{{span:86400,moves:[],locs:{{}}}}}},{{id:'o3',at:Date.now(),name:'Unpriced',type:587,qty:1,status:'planned',cost:1e6,value:2e6,materials:[{{t:34,n:'Tritanium',q:1,noPrice:true}}],jobs:[],route:{{span:86400,moves:[],locs:{{}}}}}},{{id:'o4',at:Date.now(),name:'Done',type:587,qty:1,status:'done',cost:1,value:9e9,materials:[],jobs:[]}}]; saveMisc();}}")
+    po = t.show("planned orders", await t.js(f"plannedOrders().map(x=>[x.o.id, x.profit, Math.round((x.at-Date.now())/{H})])"))
+    t.eq(po, [["o2", 1e6, 24], ["o3", None, 24], ["o1", 4e6, 47]], "planned orders: profit and finish (running from its start, planned from today; done ones left out; unpriced unknown)")
+    await t.tab("forecast", 0.6)
+    fc = t.show("forecast", await t.js("({legend:[...document.querySelectorAll('#fc-chart .lg')].map(b=>b.textContent.trim()), tile:[...document.querySelectorAll('#fc-summary .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' ')).find(x=>x.toLowerCase().startsWith('planned orders'))||''})"))
+    t.ok("Planned orders (cumulative)" in fc["legend"], "the Forecast has a Planned orders line", fc["legend"])
+    t.ok("+5" in fc["tile"] and "2 builds" in fc["tile"] and "1 left out" in fc["tile"], "the Planned orders tile adds the dated, priced builds and says what's left out", fc["tile"])
+    await t.js("()=>{state.misc.orders.forEach(o=>o.status='done'); saveMisc(); renderForecast();}")
+    t.ok(await t.js("![...document.querySelectorAll('#fc-chart .lg')].some(b=>b.textContent.includes('Planned orders'))"), "no line once every order is done")
+
+@scenario
 async def tabs_and_menus(t):
     groups = t.show("groups", await t.js("[...document.querySelectorAll('.tabs .tabgrp')].map(g=>g.querySelector('.tabgrp-btn').innerText.replace(/\\s+/g,' ').trim())"))
     for g in ("Industry", "Market", "Stock", "Pilots", "Tools"): t.ok(any(x.startswith(g) for x in groups), f"tab menu {g} is missing", groups)
@@ -246,6 +259,17 @@ async def todo_page(t):
     t.ok(await t.js("document.querySelectorAll('#todo-nav a').length") > 0, "the To-Do page has its navigation")
     await t.pg.click("[data-todo-ord] >> nth=0"); await asyncio.sleep(0.2)
     t.ok(await t.text("#todo-ord .toolbar .muted"), "ticking a build purchase counts it")
+    # Buy for PI: PI Management's shopping (days of stock, minus the stock held), P1 and P2 lists, tickable
+    t.ok("No PI plan yet" in await t.text("#todo-pi"), "without a PI plan, Buy for PI says so")
+    await t.js("()=>{const C=piCfg(); C.alloc={2869:2}; saveMisc(); renderTodo();}"); await asyncio.sleep(0.2)
+    pi = t.show("todo pi", await t.js("(()=>{const E=piEnv(), {need}=piNeeds(E); return {need:[...need].map(([k,q])=>[k,Math.ceil(q)]), heads:[...document.querySelectorAll('#todo-pi h3')].map(h=>h.textContent), rows:[...document.querySelectorAll('#todo-pi li')].map(l=>l.innerText.replace(/\\s+/g,' ')), nav:[...document.querySelectorAll('#todo-nav a')].map(a=>a.textContent)}})()"))
+    t.ok(pi["heads"] and set(pi["heads"]) <= {"P1", "P2"} and len(pi["rows"]) == len(pi["need"]), "Buy for PI lists every input of the plan under P1 / P2", pi)
+    t.ok("Buy for PI" in pi["nav"], "Buy for PI is in the To-Do navigation", pi["nav"])
+    held = pi["need"][0]
+    await t.js(f"()=>{{state.assets['char:9001'].rows.push({{t:{held[0]},loc:60003760,h:'Hangar',q:{held[1]}}}); renderTodo();}}"); await asyncio.sleep(0.2)
+    t.eq(await t.js("document.querySelectorAll('#todo-pi li').length"), len(pi["need"]) - 1, "an input your hangars cover is off the PI list")
+    await t.pg.click("[data-todo-pi] >> nth=0"); await asyncio.sleep(0.2)
+    t.ok(await t.js("Object.keys(state.misc.todoPi||{}).length===1 && document.querySelector('[data-todo-pi]:checked')"), "ticking a PI purchase keeps it")
 
 @scenario
 async def overview_news(t):
@@ -309,6 +333,10 @@ async def pi_page(t):
     await t.pg.fill("[data-pi=planetSys]", "Delta"); await t.pg.dispatch_event("[data-pi=planetSys]", "change"); await asyncio.sleep(2.5)
     await t.pg.select_option("[data-pi=haulMode]", "courier"); await asyncio.sleep(1.5)
     t.eq(await t.js("piHaulInfo && piHaulInfo.mode"), "courier", "PI hauling by a freight service")
+    t1 = await t.js("(()=>{const E=piEnv(), {need}=piNeeds(E); const [k,q]=[...need][0]; state.assets['char:9001'].rows.push({t:k,loc:60003760,h:'Hangar',q:Math.ceil(q/2)}); renderPi(); return [k,q,E.days]})()"); await asyncio.sleep(0.2)
+    shop = t.show("pi shop", await t.js(f"(()=>{{const tb=document.querySelector('#pi-shop table'); const head=[...tb.querySelectorAll('thead th')].map(h=>h.textContent.trim()); const row=[...document.querySelectorAll('#pi-shop tbody tr')].find(r=>r.querySelector('img[src*=\"/{t1[0]}/\"]')); const i=head.findIndex(h=>h.startsWith('Remaining')); return {{head, rem:row&&row.children[i].textContent, v:row&&+row.children[i].dataset.v}}}})()"))
+    t.ok([h.rstrip(" ▲▼↕") for h in shop["head"]][:6] == ["Item", "Needed", "In stock", "Remaining", "To buy", "Cost"] and not any("m³" in h for h in shop["head"]), "PI Shopping: Remaining sits between In stock and To buy, no m³ column", shop)
+    t.ok(abs(shop["v"] - (t1[1] / 2) / t1[1] * t1[2] * 86400) < 0.01 * t1[2] * 86400, "Remaining = stock ÷ the plan's use per day", [shop, t1])
     t.ok(await t.js("typeof piWeekly()==='number'"), "PI's weekly profit for the Forecast", await t.js("piWeekly()"))
     await t.tab("forecast", 0.6)
     t.ok(await t.js("state.forecast.activities.some(a=>a.linked==='pi')"), "the PI plan is linked into the Forecast")
@@ -352,6 +380,31 @@ async def characters_and_contracts(t):
     t.ok("Hand Pilot" in await t.js("state.chars.map(c=>c.name)"), "adding a pilot by hand")
     await t.tab("contracts"); await t.js("cmRemember('Old Client'); cmRemember('bob'); renderContracts()")
     t.ok("Old Client" in await t.js("[...document.querySelectorAll('#cm-clients option')].map(o=>o.value)"), "the client box remembers clients")
+    await t.js("()=>{state.misc.cm=[{id:'c1',client:'Bob Client',created:Date.now(),items:{34:1000},names:{34:'Tritanium'},sends:[]}]; cmOpen='c1'; saveMisc(); renderContracts();}"); await asyncio.sleep(0.2)
+    cm = t.show("contract detail", await t.js("(()=>{const h=document.querySelector('#cm-detail h2'); return {fold:h.classList.contains('fold-h'), copy:(h.querySelector('[data-copy]')||{}).dataset?.copy, janice:document.querySelectorAll('[data-cm-janice]').length}})()"))
+    t.ok(not cm["fold"] and cm["copy"] == "Bob Client" and cm["janice"] == 2, "the opened contract doesn't fold, its name copies, Janice buttons are there", cm)
+    await t.pg.fill("#cm-goods", "Tritanium 100"); await t.js("window.open=(u)=>{window._opened=u}")
+    await t.pg.click("[data-cm-janice='cm-goods']"); await asyncio.sleep(0.2)
+    t.eq(await t.js("window._opened"), "https://janice.e-351.com/", "Open in Janice opens Janice")
+    # Assets: items in your open contracts are found by the search (read once per contract, never counted)
+    await t.js("()=>contractItems('char:9001',(window._ct=[{id:900,type:'item_exchange',status:'outstanding',issuer:9001,price:1,reward:0,expires:Date.now()+864e5,title:'Two Ventures',from:60003760},{id:901,type:'item_exchange',status:'outstanding',issuer:555,price:1,reward:0,expires:Date.now()+864e5,from:60003760}]),(cid)=>`/characters/9001/contracts/${cid}/items/`,'tok','',(c)=>c.issuer===9001).then(()=>{state.contracts['char:9001']={at:Date.now(),list:window._ct}; saveContracts();})")
+    t.eq(await t.js("window._ct.map(c=>c.items||null)"), [[[32880, 2, 0]], None], "the items of your own open contracts are read")
+    await t.tab("stock", 0.4); await t.pg.fill("#st-search", "venture"); await asyncio.sleep(0.4)
+    st = t.show("asset search", await t.text("#st-table"))
+    t.ok(st and "Venture" in st and "in a contract" in st and "Two Ventures" in st, "the Assets search finds an item in a contract", st)
+    t.ok(await t.js("!stockSources().some(s=>s.rows.some(r=>r.t===32880))"), "contract items aren't counted as stock")
+    # Assets outside the hangars (ship cargo and fittings, Deliveries, nested containers, asset safety): found by the search, never counted
+    ag = t.show("aggregate", await t.js("""(()=>{const L=[{item_id:1,type_id:587,location_id:60003760,location_flag:'Hangar',quantity:1},{item_id:2,type_id:34,location_id:1,location_flag:'Cargo',quantity:500},{item_id:3,type_id:2048,location_id:1,location_flag:'LoSlot0',quantity:1},
+      {item_id:4,type_id:3467,location_id:60003760,location_flag:'Hangar',quantity:1},{item_id:5,type_id:3467,location_id:4,location_flag:'Unlocked',quantity:1},{item_id:6,type_id:32881,location_id:5,location_flag:'Unlocked',quantity:1,is_blueprint_copy:true},
+      {item_id:7,type_id:35,location_id:60000002,location_flag:'Deliveries',quantity:70},{item_id:8,type_id:36,location_id:60000001,location_flag:'AssetSafety',quantity:9}];
+      const m=new Map(), rows=aggregateAssets(L,false,m), other=[...m.values()]; state.typeNames={...state.typeNames,587:'Rifter',3467:'Small Secure Container',2048:'Damage Control II',32881:'Venture Blueprint',36:'Mexallon'};
+      state.assets['char:9001'].other=other; return {rows:rows.map(r=>[r.t,r.q]).sort(), other:other.map(r=>[r.t,r.q,r.loc,assetPlace(r,null)]).sort((a,b)=>a[0]-b[0])}})()"""))
+    t.eq(sorted(ag["rows"]), [[587, 1], [3467, 2]], "hangar rows are unchanged: the ship and both containers")
+    t.eq(ag["other"], [[34, 500, 60003760, "Item hangar · in Rifter · cargo"], [35, 70, 60000002, "Deliveries"], [36, 9, 60000001, "Asset safety"], [2048, 1, 60003760, "Item hangar · in Rifter · fitted, low slot"], [32881, 1, 60003760, "Item hangar · in Small Secure Container"]], "items outside the hangars are kept with where they are")
+    await t.pg.fill("#st-search", "venture blueprint"); await asyncio.sleep(0.4)
+    st2 = t.show("asset search 2", await t.text("#st-table"))
+    t.ok(st2 and "in Small Secure Container" in st2 and "not counted" in st2, "the Assets search finds a blueprint in a nested container", st2)
+    t.ok(await t.js("stockByType().get(36)===undefined && !stockSources().some(s=>s.value && s.rows.some(r=>r.t===36))"), "items outside the hangars aren't counted as stock")
 
 @scenario
 async def jump_planner_and_blueprint_calc(t):

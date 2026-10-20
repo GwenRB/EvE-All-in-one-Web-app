@@ -679,7 +679,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       </div>
       <div class="finder">
         <label for="st-search" class="label">Find an item</label>
-        <input type="search" id="st-search" placeholder="Type an item, group or category name, e.g. Tritanium, Mineral or Ship. Searches every hangar, ticked or not." aria-label="Find an item">
+        <input type="search" id="st-search" placeholder="Type an item, group or category name, e.g. Tritanium, Mineral or Ship. Searches every hangar, ticked or not, ship cargo, Deliveries and your open contracts." aria-label="Find an item">
       </div>
       <div class="toolbar">
         <select id="st-cat" aria-label="Category" style="max-width:260px"><option value="">All categories</option></select><select id="st-grp" aria-label="Group" style="max-width:260px"><option value="">All groups</option></select><select id="st-loc" aria-label="Location" style="max-width:320px"></select><select id="st-group" aria-label="Group by"><option value="item">One row per item</option><option value="place">One row per item and hangar</option></select>
@@ -800,6 +800,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
     <section class="panel" aria-labelledby="todo-ct-title" id="todo-ct-panel" hidden><div class="bp-head"><div><h2 id="todo-ct-title">Ongoing contracts</h2><p class="muted" style="margin:4px 0 0">Client orders still missing goods (Contract management) and your contracts in game that are still open.</p></div><button type="button" class="link" data-tab-go="contracts">Open Contract management</button></div><div id="todo-ct"></div></section>
     <section class="panel" aria-labelledby="todo-sc-title" id="todo-sc-panel" hidden><div class="bp-head"><div><h2 id="todo-sc-title">Trips for a freight service</h2><p class="muted" style="margin:4px 0 0">Supply chain trips none of your ships can do (from the last plan on the Map page): contract them out, then mark them sent.</p></div><button type="button" class="link" data-tab-go="map">Open the Map</button></div><div id="todo-sc"></div></section>
     <section class="panel" aria-labelledby="todo-rx-title"><div class="bp-head"><div><h2 id="todo-rx-title">Buy for reactions</h2><p class="muted" style="margin:4px 0 0">What the Reactions management plan still needs, after your stock: tick each line as you buy it.</p></div><button type="button" class="link" data-tab-go="reactions">Open Reactions management</button></div><div id="todo-rx"></div></section>
+    <section class="panel" aria-labelledby="todo-pi-title"><div class="bp-head"><div><h2 id="todo-pi-title">Buy for PI</h2><p class="muted" style="margin:4px 0 0">What the PI Management plan still needs for its days of stock, after your stock (its Shopping panel): tick each line as you buy it.</p></div><button type="button" class="link" data-tab-go="pimgmt">Open PI Management</button></div><div id="todo-pi"></div></section>
     <section class="panel" aria-labelledby="todo-ord-title" id="todo-ord-panel" hidden><div class="bp-head"><div><h2 id="todo-ord-title">Buy for builds</h2><p class="muted" style="margin:4px 0 0">Materials still to buy for the Planned and In progress builds of Orders management: tick each line as you buy it.</p></div><button type="button" class="link" data-tab-go="orders">Open Orders management</button></div><div id="todo-ord"></div></section>
    </div></div>
   </div>
@@ -899,10 +900,10 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="fc-box"><h3>New contract</h3>
         <div class="toolbar"><label class="label" for="cm-client">Client</label><input type="text" id="cm-client" placeholder="Client name" maxlength="60" style="width:240px" list="cm-clients" autocomplete="off"><datalist id="cm-clients"></datalist></div>
         <textarea id="cm-goods" rows="6" style="width:100%;margin-top:6px" placeholder="Paste the goods the client wants (inventory copy, multibuy list, EFT fit, Name x100, 100 Name…)"></textarea>
-        <div class="toolbar" style="margin-top:6px"><button type="button" class="primary" id="cm-create">Create contract</button><span class="muted" id="cm-status" style="font-size:.85rem"></span></div></div>
+        <div class="toolbar" style="margin-top:6px"><button type="button" class="primary" id="cm-create">Create contract</button><button type="button" data-cm-janice="cm-goods" title="Copies the pasted goods, then opens Janice in a new tab: paste them there (Ctrl+V)">Open in Janice</button><span class="muted" id="cm-status" style="font-size:.85rem"></span></div></div>
       <div id="cm-list" style="margin-top:12px"></div>
     </section>
-    <section class="panel" id="cm-detail" hidden></section>
+    <section class="panel nofold" id="cm-detail" hidden></section>
   </div>
 
   <div id="page-prices" class="page" hidden>
@@ -1923,7 +1924,7 @@ const SYNC_NOTE = "Syncing replaces a pilot's levels with what ESI reports (acti
 const SLOTS_NOTE = "M, S and R stand for manufacturing, science and reactions. Job slots count the base slot plus Mass Production / Laboratory Operation / Mass Reactions and their advanced versions.";
 const JOBTIME_NOTE = "Job time is estimated from Industry (4% per level), Advanced Industry (3%) and 1% per level of each other skill the blueprint requires; reactions use Reactions (4%).";
 const HOWTO = {
-  forecast: "Active contracts count what they will pay you (+) or cost you (−) once completed; contracts between your own pilots are ignored. Actual profit comes from the Profit and loss page: every counted wallet entry (Left out ones aren't), cumulative from the start of the span shown (or the first entry kept), and per week over the last 30 days kept; it's for comparing with the planned profit and isn't added to the total, which already holds that ISK. The forecast records one point per day (ISK from your wallets plus your stock value); the history, stock list and activities are saved in backups.",
+  forecast: "Active contracts count what they will pay you (+) or cost you (−) once completed; contracts between your own pilots are ignored. Actual profit comes from the Profit and loss page: every counted wallet entry (Left out ones aren't), cumulative from the start of the span shown (or the first entry kept), and per week over the last 30 days kept; it's for comparing with the planned profit and isn't added to the total, which already holds that ISK. Planned orders are the Orders management builds not Done: each adds what it's worth less its build cost on the day it should be finished (In progress: from when you set it In progress plus the plan's timeline, or a running job making the item if it ends later; Planned: from today plus the timeline). Builds with no price for the item or a material, or sent before plans kept a timeline, are left out. The forecast records one point per day (ISK from your wallets plus your stock value); the history, stock list and activities are saved in backups.",
   omega: "Omega dates are entered by hand because ESI doesn't provide them.",
   jobs: `Corporation jobs need one linked pilot with the Factory Manager role; they then count against the slots of whichever of your pilots installed them. Job slots in use come from ESI and include jobs that are finished but not yet delivered. ${SLOTS_NOTE}`,
   overview: `${JOBTIME_NOTE} Invention chance uses base chance × (1 + science levels ÷ 30 + encryption level ÷ 40); structures, rigs, implants and decryptors aren't counted here (Build planning counts them). The skill check reads CCP's game data, so it needs an internet connection the first time you check each blueprint; after that it works offline. ${SYNC_NOTE}`,
@@ -2198,8 +2199,8 @@ function renderContracts() {
     return `<tr${cmOpen === c.id ? ` style="background:var(--panel-2)"` : ""}><th scope="row"><button type="button" class="copyname" data-copy="${esc(c.client)}" data-copy-msg="Client name copied" title="Click to copy">${esc(c.client)}</button></th><td data-v="${c.created || ""}">${fmtDate(c.created)}</td><td class="num">${m.length}</td><td style="min-width:160px"><div class="progress"><i style="width:${pct}%"></i></div><span class="muted" style="font-size:.8rem">${pct}% · ${(c.sends || []).length} send${(c.sends || []).length === 1 ? "" : "s"}</span></td><td>${complete ? `<span class="pill good">Complete</span>` : `<span class="pill mid">${m.filter(x => x.left).length} item${m.filter(x => x.left).length === 1 ? "" : "s"} missing</span>`}</td><td><button type="button" class="link" data-cm-open="${c.id}">${cmOpen === c.id ? "Opened" : "Open"}</button></td></tr>`; }).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0">No contract yet.</p>`;
   const d = $("cm-detail"), c = L.find(x => x.id === cmOpen); d.hidden = !c; if (!c) return;
   const m = cmMissing(c), left = m.filter(x => x.left), nm = (t) => c.names[t] || "Item " + t;
-  d.innerHTML = `<div class="bp-head"><div><h2>${esc(c.client)}</h2><p class="muted" style="margin:4px 0 0">Created ${fmtDate(c.created)} · ${m.length} item${m.length === 1 ? "" : "s"} wanted</p></div><div class="toolbar"><button type="button" class="link" data-cm-close="1">Close</button><button type="button" class="link" data-cm-del="${c.id}">${c._del ? "Click again to delete" : "Delete contract"}</button></div></div>
-    <div class="fc-box"><h3>Record a send</h3><textarea id="cm-send" rows="5" style="width:100%" placeholder="Paste what you send this time"></textarea><div class="toolbar" style="margin-top:6px"><button type="button" class="primary" data-cm-send="${c.id}">Record what I sent</button><span class="muted" id="cm-send-status" style="font-size:.85rem"></span></div></div>
+  d.innerHTML = `<div class="bp-head"><div><h2><button type="button" class="copyname" data-copy="${esc(c.client)}" data-copy-msg="${esc(c.client)} copied" title="Click to copy the name" style="font:inherit">${esc(c.client)}</button></h2><p class="muted" style="margin:4px 0 0">Created ${fmtDate(c.created)} · ${m.length} item${m.length === 1 ? "" : "s"} wanted</p></div><div class="toolbar"><button type="button" class="link" data-cm-close="1">Close</button><button type="button" class="link" data-cm-del="${c.id}">${c._del ? "Click again to delete" : "Delete contract"}</button></div></div>
+    <div class="fc-box"><h3>Record a send</h3><textarea id="cm-send" rows="5" style="width:100%" placeholder="Paste what you send this time"></textarea><div class="toolbar" style="margin-top:6px"><button type="button" class="primary" data-cm-send="${c.id}">Record what I sent</button><button type="button" data-cm-janice="cm-send" title="Copies the pasted goods, then opens Janice in a new tab: paste them there (Ctrl+V)">Open in Janice</button><span class="muted" id="cm-send-status" style="font-size:.85rem"></span></div></div>
     <h3 style="margin:12px 0 6px">Still missing ${left.length ? `<button type="button" class="cargo" data-copy="${esc(left.map(x => `${nm(x.t)}\t${x.left}`).join("\n"))}" data-tip="Copy the missing items (multibuy format)">Copy list</button>` : ""}</h3>
     ${left.length ? "" : `<p class="notice" style="margin:0">Everything has been sent.</p>`}
     <div class="scroller"><table class="bp-table" data-sorted=""><thead><tr><th scope="col">Item</th><th scope="col" class="num">Wanted</th><th scope="col" class="num">Sent</th><th scope="col" class="num">Missing</th></tr></thead><tbody>${[...m].sort((a, b) => (b.left > 0) - (a.left > 0) || nm(a.t).localeCompare(nm(b.t))).map(x => `<tr><th scope="row">${icon(x.t)} <button type="button" class="copyname" data-copy="${esc(nm(x.t))}" data-copy-msg="${esc(nm(x.t))} copied" title="Click to copy the name">${esc(nm(x.t))}</button></th><td class="num"><button type="button" class="copyname" data-copy="${x.want}" data-copy-msg="${x.want} copied" title="Click to copy the number">${x.want.toLocaleString()}</button></td><td class="num">${x.sent ? x.sent.toLocaleString() : "—"}${x.sent > x.want ? ` <span class="pill mid">+${(x.sent - x.want).toLocaleString()} extra</span>` : ""}</td><td class="num">${x.left ? `<button type="button" class="copyname" data-copy="${x.left}" data-copy-msg="${x.left} copied" title="Click to copy the number"><b>${x.left.toLocaleString()}</b></button>` : `<span class="pill good">Done</span>`}</td></tr>`).join("")}</tbody></table></div>
@@ -2235,6 +2236,10 @@ document.addEventListener("click", async (e) => {
     } catch (err) { st.textContent = netMsg(err); }
   }
 });
+// Janice (appraisals) in a new tab; it can't be filled from a link, so what's pasted in the box is copied first, ready to paste there
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-cm-janice]"); if (!b) return; const box = $(b.dataset.cmJanice), text = box ? box.value.trim() : "";
+  if (text) navigator.clipboard.writeText(text).then(() => toast("Goods copied: paste them in Janice (Ctrl+V)"), () => toast("Couldn't copy the goods: copy them from the box"));   // before the new tab takes the focus
+  window.open("https://janice.e-351.com/", "_blank", "noopener"); });
 // Broker fee for sell orders you place: NPC stations 3% − 0.3% per Broker Relations − 0.03% × faction standing − 0.02% × corporation standing (effective standings, Connections/Diplomacy included), 1% at least; citadel owners set their own
 const stationOwner = {};
 async function stationFactionCorp(id) {
@@ -3087,11 +3092,11 @@ function renderPiPick(E) {
 function piNeeds(E) { const P = piPortfolio(E, E.days), need = new Map(); for (const r of P.rows) { const n = P.n(r); if (!n) continue; for (const [m, q] of Object.entries(r.inn)) need.set(+m, (need.get(+m) || 0) + q * n); } return { P, need }; }
 function renderPiShop(E) {
   const box = $("pi-shop"); if (!box) return; const C = E.C, { P, need } = piNeeds(E), stock = piStock();
-  const head = `<div class="toolbar"><label class="label">Days of stock</label><input type="text" data-pi="stockDays" value="${esc(C.stockDays)}" inputmode="numeric" style="width:50px"><label class="label">Stock counted</label><select data-pi="scope"><option value="all"${C.scope !== "sys" ? " selected" : ""}>Every hangar</option><option value="sys"${C.scope === "sys" ? " selected" : ""}>Only in the delivery system</option></select><span class="muted" style="font-size:.85rem">What your hangars hold (Assets) is taken off.</span></div>`;
+  const head = `<div class="toolbar"><label class="label">Days of stock</label><input type="text" data-pi="stockDays" value="${esc(C.stockDays)}" inputmode="numeric" style="width:50px"><label class="label">Stock counted</label><select data-pi="scope"><option value="all"${C.scope !== "sys" ? " selected" : ""}>Every hangar</option><option value="sys"${C.scope === "sys" ? " selected" : ""}>Only in the delivery system</option></select><span class="muted" style="font-size:.85rem">What your hangars hold (Assets) is taken off. Remaining: how long that stock lasts at the planets' use (red under a day).</span></div>`;
   if (!need.size) { box.innerHTML = head + `<p class="muted" style="margin:0">Give some planets to a P4 in Pick production first.</p>`; return; }
-  const rows = [...need].map(([t, q]) => { const nq = Math.ceil(q), held = stock.get(t) || 0, buy = Math.max(0, nq - held); const u = piPrice(t, C.inP); return { t, need: nq, held, buy, cost: u == null ? null : buy * u, tier: piTier(t) }; });
+  const rows = [...need].map(([t, q]) => { const nq = Math.ceil(q), held = stock.get(t) || 0, buy = Math.max(0, nq - held); const u = piPrice(t, C.inP); return { t, need: nq, held, buy, last: q > 0 ? held / q * E.days * 86400 : null, cost: u == null ? null : buy * u, tier: piTier(t) }; });   // last: seconds the stock lasts at the plan's use
   const list = (tier, title) => { const L = rows.filter(x => x.tier === tier).sort((a, b) => piName(a.t).localeCompare(piName(b.t))); if (!L.length) return ""; const toBuy = L.filter(x => x.buy > 0);
-    return `<h3 style="margin:12px 0 6px;font-size:1rem">${title} ${toBuy.length ? `<button type="button" class="cargo" data-copy="${esc(toBuy.map(x => `${piName(x.t)}\t${x.buy}`).join("\n"))}" data-copy-msg="Multibuy list copied">Copy multibuy</button>` : `<span class="pill good">All in stock</span>`}</h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">In stock</th><th scope="col" class="num">To buy</th><th scope="col" class="num">Cost</th><th scope="col" class="num">m³</th></tr></thead><tbody>${L.map(x => `<tr><th scope="row">${icon(x.t)} <button type="button" class="copyname" data-copy="${esc(piName(x.t))}" data-copy-msg="${esc(piName(x.t))} copied">${esc(piName(x.t))}</button></th><td class="num">${x.need.toLocaleString()}</td><td class="num">${x.held ? x.held.toLocaleString() : "—"}</td><td class="num"><b>${x.buy.toLocaleString()}</b></td><td class="num">${x.cost == null ? `<span style="color:var(--bad)">no price</span>` : isk(x.cost)}</td><td class="num">${Math.round(x.buy * piVol(x.t)).toLocaleString()}</td></tr>`).join("")}</tbody><tfoot><tr class="total"><th scope="row">Total</th><td></td><td></td><td></td><td class="num"><b>${isk(L.reduce((a, x) => a + (x.cost || 0), 0))}</b>${L.some(x => x.cost == null && x.buy > 0) ? `<div class="label" style="color:var(--bad)">${L.filter(x => x.cost == null && x.buy > 0).length} not counted</div>` : ""}</td><td class="num">${Math.round(L.reduce((a, x) => a + x.buy * piVol(x.t), 0)).toLocaleString()}</td></tr></tfoot></table></div>`; };
+    return `<h3 style="margin:12px 0 6px;font-size:1rem">${title} ${toBuy.length ? `<button type="button" class="cargo" data-copy="${esc(toBuy.map(x => `${piName(x.t)}\t${x.buy}`).join("\n"))}" data-copy-msg="Multibuy list copied">Copy multibuy</button>` : `<span class="pill good">All in stock</span>`}</h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">In stock</th><th scope="col" class="num">Remaining</th><th scope="col" class="num">To buy</th><th scope="col" class="num">Cost</th></tr></thead><tbody>${L.map(x => `<tr><th scope="row">${icon(x.t)} <button type="button" class="copyname" data-copy="${esc(piName(x.t))}" data-copy-msg="${esc(piName(x.t))} copied">${esc(piName(x.t))}</button></th><td class="num">${x.need.toLocaleString()}</td><td class="num">${x.held ? x.held.toLocaleString() : "—"}</td><td class="num" data-v="${x.last || 0}"${x.held && x.last < 864e2 ? ` style="color:var(--bad)"` : ""}>${x.held && x.last ? fmtDur(x.last) : "—"}</td><td class="num"><b>${x.buy.toLocaleString()}</b></td><td class="num">${x.cost == null ? `<span style="color:var(--bad)">no price</span>` : isk(x.cost)}</td></tr>`).join("")}</tbody><tfoot><tr class="total"><th scope="row">Total</th><td></td><td></td><td></td><td></td><td class="num"><b>${isk(L.reduce((a, x) => a + (x.cost || 0), 0))}</b>${L.some(x => x.cost == null && x.buy > 0) ? `<div class="label" style="color:var(--bad)">${L.filter(x => x.cost == null && x.buy > 0).length} not counted</div>` : ""}</td></tr></tfoot></table></div>`; };
   const cost = rows.reduce((a, x) => a + (x.cost || 0), 0), fee = C.buyHow === "orders" ? cost * E.brk : 0, volBuy = rows.reduce((a, x) => a + x.buy * piVol(x.t), 0), volAll = rows.reduce((a, x) => a + x.need * piVol(x.t), 0), valAll = rows.reduce((a, x) => a + x.need * (piPrice(x.t, C.inP) || 0), 0);
   const outRows = P.rows.filter(r => P.n(r) > 0), volOut = outRows.reduce((a, r) => a + r.outM3 * P.n(r), 0), valOut = outRows.reduce((a, r) => a + r.exportValue * P.n(r), 0);
   const jitaIn = C.shipIn ? volBuy * rxNum(C.rateIn) + cost * rxNum(C.collIn) / 100 : 0, runs = piHaulCost(volAll, valAll, volOut, valOut, true);
@@ -3394,8 +3399,8 @@ async function applyToken(tok, refreshed) {
     catch (e) { corpStructError = e.status === 403 ? "no Station Manager role in the corporation" : netMsg(e); }
   }
   let contractsError = "";
-  if (scopes.includes(CONTRACTS_SCOPE)) { try { state.contracts["char:" + charId] = { at: Date.now(), list: slimContracts(await esiAuthGetAll(`/characters/${charId}/contracts/`, tok.access_token)) }; saveContracts(); } catch (e) { contractsError = netMsg(e); } }
-  if (corpId && scopes.includes(CORP_CONTRACTS_SCOPE)) { try { state.contracts["corp:" + corpId] = { at: Date.now(), list: slimContracts(await esiAuthGetAll(`/corporations/${corpId}/contracts/`, tok.access_token)) }; saveContracts(); } catch (e) { contractsError = contractsError || (e.status === 403 ? "corporation contracts refused" : netMsg(e)); } }
+  if (scopes.includes(CONTRACTS_SCOPE)) { try { const L = slimContracts(await esiAuthGetAll(`/characters/${charId}/contracts/`, tok.access_token)); await contractItems("char:" + charId, L, (cid) => `/characters/${charId}/contracts/${cid}/items/`, tok.access_token, scopes, (c) => c.issuer === charId); state.contracts["char:" + charId] = { at: Date.now(), list: L }; saveContracts(); } catch (e) { contractsError = netMsg(e); } }
+  if (corpId && scopes.includes(CORP_CONTRACTS_SCOPE)) { try { const L = slimContracts(await esiAuthGetAll(`/corporations/${corpId}/contracts/`, tok.access_token)); await contractItems("corp:" + corpId, L, (cid) => `/corporations/${corpId}/contracts/${cid}/items/`, tok.access_token, scopes, (c) => c.forCorp && c.issuerCorp === corpId); state.contracts["corp:" + corpId] = { at: Date.now(), list: L }; saveContracts(); } catch (e) { contractsError = contractsError || (e.status === 403 ? "corporation contracts refused" : netMsg(e)); } }
   let assetsError = "", corpAssetsError = "";
   if (scopes.includes(ASSETS_SCOPE)) {
     try { await syncAssets("char:" + charId, name, "Personal", await esiAuthGetAll(`/characters/${charId}/assets/`, tok.access_token), false, tok.access_token, scopes, null); }
@@ -4641,6 +4646,7 @@ const SERIES = [
   { key: "profit", label: "Planned profit (cumulative)", color: "#22a06b", width: 2 },
   { key: "cin", label: "Active contracts (+)", color: "#0ea5a4", width: 2, opt: true },
   { key: "cout", label: "Active contracts (−)", color: "#be123c", width: 2, opt: true },
+  { key: "orders", label: "Planned orders (cumulative)", color: "#4f46e5", width: 2, opt: true },
   { key: "actual", label: "Actual profit (cumulative, from Profit and loss)", color: "#a16207", width: 2 }
 
 ];
@@ -4656,6 +4662,19 @@ function omegaRenewals(until) {
   return out.sort((a, b) => a.t - b.t);
 }
 function renderForecast() { renderForecastChart(); renderAgenda(); renderFcNav(); }
+// Orders management builds as dated profits (worth − build cost), counted the day each one is finished: In progress = started + the plan's timeline,
+// or later when a running job making the item ends later; Planned = today + the timeline. Done orders are in the wallets already.
+// profit null = unknown (no price for the item or some materials); at null = no timeline (sent before plans kept one)
+function plannedOrders() {
+  const now = Date.now(), out = [];
+  for (const o of ordList()) {
+    if (o.status === "done") continue;
+    const started = o.status !== "planned" && o.startedAt, span = o.route && o.route.span != null ? o.route.span * 1000 : null, ends = started ? scJobEnds(null, [1, 9, 11], o.type) : [];
+    const at = span != null || ends.length ? Math.max(now, span != null ? (started ? o.startedAt : now) + span : 0, ...ends) : null;
+    out.push({ o, at, profit: !o.value || (o.materials || []).some(m => m.noPrice) ? null : o.value - o.cost });
+  }
+  return out.sort((a, b) => (a.at ?? Infinity) - (b.at ?? Infinity));
+}
 /* ---------- combined calendar (forecast page) ---------- */
 let lastGoalHits = [];
 const AG_COLORS = { pi: "#0ea5a4", omega: "#e05d5d", contracts: "#db2777", goals: "#ca8a04", research: "#64748b", fuel: "#f97316" };
@@ -4714,27 +4733,29 @@ function renderForecastChart() {
   $("fc-lines").value = F.lines === "each" ? "each" : "sum";
   const iskT = iskNow() || 0, stockT = stockNow(), weekly = weeklyNow(), ct = contractTotals(), actual = pnlActual(days);
   const horizonEnd = now + days * 864e5, renewals = omegaRenewals(horizonEnd);
+  const ords = plannedOrders(), ordDated = ords.filter(x => x.at != null && x.profit != null), ordBy = (t) => ordDated.filter(x => x.at <= t).reduce((a, x) => a + x.profit, 0), ordOff = ords.filter(x => x.at == null || x.profit == null);
   const costBy = (t) => renewals.filter(r => r.t <= t).reduce((x, r) => x + r.cost, 0);
   const eachMode = F.lines === "each" && F.activities.some(a => a.on !== false), weeklyShown = eachMode ? F.activities.filter(a => a.on !== false && inc("a:" + a.id)).reduce((s2, a) => s2 + (a.weekly || 0), 0) : inc("profit") ? weekly : 0;
-  const nowShown = (inc("isk") ? iskT : 0) + (inc("stock") ? stockT : 0) + (inc("cin") ? ct.cin : 0) - (inc("cout") ? ct.cout : 0), anyHidden = ["isk", "omega", "stock", "cin", "cout", "profit"].some(k => hid.has(k)) || (eachMode && F.activities.some(a => hid.has("a:" + a.id)));
-  const costAll = costBy(horizonEnd), endTotal = nowShown + weeklyShown * weeks - (inc("omega") ? costAll : 0);
+  const nowShown = (inc("isk") ? iskT : 0) + (inc("stock") ? stockT : 0) + (inc("cin") ? ct.cin : 0) - (inc("cout") ? ct.cout : 0), anyHidden = ["isk", "omega", "stock", "cin", "cout", "profit", "orders"].some(k => hid.has(k)) || (eachMode && F.activities.some(a => hid.has("a:" + a.id)));
+  const costAll = costBy(horizonEnd), ordEnd = inc("orders") ? ordBy(horizonEnd) : 0, endTotal = nowShown + weeklyShown * weeks + ordEnd - (inc("omega") ? costAll : 0);
   $("fc-summary").innerHTML = `<div class="slot-tile"><div class="label">Total value today${anyHidden ? " · shown lines only" : ""}</div><span class="big-num" title="${iskFull(nowShown)}">${isk(nowShown)}</span><div class="muted">ISK ${isk(iskT)} · stock ${isk(stockT)}${ct.cin || ct.cout ? ` · contracts ${ct.cin - ct.cout >= 0 ? "+" : "−"}${isk(Math.abs(ct.cin - ct.cout))}` : ""}</div></div>
     ${ct.cin || ct.cout ? `<div class="slot-tile"><div class="label">Active contracts</div><span class="big-num">${ct.cin - ct.cout >= 0 ? "+" : "−"}${isk(Math.abs(ct.cin - ct.cout))}</span><div class="muted">+${isk(ct.cin)} in · −${isk(ct.cout)} out · ${ct.list.length} contract${ct.list.length === 1 ? "" : "s"}</div></div>` : ""}
     <div class="slot-tile"><div class="label">Planned profit</div><span class="big-num">${isk(weekly)}</span><div class="muted">per week, ${F.activities.filter(a => a.on !== false).length} activit${F.activities.filter(a => a.on !== false).length === 1 ? "y" : "ies"}${unknownActs().length ? ` · <span style="color:var(--bad)">${esc(unknownActs().map(a => a.name).join(", "))} left out: no price for some items</span>` : ""}</div></div>
+    ${ords.length ? (() => { const sum = ordDated.reduce((a, x) => a + x.profit, 0), next = ordDated[0]; return `<div class="slot-tile"><div class="label">Planned orders</div><span class="big-num" title="${iskFull(sum)}"${sum < 0 ? ` style="color:var(--bad)"` : ""}>${sum < 0 ? "−" : "+"}${isk(Math.abs(sum))}</span><div class="muted">${ordDated.length} build${ordDated.length === 1 ? "" : "s"} from Orders management${next ? ` · next done ${fmtDate(next.at)}` : ""}${ordOff.length ? ` · <span style="color:var(--bad)" title="${esc(ordOff.map(x => `${x.o.qty} × ${x.o.name}: ${x.profit == null ? "no price for the item or some materials" : "no timeline (send it again from Build planning)"}`).join("\n"))}">${ordOff.length} left out</span>` : ""}</div></div>`; })() : ""}
     ${actual && actual.weekly != null ? `<div class="slot-tile"><div class="label">Actual profit</div><span class="big-num" title="${iskFull(actual.weekly)}"${actual.weekly < 0 ? ` style="color:var(--bad)"` : ""}>${isk(actual.weekly)}</span><div class="muted">per week over the last ${Math.round(actual.span)} days (planned ${isk(weekly)}) · from Profit and loss${actual.none ? ` · includes ${isk(actual.none)} a week not assigned to an activity` : ""}</div></div>` : ""}
-    <div class="slot-tile"><div class="label">In ${spanLabel(days)}</div><span class="big-num" title="${iskFull(endTotal)}">${isk(endTotal)}</span><div class="muted">+${isk(weeklyShown * weeks)} profit, −${isk(inc("omega") ? costAll : 0)} Omega${anyHidden ? " · hidden lines left out" : ""}</div></div>
+    <div class="slot-tile"><div class="label">In ${spanLabel(days)}</div><span class="big-num" title="${iskFull(endTotal)}">${isk(endTotal)}</span><div class="muted">+${isk(weeklyShown * weeks)} profit${ordEnd ? `, ${ordEnd < 0 ? "−" : "+"}${isk(Math.abs(ordEnd))} orders` : ""}, −${isk(inc("omega") ? costAll : 0)} Omega${anyHidden ? " · hidden lines left out" : ""}</div></div>
     ${(() => { const yr = omegaRenewals(now + 365 * 864e5).reduce((a, r) => a + r.cost, 0) / 12, pm = weekly * 365.25 / 12 / 7; return `<div class="slot-tile"><div class="label">Profit per month</div><span class="big-num" title="${iskFull(pm - yr)}">${pm - yr < 0 ? "−" : ""}${isk(Math.abs(pm - yr))}</span><div class="muted">+${isk(pm)} planned profit · −${isk(yr)} Omega (average over the next 12 months)</div></div>`; })()}`;
   // Points: recorded history (solid), then a daily forecast from today (dashed)
   const acts = F.activities.filter(a => a.on !== false && a.weekly != null);
   const each = F.lines === "each" && acts.length > 0;
   const ACT_COLORS = ["#22a06b", "#a16207", "#db2777", "#7c3aed", "#c2410c", "#0284c7", "#65a30d", "#ca8a04"];
-  const allSeries = [...SERIES.filter(sr => !(each && sr.key === "profit") && !(sr.key === "omega" && !renewals.length) && !(sr.key === "cin" && !ct.cin) && !(sr.key === "cout" && !ct.cout) && !(sr.key === "actual" && !(actual && actual.pts.length > 1))), ...(each ? acts.map((a, i) => ({ key: "a:" + a.id, label: `${a.name} (cumulative)`, color: ACT_COLORS[i % ACT_COLORS.length], width: 2 })) : [])];
+  const allSeries = [...SERIES.filter(sr => !(each && sr.key === "profit") && !(sr.key === "omega" && !renewals.length) && !(sr.key === "cin" && !ct.cin) && !(sr.key === "cout" && !ct.cout) && !(sr.key === "orders" && !ordDated.length) && !(sr.key === "actual" && !(actual && actual.pts.length > 1))), ...(each ? acts.map((a, i) => ({ key: "a:" + a.id, label: `${a.name} (cumulative)`, color: ACT_COLORS[i % ACT_COLORS.length], width: 2 })) : [])];
   const series = allSeries.filter(sr => !hid.has(sr.key));
   // History shown over the same span as the forecast, so zooming in looks closer on both sides of today
   const hist = F.history.map(p => { const t = new Date(p.d + "T12:00:00").getTime(); return { t, isk: p.isk, stock: p.stock, total: (inc("isk") ? p.isk : 0) + (inc("stock") ? p.stock : 0) + (inc("cin") && inc("cout") ? p.c || 0 : 0), hist: true }; }).filter(p => p.t >= now - days * 864e5);
   const fc = Array.from({ length: days + 1 }, (_, d) => {
     const t = now + d * 864e5, profit = weekly * d / 7, cost = costBy(t);
-    const pt = { t, isk: iskT, omega: -cost, stock: stockT, profit, cin: ct.cin, cout: -ct.cout, total: (inc("isk") ? iskT : 0) - (inc("omega") ? cost : 0) + (inc("stock") ? stockT : 0) + weeklyShown * d / 7 + (inc("cin") ? ct.cin : 0) - (inc("cout") ? ct.cout : 0) };
+    const orders = ordBy(t), pt = { t, isk: iskT, omega: -cost, stock: stockT, profit, cin: ct.cin, cout: -ct.cout, orders, total: (inc("isk") ? iskT : 0) - (inc("omega") ? cost : 0) + (inc("stock") ? stockT : 0) + weeklyShown * d / 7 + (inc("cin") ? ct.cin : 0) - (inc("cout") ? ct.cout : 0) + (inc("orders") ? orders : 0) };
     for (const a of acts) pt["a:" + a.id] = (a.weekly || 0) * d / 7;
     return pt;
   });
@@ -4787,7 +4808,7 @@ function renderForecastChart() {
   // Objectives: a dot on the total value line on the first day it reaches the objective's cost
   // Objectives: first day the total reaches the cost, looked for up to 10 years ahead whatever the chart shows
   const longRen = omegaRenewals(now + 3650 * 864e5);
-  const reachOf = (cost) => { let ri = 0, spent = 0; for (let d = 0; d <= 3650; d++) { const t = now + d * 864e5; while (ri < longRen.length && longRen[ri].t <= t) spent += longRen[ri++].cost; if (iskT - spent + stockT + weekly * d / 7 + ct.cin - ct.cout >= cost) return t; } return null; };
+  const reachOf = (cost) => { let ri = 0, spent = 0; for (let d = 0; d <= 3650; d++) { const t = now + d * 864e5; while (ri < longRen.length && longRen[ri].t <= t) spent += longRen[ri++].cost; if (iskT - spent + stockT + weekly * d / 7 + ct.cin - ct.cout + ordBy(t) >= cost) return t; } return null; };
   const goalHits = (F.goals || []).map(gl => { const t = reachOf(gl.cost); return { gl, t, p: t != null && t <= horizonEnd ? fc.find(p => p.t >= t) || null : null }; });
   lastGoalHits = goalHits.filter(h => h.t != null).map(h => ({ name: h.gl.name, cost: h.gl.cost, t: h.t }));
   const goalDots = goalHits.filter(h => h.p).map((h, i) => { const gx = x(h.p.t), gy = y(h.p.total), right = gx < W - R - 140;
@@ -4937,7 +4958,18 @@ $("fc-snap").addEventListener("click", () => { recordSnapshot(true); renderForec
 
 /* ---------- contracts ---------- */
 function saveContracts() { try { localStorage.setItem("eve-industry-contracts", JSON.stringify(state.contracts)); } catch (e) {} }
-const slimContracts = (list) => list.filter(c => c.status === "outstanding" || c.status === "in_progress").map(c => ({ id: c.contract_id, type: c.type, status: c.status, issuer: c.issuer_id, issuerCorp: c.issuer_corporation_id, forCorp: c.for_corporation, assignee: c.assignee_id, acceptor: c.acceptor_id, price: c.price || 0, reward: c.reward || 0, collateral: c.collateral || 0, expires: Date.parse(c.date_expired), title: c.title || "" }));
+const slimContracts = (list) => list.filter(c => c.status === "outstanding" || c.status === "in_progress").map(c => ({ id: c.contract_id, type: c.type, status: c.status, issuer: c.issuer_id, issuerCorp: c.issuer_corporation_id, forCorp: c.for_corporation, assignee: c.assignee_id, acceptor: c.acceptor_id, price: c.price || 0, reward: c.reward || 0, collateral: c.collateral || 0, expires: Date.parse(c.date_expired), title: c.title || "", from: c.start_location_id || null }));
+// What you put in your open contracts (ESI takes it out of your assets while the contract is up): read once per contract, for the Assets search
+async function contractItems(key, list, path, access, scopes, mine) {
+  const prev = new Map(((state.contracts[key] || {}).list || []).filter(c => c.items).map(c => [c.id, c.items]));
+  await pool(list.filter(mine), 3, async (c) => {
+    if (prev.has(c.id)) { c.items = prev.get(c.id); return; }
+    try { c.items = (await esiAuthGet(path(c.id), access)).filter(i => i.is_included).map(i => [i.type_id, i.quantity, i.raw_quantity === -2 ? 1 : 0]); } catch (e) {}   // [type, quantity, copy]
+  });
+  const have = list.filter(c => c.items && c.items.length), types = [...new Set(have.flatMap(c => c.items.map(i => i[0])))].filter(t => !state.typeNames[t]);
+  if (types.length) Object.assign(state.typeNames, await esiNames(types).catch(() => ({})));
+  await locationNames(have.map(c => c.from).filter(Boolean), access, scopes).catch(() => null);
+}
 // ISK that active contracts will bring in (+) or take out (−) once completed; contracts between your own pilots cancel out
 function contractTotals() {
   const chars = new Set(state.chars.map(c => c.esiId).filter(Boolean)), corps = new Set(state.chars.map(c => c.corpId).filter(Boolean));
@@ -4958,10 +4990,16 @@ function contractTotals() {
 }
 
 /* ---------- stock (hangars) ---------- */
+const ASSET_FLAG = { Deliveries: "Deliveries", CorpDeliveries: "Deliveries", AssetSafety: "Asset safety", CorpAssetSafety: "Asset safety", Implant: "implant", Cargo: "cargo", DroneBay: "drone bay", FighterBay: "fighter bay", ShipHangar: "ship hangar", FleetHangar: "fleet hangar", Wardrobe: "SKINs" }, ASSET_SLOT = { Hi: "high", Med: "mid", Lo: "low", Rig: "rig", SubSystem: "subsystem" };
+function assetPlace(r, divisions) {
+  const f = r.h || "", slot = /^(Hi|Med|Lo|Rig|SubSystem)Slot\d+$/.exec(f), what = ASSET_FLAG[f] || (slot ? `fitted, ${ASSET_SLOT[slot[1]]} slot` : /^(Unlocked|Locked|AutoFit)$/.test(f) ? "" : f.replace(/\d+$/, "").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase());
+  return [r.hg ? HANGAR_NAME(r.hg, divisions) : "", r.in ? `in ${state.typeNames[r.in] || "Item " + r.in}` : "", what].filter(Boolean).join(" · ").replace(/^./, (x) => x.toUpperCase());
+}
 const HANGAR_NAME = (flag, divisions) => { if (flag === "Hangar") return "Item hangar"; const n = +flag.replace("CorpSAG", ""); return (divisions && divisions[n]) || `Hangar ${n}`; };
 function saveAssets() { try { localStorage.setItem("eve-industry-assets", JSON.stringify({ assets: state.assets, locNames: state.locNames, typeNames: state.typeNames, prices: state.prices, pricesAt: state.pricesAt, cfg: state.stockCfg, typeMeta: state.typeMeta, groupNames: state.groupNames, catNames: state.catNames })); } catch (e) { toast("Stock data is too large to keep in this browser; it will reload on the next refresh."); } }
 // Keep only items in hangars (and in containers sitting in a hangar), summed per item, place and hangar
-function aggregateAssets(list, corp) {
+// Hangar rows (counted) and, into the `other` map, everything else ESI lists: ship cargo and fittings, Deliveries, nested containers, asset safety… (only for the Assets search)
+function aggregateAssets(list, corp, other) {
   const byId = new Map(list.map(a => [a.item_id, a]));
   const isHangar = (f) => corp ? /^CorpSAG[1-7]$/.test(f) : f === "Hangar";
   const inContainer = (f) => /^(Unlocked|Locked|AutoFit)$/.test(f);
@@ -4970,9 +5008,10 @@ function aggregateAssets(list, corp) {
     let hangar = null;
     if (isHangar(a.location_flag)) hangar = a.location_flag;
     else if (inContainer(a.location_flag)) { const p = byId.get(a.location_id); if (p && isHangar(p.location_flag)) hangar = p.location_flag; }
-    if (!hangar) continue;
-    let loc = a.location_id, node = byId.get(loc), guard = 0;
-    while (node && guard++ < 8) { loc = node.location_id; node = byId.get(loc); }   // climb containers and offices to the station or structure
+    let loc = a.location_id, node = byId.get(loc), guard = 0, hg = null;
+    while (node && guard++ < 8) { if (!hg && isHangar(node.location_flag)) hg = node.location_flag; loc = node.location_id; node = byId.get(loc); }   // climb containers and offices to the station or structure (hg: the hangar it's in, if any)
+    if (!hangar) { if (other && a.location_flag !== "OfficeFolder") { const p = byId.get(a.location_id), bpc = !!a.is_blueprint_copy, key = `${a.type_id}|${loc}|${a.location_flag}|${p ? p.type_id : ""}|${hg || ""}|${bpc ? 1 : 0}`;
+      const r = other.get(key) || { t: a.type_id, loc, h: a.location_flag, in: p ? p.type_id : null, hg, q: 0, bpc }; r.q += a.quantity || 1; other.set(key, r); } continue; }
     const bpc = !!a.is_blueprint_copy, key = `${a.type_id}|${loc}|${hangar}|${bpc ? 1 : 0}`;
     const r = rows.get(key) || { t: a.type_id, loc, h: hangar, q: 0, bpc };
     r.q += a.quantity || 1; rows.set(key, r);
@@ -4994,13 +5033,13 @@ async function refreshPrices(force) {
   try { const d = await esiGet("/markets/prices/"); state.prices = Object.fromEntries(d.map(p => [p.type_id, p.average_price || p.adjusted_price || 0])); state.adjPrices = Object.fromEntries(d.map(p => [p.type_id, p.adjusted_price || p.average_price || 0])); state.pricesAt = Date.now(); } catch (e) {}
 }
 async function syncAssets(key, owner, kind, list, corp, access, scopes, divisions, via) {
-  const rows = aggregateAssets(list, corp);
-  await locationNames(rows.map(r => r.loc), access, scopes);
-  const types = [...new Set(rows.map(r => r.t))].filter(t => !state.typeNames[t]);
+  const more = new Map(), rows = aggregateAssets(list, corp, more), other = [...more.values()];
+  await locationNames([...rows, ...other].map(r => r.loc), access, scopes);
+  const types = [...new Set([...rows.map(r => r.t), ...other.flatMap(r => [r.t, r.in])])].filter(t => t && !state.typeNames[t]);
   if (types.length) Object.assign(state.typeNames, await esiNames(types));
   await refreshPrices(false);
   setTimeout(loadTypeMeta, 0);
-  state.assets[key] = { owner, kind, at: Date.now(), rows, divisions: divisions || (state.assets[key] && state.assets[key].divisions) || null, via: via || owner };
+  state.assets[key] = { owner, kind, at: Date.now(), rows, other, divisions: divisions || (state.assets[key] && state.assets[key].divisions) || null, via: via || owner };
   saveAssets();
 }
 // Jita 4-4 market: lowest sell order (JSV) and highest buy order (JBV) at the station, read live from ESI, kept in this browser
@@ -5184,6 +5223,16 @@ function stockSources() { return Object.entries(state.assets).map(([k, v]) => { 
 function stockLocCount() { let on = 0, all = 0; for (const s of stockSources()) { const locs = new Set(s.rows.map(r => r.loc)); for (const l of locs) { all++; if (s.on && locOn(s.key, l)) on++; } } return { on, all }; }
 function hangarStockValue() { return stockSources().filter(s => s.on).reduce((t, s) => t + s.value, 0); }
 let stockLimit = 200;
+// Items in your open contracts, as asset rows the search finds; never counted (the contract's price is on the Forecast)
+function contractRows() {
+  const out = [], seen = new Set(), now = Date.now(), who = (c) => (state.chars.find(x => x.esiId === c.issuer) || {}).name || (c.forCorp && state.corpNames[c.issuerCorp]) || "Contract";
+  for (const src of Object.values(state.contracts)) for (const c of src.list || []) {
+    if (!c.items || seen.has(c.id) || (c.expires && c.expires < now && c.status === "outstanding")) continue; seen.add(c.id);
+    const s = { key: "ct:" + c.id, owner: c.forCorp ? state.corpNames[c.issuerCorp] || who(c) : who(c), kind: "Contract", divisions: null };
+    for (const [t, q, copy] of c.items) out.push({ t, q, bpc: !!copy, loc: c.from, h: "Contract", src: s, counted: false, ct: c });
+  }
+  return out;
+}
 function renderStock() {
   const tbl = $("st-table"); if (!tbl) return;
   if (document.activeElement !== $("st-price")) { $("st-price").innerHTML = pricings().map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(""); $("st-price").value = stockMode(); }
@@ -5200,7 +5249,7 @@ function renderStock() {
   const errs = linked.filter(c => c.assetsError); if (errs.length) notes.push(`Personal hangars couldn't be read for ${errs.map(c => `${esc(c.name)} (${esc(c.assetsError)})`).join(", ")}.`);
   notes.push(`Values use the pricing chosen above (live Jita orders, kept 6 hours${stockJitaBusy ? ", being read now" : ""}). Blueprint copies count as zero.`);
   $("st-note").innerHTML = `<div class="notice" style="display:grid;gap:4px">${notes.map(n => `<span>${n}</span>`).join("")}</div>`;
-  const every = srcs.flatMap(s => s.rows.map(r => ({ ...r, src: s, counted: rowCounted(s, r) })));
+  const every = [...srcs.flatMap(s => s.rows.map(r => ({ ...r, src: s, counted: rowCounted(s, r) }))), ...srcs.flatMap(s => (s.other || []).map(r => ({ ...r, src: s, counted: false, out: true }))), ...contractRows()];   // out: outside the hangars
   const counted = every.filter(r => r.counted), noP = [...new Set(counted.filter(r => !r.bpc && stockPrice(r.t) == null).map(r => r.t))];
   if (noP.length) $("st-note").insertAdjacentHTML("beforeend", noPriceNote(stockMode(), noP.map(t => ({ t, name: state.typeNames[t] || "Item " + t })), stockJitaBusy ? "left out of the values (prices are still being read)" : "left out of the values"));
   const corpV = counted.filter(r => r.src.kind === "Corporation").reduce((t, r) => t + r.q * priceOf(r), 0), persV = counted.filter(r => r.src.kind !== "Corporation").reduce((t, r) => t + r.q * priceOf(r), 0);
@@ -5234,7 +5283,8 @@ function renderStock() {
   const gf = grpSel.value;
   const cf = catSel.value, words = (t) => [nm(t), state.groupNames[metaOf(t)[0]] || "", state.catNames[metaOf(t)[1]] || ""].join("\n").toLowerCase();
   const filtered = pool2.filter(r => (!lf || String(r.loc) === lf) && (!cf || String(metaOf(r.t)[1]) === cf) && (!gf || String(metaOf(r.t)[0]) === gf) && (!q || words(r.t).includes(q)));
-  const where = (r) => `${esc(r.src.owner)} · ${esc(locName(r.loc))} · ${esc(HANGAR_NAME(r.h, r.src.divisions))}${r.counted ? "" : ` <span class="pill mid">not counted</span>`}`;
+  const where = (r) => r.ct ? `${esc(r.src.owner)} · ${r.loc ? esc(locName(r.loc)) : "?"} · <span class="pill mid">in a contract</span>${r.ct.title ? ` <span class="muted">“${esc(r.ct.title)}”</span>` : ""}${r.ct.expires ? ` <span class="muted">until ${esc(fmtDate(r.ct.expires))}</span>` : ""}`
+    : `${esc(r.src.owner)} · ${esc(locName(r.loc))} · ${esc(r.out ? assetPlace(r, r.src.divisions) : HANGAR_NAME(r.h, r.src.divisions))}${r.counted ? "" : ` <span class="pill mid">not counted</span>`}`;
   let rows;
   if (mode === "place") rows = filtered.map(r => ({ t: r.t, q: r.q, bpc: r.bpc, value: r.q * priceOf(r), places: [r] }));
   else {
@@ -8058,11 +8108,11 @@ function timelineSvg(sch) {
   ta.addEventListener("input", () => { clearTimeout(tmr); $("notes-status").textContent = "Saving…"; tmr = setTimeout(() => { try { localStorage.setItem("eve-industry-notes", ta.value); $("notes-status").textContent = "Saved " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }); } catch (e) { $("notes-status").textContent = "Couldn't save (browser storage full?)"; } }, 400); });
   $("notes-dl").addEventListener("click", () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ta.value], { type: "text/plain" })); a.download = "industry-management-notes.txt"; document.body.appendChild(a); a.click(); a.remove(); });
 })();
-// To-Do: a tickable buying list (shared by the reaction and the build lists)
-function todoBuyList(rows, store, attr, extra = "") {
+// To-Do: a tickable buying list (shared by the build and PI lists); groups: [[row.g, title, heading id]]
+function todoBuyList(rows, store, attr, extra = "", groups = null) {
   const done = state.misc[store] = state.misc[store] || {}, key = (x) => x.t + ":" + x.q, left = rows.filter(x => !done[key(x)]);
   const li = (x) => { const ok = !!done[key(x)]; return `<li${ok ? ` style="opacity:.55"` : ""}><input type="checkbox" ${attr}="${esc(key(x))}"${ok ? " checked" : ""} aria-label="Bought ${esc(x.n)}"><span class="grow"${ok ? ` style="text-decoration:line-through"` : ""}>${x.bp ? iconBp(x.t, 20) : icon(x.t, 20)} <button type="button" class="copyname" data-copy="${esc(x.n)}" data-copy-msg="${esc(x.n)} copied">${esc(x.n)}</button>${x.note ? ` <span class="muted" style="font-size:.8rem">${esc(x.note)}</span>` : ""}</span><button type="button" class="copyname val" data-copy="${x.q}" data-copy-msg="${x.q} copied">${x.q.toLocaleString()}</button></li>`; };
-  return { left, html: `<div class="toolbar"><span class="muted" style="font-size:.85rem">${left.length} of ${rows.length} still to buy${extra}</span>${left.length ? `<button type="button" class="cargo" data-copy="${esc(left.map(x => `${x.n}\t${x.q}`).join("\n"))}" data-copy-msg="Multibuy list copied">Copy multibuy (what's left)</button>` : `<span class="pill good">All bought</span>`}<button type="button" class="link" data-todo-reset="${store}">Untick all</button></div><ul class="fc-list">${[...rows].sort((a, b) => a.n.localeCompare(b.n)).map(li).join("")}</ul>` };
+  return { left, html: `<div class="toolbar"><span class="muted" style="font-size:.85rem">${left.length} of ${rows.length} still to buy${extra}</span>${left.length ? `<button type="button" class="cargo" data-copy="${esc(left.map(x => `${x.n}\t${x.q}`).join("\n"))}" data-copy-msg="Multibuy list copied">Copy multibuy (what's left)</button>` : `<span class="pill good">All bought</span>`}<button type="button" class="link" data-todo-reset="${store}">Untick all</button></div>${groups ? groups.map(([g, title, id]) => { const L = rows.filter(x => x.g === g); return L.length ? `<h3 id="${id}" style="margin:10px 0 4px;font-size:.95rem">${title}</h3><ul class="fc-list">${L.sort((a, b) => a.n.localeCompare(b.n)).map(li).join("")}</ul>` : ""; }).join("") : `<ul class="fc-list">${[...rows].sort((a, b) => a.n.localeCompare(b.n)).map(li).join("")}</ul>`}` };
 }
 function renderTodoMore() {
   const now = Date.now(); scAlerts();
@@ -8082,7 +8132,17 @@ function renderTodoMore() {
   $("todo-ord").innerHTML = rows.length ? todoBuyList(rows, "todoOrd", "data-todo-ord").html : "";
 }
 // To-Do: the reaction shopping list with ticks
-function renderTodo() { renderTodoInner(); renderTodoNav(); }
+function renderTodo() { renderTodoInner(); renderTodoPi(); renderTodoNav(); }
+// To-Do: what the PI plan still needs (PI Management's Shopping: its days of stock, minus the stock it counts), with ticks
+function renderTodoPi() {
+  const box = $("todo-pi"); if (!box) return;
+  const C = state.misc.pi; if (!C || !Object.values(C.alloc || {}).some(n => n > 0)) { box.innerHTML = `<p class="muted" style="margin:0">No PI plan yet: give planets to a P4 on PI Management.</p>`; return; }
+  if (C.scope === "sys") piHaulEnsure().then(ch => { if (ch && !$("page-todo").hidden) renderTodo(); }, () => null);   // stock counted in the delivery system only
+  const E = piEnv(), { need } = piNeeds(E), stock = piStock();
+  const rows = [...need].map(([t, q]) => ({ t, n: piName(t), q: Math.max(0, Math.ceil(q) - (stock.get(t) || 0)), g: piTier(t) })).filter(x => x.q > 0);
+  box.innerHTML = rows.length ? todoBuyList(rows, "todoPi", "data-todo-pi", `, for ${E.days} day${E.days === 1 ? "" : "s"} of stock`, [[1, "P1", "todo-pi-p1"], [2, "P2", "todo-pi-p2"]]).html
+    : `<p class="muted" style="margin:0"><span class="pill good">Nothing to buy</span> Your stock covers the plan.</p>`;
+}
 function renderTodoInner() {
   renderTodoMore();
   const box = $("todo-rx"); if (!box) return;
@@ -8097,6 +8157,7 @@ function renderTodoInner() {
   box.innerHTML = all.length ? `<div class="toolbar"><span class="muted" style="font-size:.85rem">${left.length} of ${all.length} still to buy, for ${N} cycle${N > 1 ? "s" : ""}</span>${left.length ? `<button type="button" class="cargo" data-copy="${esc(left.map(x => `${rxName(x.t)}\t${x.buy}`).join("\n"))}" data-copy-msg="Multibuy list copied">Copy multibuy (what's left)</button>` : `<span class="pill good">All bought</span>`}<button type="button" class="link" data-todo-rx-reset="1">Untick all</button></div>${group("fuel", "Fuel blocks")}${group("goo", "Moon goo")}${group("other", "Other inputs")}${group("formula", "Reaction formulas")}`
     : `<p class="muted" style="margin:0"><span class="pill good">Nothing to buy</span> Your stock covers the plan.</p>`;
 }
+document.addEventListener("change", (e) => { const k3 = e.target.dataset && e.target.dataset.todoPi; if (!k3) return; const d = state.misc.todoPi = state.misc.todoPi || {}; if (e.target.checked) d[k3] = Date.now(); else delete d[k3]; saveMisc(); setTimeout(renderTodo, 0); });
 document.addEventListener("change", (e) => { const k2 = e.target.dataset && e.target.dataset.todoOrd; if (!k2) return; const d = state.misc.todoOrd = state.misc.todoOrd || {}; if (e.target.checked) d[k2] = Date.now(); else delete d[k2]; saveMisc(); setTimeout(renderTodo, 0); });
 document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-todo-reset]"); if (!b) return; state.misc[b.dataset.todoReset] = {}; saveMisc(); renderTodo(); });
 document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.todoRx; if (!k) return; const d = state.misc.todoRx = state.misc.todoRx || {}; if (e.target.checked) d[k] = Date.now(); else delete d[k]; saveMisc(); setTimeout(renderTodo, 0); });
@@ -8322,7 +8383,7 @@ const fcWide = matchMedia("(min-width: 1640px)"); fcWide.addEventListener("chang
 if (window.ResizeObserver) new ResizeObserver(() => { const h = $("fc-nav").offsetHeight; if (h) $("page-forecast").style.setProperty("--fcnav-h", h + "px"); }).observe($("fc-nav"));
 // Left navigation for the To-Do page: only the lists that have something in them
 function renderTodoNav() {
-  navRender("todo-nav", [["todo-om-title", "Omega to renew"], ["todo-ct-title", "Ongoing contracts"], ["todo-ct-cm", "Client orders to complete", true], ["todo-ct-game", "Open in game", true], ["todo-sc-title", "Trips for a freight service"], ["todo-rx-title", "Buy for reactions"], ["todo-rx-fuel", "Fuel blocks", true], ["todo-rx-goo", "Moon goo", true], ["todo-rx-other", "Other inputs", true], ["todo-rx-formula", "Reaction formulas", true], ["todo-ord-title", "Buy for builds"]]);
+  navRender("todo-nav", [["todo-om-title", "Omega to renew"], ["todo-ct-title", "Ongoing contracts"], ["todo-ct-cm", "Client orders to complete", true], ["todo-ct-game", "Open in game", true], ["todo-sc-title", "Trips for a freight service"], ["todo-rx-title", "Buy for reactions"], ["todo-rx-fuel", "Fuel blocks", true], ["todo-rx-goo", "Moon goo", true], ["todo-rx-other", "Other inputs", true], ["todo-rx-formula", "Reaction formulas", true], ["todo-pi-title", "Buy for PI"], ["todo-pi-p1", "P1", true], ["todo-pi-p2", "P2", true], ["todo-ord-title", "Buy for builds"]]);
 }
 // Left navigation for Reactions management
 function renderRxNav() {
