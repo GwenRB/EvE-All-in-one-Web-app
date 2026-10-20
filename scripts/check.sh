@@ -1,7 +1,9 @@
 #!/bin/sh
 # Syntax check of every inline <script> in the app (no browser needed). Exit status 1 on a syntax error.
 cd "$(dirname "$0")/.."
-python3 - <<'PY'
+# python3, or python where python3 isn't a working command (Windows)
+PY=python3; python3 -c "" 2>/dev/null || PY=python
+"$PY" - <<'PY'
 import re, subprocess, sys, tempfile
 s = open("EVE Industry Management.html", encoding="utf-8").read()
 js = "\n".join(re.findall(r"<script>(.*?)</script>", s, re.S))

@@ -1,16 +1,25 @@
 # Tests
 
-`e2e_smoke.py` is a Playwright walk-through of the whole app with **fake data**: every request to ESI, EVE Ref, CCP's static data and the image servers is intercepted and answered from the tables at the top of the file (7 fake systems Alpha…Golf, a fake Venture build chain, reaction formulas, PI items, a Rhea, decryptors, a test citadel market…). No EVE account or internet access is needed.
+`e2e_smoke.py` runs the app in Playwright as **independent scenarios with assertions**, on **fake data**: every request to ESI, EVE Ref, CCP's static data, the launcher's news and the image servers is intercepted and answered by `fake_eve.py` (7 fake systems Alpha…Golf, a fake Venture build chain, reaction formulas, PI items, a Rhea, decryptors, ores…). No EVE account or internet access is needed.
 
 ```sh
 pip install playwright && playwright install chromium   # once
-python3 tests/e2e_smoke.py                               # or CHROMIUM_PATH=/path/to/chrome python3 tests/e2e_smoke.py
+python3 tests/e2e_smoke.py                    # every scenario; exit 1 when one fails
+python3 tests/e2e_smoke.py supply ore_buy     # only the scenarios whose name contains one of these words
+python3 tests/e2e_smoke.py --list             # the scenarios
+python3 tests/e2e_smoke.py -v supply_chain    # also print the values a scenario reads
+AUDIT=1 python3 tests/e2e_smoke.py layout     # the layout audit
 ```
 
+(On the Windows machine: `py -3.13 tests/e2e_smoke.py`, the Python that has Playwright.)
+
 - It starts the launcher's server on http://localhost:8642 if nothing is running there (and stops it at the end).
-- It prints, page by page, what the app shows (`label: value` lines). It does **not** assert most values yet: compare the output before/after a change. It exits with status 1 when the page throws a JavaScript error (`errors [...]` at the end).
-- Screenshots go to `tests/out/` (git-ignored).
-- `fixtures/sde.zip` is a tiny fake of CCP's static data zip (`blueprints.jsonl`, `types.jsonl`, `planetSchematics.jsonl`), served for `eve-online-static-data-latest-jsonl.zip`.
-- The script grew feature by feature: later sections reuse state set by earlier ones (characters, assets, build settings…), so run it whole. Good first task: split it into independent scenarios with real assertions.
+- **Each scenario gets a fresh browser context** (empty localStorage and IndexedDB), seeds three pilots, a few hangars and two corporation structures (`SEED`), then sets up only what it needs with the shared helpers: `ships` (Misc ship data), `map_` (the map), `structs` (Build planning structures through the UI), `reactions` (Reactions in Delta, delivery Alpha), `plan` (run a build), `supply_setup` (a Venture order sent to Orders management, the Rhea flown in Echo).
+- A scenario **fails** on any failed check (`t.ok(cond, msg, detail)` / `t.eq(got, want, msg)`; the message says what should be true, the detail what was seen) or any JavaScript error on the page. A scenario that throws stops there and fails.
+- Scenarios: Forecast history, tab menus, Build planning (structures, stock, rigs, build-or-buy, who builds, hauling on the map), ore instead of minerals (`lpMin`, compressed ore, left-overs' worth taken off the cost, two reprocessing places chosen by yield and tax, adding/removing places, any ore), invention (T2 and T3), Quotation / notes / harvest gap, Reactions, To-Do, Overview (news list, RSS channel merged, hidden category, layout of fleets and clocks, renaming and ordering channels, your own time zones), PI, citadel pricing (no invented prices, unknown linked plan in the Forecast), doctrines, pilot cards and contracts, jump planner and Blueprint calculator, supply chain (legs chain in both focuses, a pilot never flies two ships at once, goods wait for their materials, never worse than trip by trip, the next cycle's inputs first, Done), the planning horizon (reaction cycles and PI refills), several ships per pilot (changing ships by shuttle, or jump clone with no gate route), moves done from assets (half, all, a new owner doesn't count, Undo), the whole-plan search on a Rorqual + Rhea mix, trips for a freight service, the shared ESI market budget (a 429 pauses, rate-limit headers, at most 6 at once), CCP's game data vs EVE Ref, Profit and loss (fake wallet of pilot 9001 in `fake_eve.py` (`WALLET_J`, `WALLET_T`), the corporation's wallets refused: exact totals per activity, market lines and escrow not counted twice, contracts sorted by what they held (`CONTRACT_ITEMS`: one shared between Reactions and PI by value with its fee, one left whole for an unpriced item, a client's choice winning), a client's / an item's / one entry's choice moving the right ISK, transfers between your pilots left out, a backup's history joined, the Forecast's actual profit tile and line), shared UI (sorting, folding, rails, page notes).
+- Screenshots go to `tests/out/` (git-ignored): plan, ore box and places, overview, settings tables, supply chain panels.
+- CCP's static data zip is faked by `build_sde()` in `fake_eve.py`: the fake items, blueprints, attributes, bonuses and map from its tables, plus `fixtures/sde.zip` (reaction formulas and planet schematics, which win where both have an entry). Set `CCP_OFF = True` there to serve only the fixture (CCP's index then fails and everything goes through EVE Ref).
+- Adding a scenario: an `async def name(t)` decorated with `@scenario`; use `t.js(...)`, `t.until(js, timeout)`, `t.tab(key)`, `t.text(selector)`, `t.show(label, value)` (printed with `-v`) and the helpers above.
+- `layout_audit` (only with `AUDIT=1`) walks every page at 1000, 1280 and 1920 px wide and prints what doesn't fit: the page scrolling sideways, content spilling out of its panel, tables scrolling inside their box, tables outside a scroller (full-page screenshots in `tests/out/audit/`).
 
 Quick syntax check without a browser: `scripts/check.sh` (needs Node).

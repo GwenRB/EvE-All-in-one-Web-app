@@ -10,7 +10,8 @@ A personal, local web tool for running EVE Online industry across several charac
 
 ## Commands
 - Syntax check: `scripts/check.sh`
-- Smoke test (fake data, Playwright): `python3 tests/e2e_smoke.py` → exit 1 on any page JS error; read the printed values for regressions. See `tests/README.md`.
+- End-to-end tests (fake data, Playwright): `python3 tests/e2e_smoke.py [words…]` → independent scenarios with assertions, exit 1 when one fails (a failed check or a page JS error); `-v` prints the values read, `--list` the scenarios. Add a scenario (with checks) for new features. See `tests/README.md`.
+- ESI market reads go through `esiMarket` (one shared budget), never `fetch`/`fetchRetry` directly.
 - Run for real: `./start-eve-industry-management.sh` then open http://localhost:8642/
 
 ## Read before changing things
@@ -19,12 +20,15 @@ A personal, local web tool for running EVE Online industry across several charac
 - `docs/ROADMAP.md` — known issues, limits, and ideas not built yet.
 
 ## The user's standing preferences (apply everywhere)
-- **Game data first:** prefer CCP's own data (ESI, the static data export at developers.eveonline.com) over third parties. EVE Ref (`ref-data.everef.net`) is still used for many type/blueprint lookups; moving a lookup to CCP data is welcome, keep EVE Ref only as a fallback.
-- **Tables sorted alphabetically by default**; sorting is done by clicking column headers (no "sort by" dropdowns).
-- **Panels hideable/collapsible; long pages get a left navigation rail** (the `plan-layout` / `plan-rail` / `plan-nav` pattern, sub-items with ellipsis, active item tracked on scroll).
+- **Game data first:** prefer CCP's own data (ESI, the static data export at developers.eveonline.com) over third parties. Item/blueprint/group lookups are written `getJSON(REF + "/types/<id>")` etc. and answered from CCP's static data (an index built once per game build, `ccpGet`); EVE Ref (`ref-data.everef.net`) only answers when CCP's data can't be read. New lookups should go through `getJSON` the same way.
+- **Every table sorts by clicking its column headers** (no "sort by" dropdowns), A→Z by the first column by default; a table whose order means something (by date, value, cheapest first…) keeps it and marks it `data-sorted="<col>:<1|-1>"` (`""` = as rendered). The shared sorter (`tableDecorate`/`tableSort`) does this after every render; give cells whose text doesn't sort right (dates, levels) a `data-v`; totals rows are `tr.total`. Tables that page their rows sort in the renderer (`sortHead`/`sortRows`, e.g. Assets).
+- **Grouped tables fold like Reactions' kinds:** `tr.group` / `tr.subgroup` rows (▾/▸, "· n hidden", remembered in `state.misc.folds`); rows sort inside their group. Use them for any table with categories.
+- **Every panel folds from its title** (`state.misc.panels`); **long pages get a left navigation rail** (`plan-layout` / `plan-rail` / `plan-nav`; `navRender(navId, items)`, or `data-auto` to list the page's panels plus `data-nav-sub` sub-items).
+- **Page notes:** how a page's numbers are worked out goes in `HOWTO[page]` (folded under the page), not in panel text.
 - **New tools read other pages' data but never write into them**, unless the user explicitly asks for a link (e.g. Reactions/PI → Forecast activity was requested).
 - **Prices are never invented:** a citadel pricing only returns that citadel's own orders; an item without a price is empty ("no price"), never 0 and never another market's price. Totals leave it out and say so (`noPriceNote`), and results that depend on it (margins, profits, breakeven) show as unknown.
 - **Same rules everywhere:** structure/rig bonuses always via `rigBonus` (and `sciBonus` for laboratories); hauling via the shared JF/freight logic; pricings via the shared pricing system (Settings → Pricings).
+- **Ships fly every leg:** a hauler's trip always starts where its last trip ended (it flies back empty if nothing rides the return); never plan a trip from somewhere the ship isn't. Plan hauling globally (the whole plan scored at once, `scSolve`), never one trip at a time.
 - **Jump fatigue:** after a jump fatigue = max(10, F) × (1 + ly) capped at 300 min; activation timer = max(1 + ly, F / 10) capped at 30 min. Fatigue under 10 min acts as 10, so waiting it lower never helps.
 - **UI copy:** plain English, short, sentence case, no jargon the game doesn't use. Numbers via `isk()`, dates via `fmtDate`, durations via `fmtDur`.
 - **Deliverables:** the user wants the updated HTML (and launchers only when they change), plus a short summary of what changed. Don't rename the HTML file (the launchers serve it by name).
