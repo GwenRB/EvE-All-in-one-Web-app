@@ -4,7 +4,7 @@ A personal web tool for running EVE Online industry across several characters, i
 
 It is a single HTML page that runs in your browser. A small launcher serves it on your own computer; nothing is hosted anywhere and your data never leaves your browser.
 
-> **README last updated:** 2026-10-25 · what changed and when: [CHANGELOG.md](CHANGELOG.md)
+> **README last updated:** 2026-10-25 · what changed and when: [CHANGELOG.md](CHANGELOG.md) · how to use each page, step by step: [the wiki](https://github.com/GwenRB/EvE-All-in-one-Web-app/wiki)
 
 ---
 
@@ -158,6 +158,7 @@ Pages the browser can't read directly (CCP's data zip, supplier sheets, news) go
 | `Start EVE Industry Management.bat` | Windows launcher (PowerShell). |
 | `start-eve-industry-management.sh` | macOS / Linux launcher (Python 3). |
 | `CHANGELOG.md` | What changed, version by version. |
+| `wiki/` | The user guide, published as the repository's GitHub wiki (`scripts/wiki.sh`). |
 | `CLAUDE.md` | Working notes for development with Claude (start here when changing the code). |
 | `docs/FEATURES.md` | Every page in detail, with the rules agreed for each. |
 | `docs/ARCHITECTURE.md` | Code map, state and storage, shared helpers. |
@@ -181,6 +182,7 @@ This README describes what the tool does **now**; `CHANGELOG.md` records **how i
 When features change:
 1. Add the change to `CHANGELOG.md` under **Unreleased** (Added / Changed / Fixed / Removed), in plain words.
 2. Update the matching section of this README, and the "README last updated" date at the top.
-3. When the work is committed, the **Unreleased** entries move under a new dated version heading with its commit.
+3. Update the wiki page that explains it (`wiki/`). `sh scripts/wiki.sh` lists every changelog line the wiki doesn't cover yet, with the pages to update; `sh scripts/wiki.sh mark` records them as done, and `sh scripts/wiki.sh publish` pushes the pages to the GitHub wiki.
+4. When the work is committed, the **Unreleased** entries move under a new dated version heading with its commit.
 
-To refresh it, ask Claude: *"update the README"*. It compares the changelog's last entry with the git history and the docs, then updates both files.
+To refresh it, ask Claude: *"update the README"*. It compares the changelog's last entry with the git history and the docs, then updates both files. Likewise *"update the wiki"*.

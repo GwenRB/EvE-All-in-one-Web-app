@@ -1,0 +1,48 @@
+<!-- tracks: tab bar, tables, sort, fold, panels, navigation rail, How this page works, sync, downtime, server status, market reads -->
+
+## Tabs and menus
+The tab bar groups pages into menus: **Industry**, **Market**, **Stock**, **Pilots** and **Other** open when you hover or click them; the menu holding the open page shows that page's name.
+
+Each page has its own web address (for example `http://localhost:8642/#build-planning`), so bookmarks and the browser's back button work.
+
+Pages you don't use can be hidden in **Settings → Pages** (Settings itself always stays).
+
+Some tabs show a **red number**: To-Do counts what waits on you, Intel counts notifications that need attention.
+
+## The header
+- **Link EVE characters:** add or re-log characters, choose permissions. See [Getting started](Getting-started#4-link-your-characters).
+- **Server status:** online with the number of players, VIP mode, or not answering. After the daily downtime it shows **"Online since HH:MM EVE"** for a day, the minute the server came back up (system indices, bounty payouts and so on follow it). Hover it for your local time too.
+
+## Syncing
+Linked pilots are read from ESI when you sync them, and most pages also have a **Refresh from ESI** button. A sync reads skills, queues, jobs, assets, planets, wallets, contracts, calendar, notifications… depending on the [permissions](ESI-permissions) you gave.
+
+Prices and market history are read when a page needs them. Every page's market reads share **one queue** that stays under ESI's rate limit, and the page you're looking at goes first. When reads are held back, a small status shows at the bottom left. A big build may take a little while to price: that's the queue waiting, not an error.
+
+### Daily downtime
+From **11:00 EVE time** until the server is back, the header says so, and syncs, market reads, sovereignty, incursions and kills wait. Prices keep what they had.
+
+## Tables
+- **Click a column title to sort**, click again to reverse. Your sort is remembered (and saved in backups).
+- Before you click, a table is A→Z by its first column, **except** tables whose order means something (by date, by value, cheapest first…). Those show an arrow on the column they're sorted by.
+- **Grouped tables** fold by group: click a group's title (▾ / ▸) to hide its rows; it shows "· n hidden". Rows sort inside their group, and totals stay last.
+
+## Panels and navigation
+- Every **panel folds from its title** (▾ / ▸), and stays folded.
+- Long pages have a **left navigation rail** listing their panels. Clicking a folded panel there opens it.
+- Pages that compute numbers explain how at the bottom, under **How this page works** (folded).
+
+## Rules that hold on every page
+These are deliberate:
+- **Prices are never invented.** An item without a price shows "no price": never 0 and never another market's price. Totals leave it out and say so, and anything that depends on it (margins, profits, breakeven) shows as unknown. See [Pricings](Pricings).
+- **Pages read each other, but don't write into each other.** For example Build planning uses your Assets, but never changes them. The few links that do write were asked for on purpose: Reactions and PI send their profit to the Forecast, Build planning sends builds to Orders management.
+- **Structure and rig bonuses, hauling and pricing work the same way everywhere.** A citadel you set up once is used by every plan.
+- **Jump fatigue:** after a jump, fatigue = max(10, current fatigue) × (1 + light years), at most 300 minutes; the jump timer = max(1 + light years, fatigue ÷ 10), at most 30 minutes. Fatigue under 10 minutes counts as 10, so waiting it lower never helps.
+
+## Where your data lives
+In your browser (localStorage and IndexedDB), on your computer. The tool doesn't send your data anywhere: it only reads from CCP's servers, from EVE Ref when CCP's data can't be read, and from the sites you add (supplier sheets, news feeds). To move to another browser or computer, use **Settings → Export backup / Import backup**. See [Settings and backups](Settings-and-backups#backups).
+
+## Where the game data comes from
+CCP's own data first:
+- **ESI:** your characters and corporation, market orders and history, public contracts, kills, server status.
+- **CCP's static data export:** items, blueprints, reactions, planet schematics, the map. Indexed once per game build in your browser.
+- **EVE Ref:** only when CCP's data can't be read.

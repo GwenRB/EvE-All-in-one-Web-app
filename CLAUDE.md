@@ -11,6 +11,7 @@ A personal, local web tool for running EVE Online industry across several charac
 ## Commands
 - Syntax check: `scripts/check.sh`
 - End-to-end tests (fake data, Playwright): `python3 tests/e2e_smoke.py [words…]` → independent scenarios with assertions, exit 1 when one fails (a failed check or a page JS error); `-v` prints the values read, `--list` the scenarios. Add a scenario (with checks) for new features. See `tests/README.md`.
+- User guide wiki: `sh scripts/wiki.sh` (what `wiki/` doesn't cover yet, broken links; exit 1 when out of date), `sh scripts/wiki.sh mark` (after updating pages), `sh scripts/wiki.sh publish [--dry-run]` (pushes `wiki/*.md` to the GitHub wiki).
 - ESI market reads go through `esiMarket` (one shared budget), never `fetch`/`fetchRetry` directly.
 - Run for real: `./start-eve-industry-management.sh` then open http://localhost:8642/
 
@@ -33,6 +34,7 @@ A personal, local web tool for running EVE Online industry across several charac
 - **Jump fatigue:** after a jump fatigue = max(10, F) × (1 + ly) capped at 300 min; activation timer = max(1 + ly, F / 10) capped at 30 min. Fatigue under 10 min acts as 10, so waiting it lower never helps.
 - **UI copy:** plain English, short, sentence case, no jargon the game doesn't use. Numbers via `isk()`, dates via `fmtDate`, durations via `fmtDur`.
 - **README and CHANGELOG:** `README.md` is the user-facing description of the tool as it is now; `CHANGELOG.md` is its history. After any user-visible change, add a plain-words line under **Unreleased** in `CHANGELOG.md` (Added / Changed / Fixed / Removed). When the user asks to "update the README": compare the changelog's newest entry with `git log` and the uncommitted diff (docs/FEATURES.md is the detailed source), fill in what's missing in the changelog, update the matching README sections and its "README last updated" date. At a commit, Unreleased becomes `## <date> · <short hash> — <title>` (hash filled in after the commit lands, or the date and title alone).
+- **Wiki (user guide):** `wiki/` is the source of the GitHub wiki: how to *use* each page, step by step, in the same plain words (README = what the tool is, `docs/FEATURES.md` = the agreed rules, wiki = how to use it). Each page's first line is `<!-- tracks: words -->`: the words that point a changelog line to it. After a user-visible change, once its changelog line is in, update the page(s) `scripts/wiki.sh` points to, then `scripts/wiki.sh mark`. When the user asks to "update the wiki": run `scripts/wiki.sh`, update every page it lists (a new page also goes in `_Sidebar.md` and Home's table), check labels against the HTML, `mark`, and only run `publish` when the user says to (it pushes to GitHub).
 - **Deliverables:** the user wants the updated HTML (and launchers only when they change), plus a short summary of what changed. Don't rename the HTML file (the launchers serve it by name).
 
 ## Working conventions in the code

@@ -9,6 +9,13 @@ How entries are kept:
 
 ---
 
+## 2026-10-25 — User guide wiki
+
+### Added
+- **User guide wiki** (`wiki/`, published as the repository's GitHub wiki): getting started, permissions, every page, step-by-step guides and troubleshooting. `scripts/wiki.sh` lists the changes the wiki doesn't explain yet and publishes it.
+
+---
+
 ## 2026-10-25 — Server status, skill queues, calendar, LP store, Corporation, Intel and customs taxes
 
 ### Added
