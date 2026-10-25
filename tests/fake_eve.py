@@ -1,7 +1,7 @@
 """Fake EVE for the end-to-end tests: every network call the app makes (ESI, EVE Ref, CCP's static data, the launcher's news, images) answered
 from the tables below. 7 fake systems Alpha…Golf, a Venture build chain, reaction formulas, PI items, a Rhea, decryptors, ores.
 Used by e2e_smoke.py: `await ctx.route("**/*", handle)`."""
-import json, os
+import json, os, time
 from urllib.parse import urlparse, parse_qs
 HERE=os.path.dirname(os.path.abspath(__file__)); ROOT=os.path.dirname(HERE)
 FIX=os.path.join(HERE,"fixtures")+os.sep
@@ -33,6 +33,7 @@ BPS[32881]["invention"]={"materials":{"20410":{"type_id":20410,"quantity":2},"20
 BPS[7001]={"manufacturing":{"materials":{"32880":{"type_id":32880,"quantity":1},"500":{"type_id":500,"quantity":5},"34":{"type_id":34,"quantity":1000}},"products":{"7000":{"type_id":7000,"quantity":1}},"time":7200,"required_skills":{"3380":5}}}
 TYPES[7000]={"group_id":543,"category_id":6,"produced_by_blueprints":{"7001":{"blueprint_type_id":7001,"blueprint_activity":"manufacturing"}},"packaged_volume":3750}
 TYPES[7001]={"group_id":105,"category_id":9,"produced_by_blueprints":{"32881":{"blueprint_type_id":32881,"blueprint_activity":"invention"}}}
+NAMES.update({1000035:"Caldari Navy",1000125:"CONCORD",777001:"Bob Client",777002:"Bob Alt"})
 NAMES.update({7100:"Fake Subsystem",7101:"Fake Subsystem Blueprint",7201:"Intact Fake Relic",7202:"Wrecked Fake Relic"})
 TYPES[7100]={"group_id":954,"category_id":32,"produced_by_blueprints":{"7101":{"blueprint_type_id":7101,"blueprint_activity":"manufacturing"}},"volume":40}
 TYPES[7101]={"group_id":973,"category_id":9,"produced_by_blueprints":{"7201":{"blueprint_type_id":7201,"blueprint_activity":"invention"},"7202":{"blueprint_type_id":7202,"blueprint_activity":"invention"}}}
@@ -76,10 +77,14 @@ WALLET_J=[_JE(1,"market_transaction",30000,777,9001,501,"market_transaction_id")
 NAMES.update({556:"Gas Supplier",557:"Other Supplier",9100:"Fake Reactive Gas",9101:"Fake Noble Gas"})
 for k in (9100,9101): TYPES[k]={"group_id":1032,"category_id":43,"volume":0.1}
 PRICE[9100]=400.0
-CONTRACT_ITEMS={900:[(32880,2,True)],901:[(16633,1000,True),(9100,500,True),(34,5,False)],902:[(16633,10,True),(9101,10,True)]}
+CONTRACT_ITEMS={8801:[(34,400,True)],8802:[(35,50,True)],8805:[(35,20,True)],8806:[(34,100,True)],900:[(32880,2,True)],901:[(16633,1000,True),(9100,500,True),(34,5,False)],902:[(16633,10,True),(9101,10,True)]}
 WALLET_T=[{"transaction_id":501,"date":"2026-10-15T12:01:00Z","type_id":16671,"quantity":10,"unit_price":3000.0,"is_buy":False,"client_id":777,"location_id":60003760,"is_personal":True,"journal_ref_id":1},
   {"transaction_id":502,"date":"2026-10-15T12:20:00Z","type_id":34,"quantity":1000,"unit_price":4.0,"is_buy":True,"client_id":778,"location_id":60003760,"is_personal":True,"journal_ref_id":20},
   {"transaction_id":503,"date":"2026-10-15T12:21:00Z","type_id":35,"quantity":5,"unit_price":9.0,"is_buy":True,"client_id":778,"location_id":60003760,"is_personal":False,"journal_ref_id":21}]
+# Corporation page: service modules (fuel per hour, attribute 2109) and two structure types with their role bonus (2339); a moon and its ore
+NAMES.update({35878:"Standup Manufacturing Plant I",35891:"Standup Research Lab I",35899:"Standup Reprocessing Facility I",45009:"Standup Moon Drill I",35825:"Raitaru",35835:"Athanor",4246:"Hydrogen Fuel Block",4247:"Helium Fuel Block"})
+for k,g,f in [(35878,1415,12),(35891,1415,12),(35899,1322,10),(45009,1887,5)]: TYPES[k]={"group_id":g,"category_id":66,"dogma_attributes":dd({2109:f})}
+TYPES[35825]={"group_id":1404,"category_id":65,"dogma_attributes":dd({2339:-25})}; TYPES[35835]={"group_id":1406,"category_id":65,"dogma_attributes":dd({2339:-20})}
 def build_sde():
     """CCP's static data zip, faked from the tables above (the same items EVE Ref answers for), plus fixtures/sde.zip's own lines
     (its reaction formulas and planet schematics win where both have an entry). The app reads items, blueprints and the map from it."""
@@ -157,7 +162,7 @@ async def handle(route):
     if "everef.net/groups/1888" in u: return await j({"group_id":1888,"name":{"en":"Composite Reaction Formulas"},"type_ids":[9001,9002,46204,9004]})
     if "everef.net/groups/1890" in u: return await j({"message":"Forbidden"},403)
     if "/universe/groups/1890/" in u: return await j({"group_id":1890,"name":"Biochemical Reaction Formulas","types":[9999]})
-    if "/markets/10000002/history" in u: return await j([{"date":"2026-10-%02d"%d,"volume":5000000,"average":1} for d in range(1,31)])
+    if "/markets/10000002/history" in u and int(parse_qs(urlparse(u).query)["type_id"][0]) not in (34,35,32880): return await j([{"date":"2026-10-%02d"%d,"volume":5000000,"average":1} for d in range(1,31)])
     if "everef.net/types/" in u:
         tid=int(u.split("/types/")[1].strip("/").split("?")[0]); return await j({"type_id":tid,"name":{"en":NAMES.get(tid,f"T{tid}")},**TYPES.get(tid,{})})
     if "universe/names" in u: ids=json.loads(route.request.post_data); return await j([{"id":i,"name":NAMES.get(i,f"T{i}")} for i in ids])
@@ -188,8 +193,59 @@ async def handle(route):
     if path.startswith("/characters/9001/wallet/journal"): return await j(WALLET_J, pages=1)
     if path.startswith("/characters/9001/wallet/transactions"): return await j(WALLET_T)
     if path.startswith("/characters/9001/industry/jobs"): return await j([{"job_id":77,"activity_id":9},{"job_id":78,"activity_id":1}] if "include_completed" in u else [])
-    if path.startswith("/characters/9001/contracts/") and path.rstrip("/").endswith("/items"):
+    if (path.startswith("/characters/9001/contracts/") or path.startswith("/corporations/98000001/contracts/")) and path.rstrip("/").endswith("/items"):
         cid=int(path.split("/")[4]); L=CONTRACT_ITEMS.get(cid)
         return await (j([{"record_id":i,"type_id":t,"quantity":q,"is_included":inc,"is_singleton":False} for i,(t,q,inc) in enumerate(L)]) if L else j({"error":"Contract not found!"},404))
+    if path.startswith("/characters/9001/skillqueue"):   # out of order on purpose: queue_position sets the order; the last level has no dates (paused)
+        return await j([{"skill_id":3392,"finished_level":5,"queue_position":1,"start_date":"2030-01-02T00:00:00Z","finish_date":"2030-01-05T00:00:00Z"},{"skill_id":3380,"finished_level":5,"queue_position":0,"start_date":"2020-01-01T00:00:00Z","finish_date":"2030-01-02T00:00:00Z"},{"skill_id":45746,"finished_level":4,"queue_position":2}])
+    # calendar: one fleet tomorrow (with details), one event that ended yesterday (left out); dates relative to now
+    if path.startswith("/characters/9001/calendar/"):
+        tail=path.rstrip("/").split("/")[-1]; now=time.time()
+        iso=lambda s: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(s))
+        if tail=="calendar": return await j([{"event_id":501,"event_date":iso(now+86400),"title":"Fleet: home defence","importance":1,"event_response":"accepted"},{"event_id":502,"event_date":iso(now-2*86400),"title":"Old ops","importance":0,"event_response":"declined"}])
+        if tail=="501": return await j({"event_id":501,"date":iso(now+86400),"duration":120,"owner_id":98000001,"owner_name":"Fake Corp","owner_type":"corporation","importance":1,"text":"Form up <b>in Alpha</b><br>Bring ECM","title":"Fleet: home defence","response":"accepted"})
+        return await j({"error":"not found"},404)
+    # server status (started a minute ago, so the daily downtime check sees it back) and kills in the last hour (Bravo is dangerous)
+    if path.rstrip("/")=="/status": return await j({"players":23456,"server_version":"3100000","start_time":time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()-60))})
+    if path.rstrip("/")=="/universe/system_kills": return await j([{"system_id":30000002,"ship_kills":6,"pod_kills":2,"npc_kills":10},{"system_id":30000006,"ship_kills":1,"pod_kills":0,"npc_kills":0}])
+    # market history (The Forge) for Tritanium, Pyerite and the Venture: yesterday +10% on the day before, +37.5% on 8 days ago; 100 sold a day this week
+    if path.startswith("/markets/10000002/history"):
+        tid=int(parse_qs(urlparse(u).query)["type_id"][0]); p=PRICE.get(tid)
+        if tid not in (34,35,32880) or not p: return await j({"error":"Type not found"},404)
+        day=lambda i: time.strftime("%Y-%m-%d", time.gmtime(time.time()-i*86400))
+        return await j([{"date":day(i),"average":p*(1.1 if i==1 else 0.8 if i>=8 else 1.0),"highest":p,"lowest":p,"order_count":5,"volume":100 if i<=7 else 50} for i in range(12,0,-1)])
+    # public contracts in The Forge (2 pages): 2 Ventures at 250k each, one asking for something back, one at 900k, one holding Tritanium, a courier
+    if path.startswith("/contracts/public/items/"):
+        cid=int(path.rstrip("/").split("/")[-1]); L={7001:[(32880,2,True)],7002:[(32880,1,True),(34,1000,False)],7003:[(32880,1,True)],7005:[(34,10,True)]}.get(cid)
+        return await (j([{"record_id":i,"type_id":t,"quantity":q,"is_included":inc} for i,(t,q,inc) in enumerate(L)]) if L else j({"error":"not found"},404))
+    if path.startswith("/contracts/public/10000002"):
+        pg=int(parse_qs(urlparse(u).query).get("page",["1"])[0]); exp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()+5*86400))
+        c=lambda i,ty,pr,v,ti="": {"contract_id":i,"type":ty,"price":pr,"volume":v,"title":ti,"start_location_id":60003760,"date_expired":exp}
+        return await j([c(7001,"item_exchange",500000,5000),c(7002,"item_exchange",100000,2500,"cheap"),c(7004,"courier",0,2500)] if pg==1 else [c(7003,"item_exchange",900000,2500),c(7005,"item_exchange",50000,2500)], pages=2)
+    # loyalty: pilot 9001's LP, the NPC corporations, one store (a priced offer with another item, an item with no price, a stack)
+    if path.startswith("/characters/9001/loyalty/points"): return await j([{"corporation_id":1000035,"loyalty_points":2500}])
+    if path.rstrip("/")=="/corporations/npccorps": return await j([1000035,1000125])
+    if path.startswith("/loyalty/stores/1000035/offers"): return await j([{"offer_id":1,"type_id":32880,"quantity":1,"lp_cost":1000,"isk_cost":100000,"required_items":[{"type_id":34,"quantity":1000}]},{"offer_id":2,"type_id":999001,"quantity":1,"lp_cost":500,"isk_cost":0,"required_items":[]},{"offer_id":3,"type_id":35,"quantity":1000,"lp_cost":100,"isk_cost":0,"required_items":[]}])
+    if path.startswith("/loyalty/stores/"): return await j({"error":"Not found"},404)
     if "/corporations/98000001/wallets/" in path: return await j({"error":"forbidden"},403)
+    # customs offices of corporation 98000001 (alliance 99000001): two in Delta (5% and 8% for members, 10% for the alliance), one in Echo (3%, no alliance access); 98000002 refuses (no Director)
+    if path.rstrip("/")=="/corporations/98000001": return await j({"name":"Fake Corp","alliance_id":99000001})
+    if path.rstrip("/")=="/corporations/98000001/customs_offices":
+        o=lambda i,s,c,a: {"office_id":i,"system_id":s,"corporation_tax_rate":c,"alliance_tax_rate":a if a is not None else 0.5,"allow_alliance_access":a is not None,"allow_access_with_standings":False,"standing_level":"neutral","reinforce_exit_start":18,"reinforce_exit_end":20}
+        return await j([o(1001,30000004,0.05,0.1),o(1002,30000004,0.08,0.1),o(1003,30000005,0.03,None)], pages=1)
+    if path.rstrip("/")=="/corporations/98000002/customs_offices": return await j({"error":"Character does not have required role(s)"},403)
+    # moon mining of corporation 98000001: one extraction (chunk tomorrow), one moon drill's ledger (two miners, one day too old for 30 days); pilot 9001's own ledger
+    iso=lambda s: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(s)); day=lambda i: time.strftime("%Y-%m-%d", time.gmtime(time.time()-i*86400)); now=time.time()
+    if path.rstrip("/")=="/corporation/98000001/mining/extractions": return await j([{"moon_id":40000001,"structure_id":1,"extraction_start_time":iso(now-5*86400),"chunk_arrival_time":iso(now+86400),"natural_decay_time":iso(now+86400+3*3600)}], pages=1)
+    if path.rstrip("/")=="/corporation/98000001/mining/observers": return await j([{"observer_id":1001,"observer_type":"structure","last_updated":day(1)}], pages=1)
+    if path.rstrip("/")=="/corporation/98000001/mining/observers/1001": return await j([{"character_id":777001,"type_id":1230,"quantity":1000,"last_updated":day(2),"recorded_corporation_id":98000001},{"character_id":777001,"type_id":1230,"quantity":500,"last_updated":day(3),"recorded_corporation_id":98000001},{"character_id":556,"type_id":62520,"quantity":300,"last_updated":day(1),"recorded_corporation_id":98000002},{"character_id":556,"type_id":62520,"quantity":9999,"last_updated":day(40),"recorded_corporation_id":98000002}], pages=1)
+    if path.rstrip("/")=="/characters/9001/mining": return await j([{"date":day(2),"solar_system_id":30000004,"type_id":1230,"quantity":200}], pages=1)
+    if path.rstrip("/")=="/universe/moons/40000001": return await j({"moon_id":40000001,"name":"Delta I - Moon 1","system_id":30000004})
+    # notifications of pilot 9001: the Sotiyo attacked an hour ago, a chunk ready, a corporation application 5 days ago, one too old to keep
+    if path.rstrip("/")=="/characters/9001/notifications":
+        ft=lambda s: int((s*1000+11644473600000)*1e4); now=now//3600*3600   # the same answer for every pilot within the hour
+        n=lambda i,ty,ago,tx: {"notification_id":i,"type":ty,"sender_id":1000125,"sender_type":"corporation","timestamp":iso(now-ago),"text":tx,"is_read":False}
+        return await j([n(1,"StructureUnderAttack",3600,"allianceName: Bad Guys\narmorPercentage: 100.0\ncharID: 556\ncorpName: Pirates\nhullPercentage: 100.0\nshieldPercentage: 45.5\nsolarsystemID: 30000004\nstructureID: &id001 1\nstructureShowInfoData:\n- showinfo\n- 35825\n- *id001\nstructureTypeID: 35825\n"),
+            n(2,"MoonminingExtractionFinished",7200,"autoTime: %d\nmoonID: 40000001\nsolarSystemID: 30000004\nstructureID: 1\nstructureTypeID: 35835\n" % ft(now+3*3600)),
+            n(3,"CorpAppNewMsg",5*86400,"applicationText: hi\ncharID: 777001\ncorpID: 98000001\n"), n(4,"StructureFuelAlert",100*86400,"solarsystemID: 30000004\nstructureID: 1\n")])
     return await j([],404)
