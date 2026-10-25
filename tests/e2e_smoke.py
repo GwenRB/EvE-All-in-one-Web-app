@@ -106,7 +106,7 @@ async def forecast_orders(t):
 @scenario
 async def tabs_and_menus(t):
     groups = t.show("groups", await t.js("[...document.querySelectorAll('.tabs .tabgrp')].map(g=>g.querySelector('.tabgrp-btn').innerText.replace(/\\s+/g,' ').trim())"))
-    for g in ("Industry", "Market", "Stock", "Pilots", "Tools"): t.ok(any(x.startswith(g) for x in groups), f"tab menu {g} is missing", groups)
+    for g in ("Industry", "Market", "Stock", "Pilots", "Other"): t.ok(any(x.startswith(g) for x in groups), f"tab menu {g} is missing", groups)
     t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=plan]) button[data-tab]')].map(b=>b.dataset.tab)"), ["pimgmt", "reactions", "plan", "orders", "jobs"], "Industry menu pages")
     await t.pg.hover(".tabs .tabgrp:has(button[data-tab=plan]) .tabgrp-btn"); await asyncio.sleep(0.2)
     await t.pg.click(".tabs .tabgrp:has(button[data-tab=plan]) button[data-tab=plan]"); await asyncio.sleep(0.3)
@@ -116,6 +116,9 @@ async def tabs_and_menus(t):
     t.eq(await t.js("getComputedStyle(document.querySelector('.tabs .tabgrp:has(button[data-tab=omega]) .tabmenu')).display"), "block", "a menu opens on click")
     await t.pg.mouse.click(700, 900); await asyncio.sleep(0.2)
     t.eq(await t.js("getComputedStyle(document.querySelector('.tabs .tabgrp:has(button[data-tab=omega]) .tabmenu')).display"), "none", "a menu closes on a click elsewhere")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab]')].map(b=>b.dataset.tab)"), ["prices", "trading", "suppliers", "contracts", "shortages", "pnl", "lp"], "Market menu pages, Profit and loss and LP store included")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=misc]) button[data-tab]')].map(b=>b.dataset.tab)"), ["misc", "corp"], "the Other menu holds Misc and Corporation")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-3)"), ["settings", "notes", "intel"], "Settings, Notes and Intel stay on the bar")
     await t.tab("misc"); h = await t.js("document.querySelector('#page-misc h2').textContent"); t.ok(h.endswith("Blueprint calculator"), "Misc's first panel is the Blueprint calculator", h)
 
 @scenario
@@ -407,6 +410,263 @@ async def characters_and_contracts(t):
     t.ok(await t.js("stockByType().get(36)===undefined && !stockSources().some(s=>s.value && s.rows.some(r=>r.t===36))"), "items outside the hangars aren't counted as stock")
 
 @scenario
+async def skill_queues(t):
+    # Reading a queue: training order, names, no dates while paused
+    q = t.show("fetched queue", await t.js("fetchQueue(9001,'tok')"))
+    t.eq([[x["n"], x["l"], x["end"] is None] for x in q], [["Industry", 5, False], ["Mechanical Engineering", 5, False], ["Reactions", 4, True]], "the queue is read in training order, with names, a paused level without dates")
+    t.ok(await t.js("SCOPE_USE[QUEUE_SCOPE] && ESI_SCOPE.includes(QUEUE_SCOPE) && !requestedScopes().includes(QUEUE_SCOPE)"), "the Skill queues permission is listed and starts unticked")
+    # Alpha: queue ends in 2 days; Beta: Industry IV done since the sync, Industry V and ME III queued; Gamma: queue ran out an hour ago
+    H, D = 3600e3, 864e5
+    await t.js(f"""()=>{{const n=Date.now(); state.misc.skills={{...(state.misc.skills||{{}}),Industry:{{id:3380,rank:1,pri:165,sec:166,req:{{}}}},'Mechanical Engineering':{{id:3392,rank:1,pri:165,sec:166,req:{{}}}},'Caldari Starship Engineering':{{id:3398,rank:1,pri:165,sec:166,req:{{}}}}}};
+      state.chars[0].queue={{at:n,list:[{{n:'Science',l:2,start:n-{H},end:n+2*{D}}}]}};
+      state.chars[1].queue={{at:n-{D},list:[{{n:'Industry',l:4,start:n-{D},end:n-{H}}},{{n:'Industry',l:5,start:n-{H},end:n+3*{D}}},{{n:'Mechanical Engineering',l:2,start:n+3*{D},end:n+4*{D}}},{{n:'Mechanical Engineering',l:3,start:n+4*{D},end:n+5*{D}}}]}};
+      state.chars[2].queue={{at:n-{D},list:[{{n:'Reactions',l:5,start:n-{D},end:n-{H}}}]}};
+      state.fits=[{{id:'fq',name:'Queue test',ship:'Venture',shipId:32880,req:{{Industry:5,'Mechanical Engineering':3}},items:[],contents:[],unknown:[]}},{{id:'fq2',name:'Untrained test',ship:'Venture',shipId:32880,req:{{'Caldari Starship Engineering':5}},items:[],contents:[],unknown:[]}}]; saveFits(); saveLocal(); render();}}""")
+    t.eq(await t.js("state.chars.map(c=>queueEnd(c)>0?'ends':queueEnd(c))"), ["ends", "ends", 0], "queue end: a running queue has a date, a queue whose last level finished is empty")
+    t.eq(await t.js("lv(queuedPilot(state.chars[1]),'Industry')"), 4, "a level the queue finished since the sync counts")
+    # Skills page: pilots training now, the queue running out first on top; pilots not training only when ticked
+    await t.tab("overview", 0.4)
+    rows = "[...document.querySelectorAll('#sq-table tbody tr')].map(r=>r.innerText.replace(/\\s+/g,' ').trim())"
+    sq = t.show("skill queues", await t.js(rows))
+    t.ok(len(sq) == 3 and "training now" in sq[0].lower() and sq[1].startswith("Ender Alpha") and "Science II" in sq[1] and sq[2].startswith("Ender Beta") and not await t.js("document.getElementById('sq-note').hidden"), "Skill queues shows the pilots training, the one running out first on top, and says one is hidden", sq)
+    await t.pg.click("#sq-idle"); await asyncio.sleep(0.2)
+    sq = t.show("with not training", await t.js(rows))
+    t.ok(len(sq) == 5 and "not training" in sq[3].lower() and sq[4].startswith("Solo Gamma") and "Empty" in sq[4] and await t.js("state.misc.sqIdle===true"), "ticking the box adds the pilots not training, in their own group", sq)
+    t.ok(await t.js("[...document.querySelectorAll('#sk-nav a')].some(a=>a.textContent==='Skill queues')"), "Skill queues is in the Skills navigation")
+    await t.tab("characters", 0.3)
+    pc = await t.js("document.getElementById('pilots').textContent"); t.ok("Skill queue empty" in pc and "Queue ends" in pc, "the pilot cards say when the queue ends, or that it's empty", pc[:400])
+    # To-Do: the empty queue, counted on the tab; unticking the pilot hides it
+    await t.tab("todo", 0.4)
+    td = t.show("todo queues", await t.js("[!document.getElementById('todo-sq-panel').hidden, document.getElementById('todo-sq').innerText, document.querySelector('.tabs button[data-tab=todo]').dataset.alert]"))
+    t.ok(td[0] and "Solo Gamma" in td[1] and "empty since" in td[1] and "Ender" not in td[1] and td[2] == "1", "To-Do shows the empty queue and counts it on the tab", td)
+    # Idle for more than 7 days: hidden (and not counted) unless To-Do's box is ticked; a later sync keeps the first idle date
+    n_ = await t.js("Date.now()")
+    t.eq(await t.js(f"[queueIdleSince({{queue:{{at:{n_},idle:{n_}-5*{D},list:[]}}}}), queueIdleSince({{queue:{{at:{n_},list:[]}}}}), queueIdleSince(state.chars[0])]"), [n_ - 5 * D, n_, None], "idle since: an earlier sync's date, else the read; none while training")
+    await t.js(f"()=>{{state.chars[2].queue={{at:Date.now()-{D},list:[{{n:'Reactions',l:5,start:Date.now()-11*{D},end:Date.now()-10*{D}}}]}}; saveLocal(); renderTodo(); todoBadge();}}")
+    td = t.show("long idle", await t.js("[!document.getElementById('todo-sq-panel').hidden, document.getElementById('todo-sq').innerText, document.querySelector('.tabs button[data-tab=todo]').dataset.alert||'']"))
+    t.ok(td[0] and "Solo Gamma" not in td[1] and "idle for over 7 days hidden" in td[1] and td[2] == "", "a pilot idle for over 7 days is hidden and not counted", td)
+    await t.pg.click("#todo-sq-idle"); await asyncio.sleep(0.2)
+    td = t.show("long idle shown", await t.js("[document.getElementById('todo-sq').innerText, document.querySelector('.tabs button[data-tab=todo]').dataset.alert||'']"))
+    t.ok("Solo Gamma" in td[0] and td[1] == "1", "ticking Show pilots idle for over 7 days lists and counts them", td)
+    await t.tab("overview", 0.3); await t.pg.click("[data-sq-alert='g']"); await asyncio.sleep(0.2)
+    t.ok(await t.js("document.getElementById('todo-sq-panel').hidden=false, renderTodo(), document.getElementById('todo-sq-panel').hidden && !document.querySelector('.tabs button[data-tab=todo]').dataset.alert"), "an unticked pilot leaves To-Do and the tab count")
+    # Fittings: Alpha flies it; Beta's queue gets there (the last needed level's date); Gamma: time to train
+    await t.tab("fittings", 0.3); await asyncio.sleep(0.5); await t.js("renderFits()")
+    t.ok(await t.js("[...document.querySelectorAll('#fit-list details[data-fit-det$=\":fly\"]')].every(d=>!d.open) && document.querySelectorAll('#fit-list details[data-fit-det$=\":fly\"]').length===2"), "Time to fly it is folded by default")
+    await t.pg.click("#fit-list details[data-fit-det$=':fly'] summary >> nth=0"); await asyncio.sleep(0.2); await t.js("renderFits()")
+    t.ok(await t.js("document.querySelector('#fit-list details[data-fit-det$=\":fly\"]').open"), "an opened Time to fly it stays open when the card redraws")
+    await t.js("document.querySelectorAll('#fit-list details').forEach(d=>d.open=true)")
+    card = t.show("fitting card", await t.js("[...document.querySelectorAll('#fit-list .fit')].map(a=>[...a.querySelectorAll('.who-list li')].map(l=>(l.className+': '+l.innerText).replace(/\\s+/g,' ')).join(' | '))"))
+    rb = await t.js("(()=>{const r=readyFor(state.chars[1], state.fits[0].req); return [r.ok, r.inQ, r.miss.length, Math.round((r.at-Date.now())/864e5)]})()")
+    t.eq(rb, [False, 2, 2, 5], "Beta: both missing levels queued, ready when Mechanical Engineering III finishes")
+    t.ok("yes: ✓ Ender Alpha" in card[0] and "no: Ender Beta ready" in card[0] and "no: Solo Gamma" in card[0] and "to train" in card[0], "the fitting shows who flies it, when Beta's queue gets there, and Gamma's training time", card[0])
+    t.ok(card[0].index("Ender Beta") < card[0].index("Solo Gamma"), "the soonest pilot is first")
+    t.ok("no: Ender Alpha" in card[1] and "to train" in card[1] and "ready" not in card[1], "a skill nobody queued shows the time to train", card[1])
+
+@scenario
+async def skill_check_saved(t):
+    # A saved blueprint can be removed from the Skill check's list
+    await t.js("()=>{bp.saved={m1:{key:'m1',name:'Test blueprint',manual:true,acts:{manufacturing:{Industry:1}},checkedAt:Date.now()},m2:{key:'m2',name:'Other blueprint',manual:true,acts:{manufacturing:{Industry:2}},checkedAt:Date.now()}}; saveBpLocal(); renderBp();}")
+    await t.tab("overview", 0.3)
+    t.eq(await t.js("document.querySelectorAll('#bp-saved [data-bp-remove]').length"), 2, "each saved blueprint has a remove button")
+    await t.pg.click("#bp-saved [data-bp-remove='m1']"); await asyncio.sleep(0.2)
+    t.eq(await t.js("[Object.keys(bp.saved), JSON.parse(localStorage.getItem('eve-industry-bp-saved')).m1===undefined, document.getElementById('bp-saved').innerText.includes('Test blueprint')]"), [["m2"], True, False], "removing it drops it from the list and from storage")
+
+@scenario
+async def map_markers(t):
+    # The map, its legend, the system panel and the hover box draw each marker with the same MK entry
+    await map_(t)
+    await t.js("()=>{state.misc.structs={...(state.misc.structs||{}), 1077:{name:'Bravo - Test Astrahus',system:30000002,type:35832,typeName:'Astrahus'}}; state.misc.map={...(state.misc.map||{}),homes:[30000002]}; saveMisc(); renderMap(); mapSelect(30000002, true);}")
+    await asyncio.sleep(0.4)
+    info = t.show("panel", await t.js("[...document.querySelectorAll('#map-info .map-sel canvas.mk-ico')].map(c=>c.dataset.mk+':'+(c.dataset.mkArg||''))"))
+    t.ok("struct:astrahus" in info and "home:" in info, "the system panel shows the map's markers (structure type, home)", info)
+    leg = t.show("legend", await t.js("[...document.querySelectorAll('#map-legend canvas.mk-ico')].map(c=>c.dataset.mk)"))
+    t.ok(set(leg) >= {k for k in await t.js("Object.keys(MK).filter(k=>MK[k].draw)")}, "the legend shows every marker the map draws", leg)
+    t.ok(await t.js("[...document.querySelectorAll('#map-legend canvas.mk-ico')].every(c=>c.getContext('2d').getImageData(0,0,32,32).data.some((v,i)=>i%4===3&&v>0))"), "every legend icon is painted")
+    pos = await t.js("(()=>{const s=mapIndex().byId.get(30000002), cv=document.getElementById('map-canvas'), rc=cv.getBoundingClientRect(); return [rc.left+(s.px-view.cx)*view.k+cv.clientWidth/2, rc.top+(s.py-view.cy)*view.k+cv.clientHeight/2]})()")
+    await t.pg.mouse.move(pos[0], pos[1]); await asyncio.sleep(0.2)
+    hv = t.show("hover", await t.js("(()=>{const h=document.getElementById('map-hover'); return [h.hidden, [...h.querySelectorAll('canvas.mk-ico')].map(c=>c.dataset.mk+':'+(c.dataset.mkArg||'')), h.innerText]})()"))
+    await t.pg.screenshot(path=SP + "map_markers.png", full_page=True)
+    t.ok(not hv[0] and "struct:astrahus" in hv[1] and "home:" in hv[1] and "Bravo - Test Astrahus" in hv[2], "the hover box uses the same markers as the system panel", hv)
+    t.ok(not await t.js("(()=>{const p=document.querySelector('#map-info .map-sel').cloneNode(true); p.querySelectorAll('button').forEach(b=>b.remove()); return /[◆□●♟◇✷▪⛴⌂]/.test(document.getElementById('map-hover').innerText + p.innerText)})()"), "no old text symbols are left in the hover box or the system panel")
+
+@scenario
+async def upcoming_fleets(t):
+    await t.tab("forecast", 0.4)
+    t.ok((await t.js("document.getElementById('fleet-title').textContent")).endswith("Upcoming events"), "the Overview panel is called Upcoming events", await t.text("#fleet-title"))
+    t.ok('"Calendar"' in (await t.text("#fleet-body")), "without the Calendar permission, Upcoming events says how to get it", await t.text("#fleet-body"))
+    ev = t.show("calendar", await t.js("fetchCalendar(9001,'tok')"))
+    e1 = next((e for e in ev if e["id"] == 501), {})
+    t.eq([len(ev), e1.get("owner"), e1.get("dur"), e1.get("text"), e1.get("imp"), e1.get("resp")], [2, "Fake Corp", 120, "Form up in Alpha\nBring ECM", True, "accepted"], "calendar events are read with who runs them, duration and plain text")
+    # Two pilots see the same fleet: listed once with both answers; an event that ended is left out
+    await t.js("ev=>{state.chars[0].calendar={at:Date.now(),list:ev}; state.chars[1].calendar={at:Date.now(),list:ev.filter(e=>e.id===501).map(e=>({id:e.id,at:e.at,title:e.title,imp:false,resp:'tentative'}))}; saveLocal(); render(); renderTz(true);}", ev)
+    fl = t.show("fleets", await t.js("[document.querySelectorAll('#fleet-body li').length, document.getElementById('fleet-body').innerText]"))
+    cal = await t.js("(renderAgenda(), [document.getElementById('ag-cal').innerText.includes('Fleet: home defence'), !!document.querySelector('#ag-filters [data-ag=fleets]')])")
+    t.eq(cal, [True, True], "the fleet is on the Overview's calendar, with its own tick box")
+    await t.pg.click("#ag-filters [data-ag=fleets]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("!document.getElementById('ag-cal').innerText.includes('Fleet: home defence')"), "unticking Fleets takes it off the calendar")
+    t.ok(fl[0] == 1 and "Tomorrow" in fl[1] and "Fleet: home defence" in fl[1] and "Fake Corp" in fl[1] and "Important" in fl[1] and "Ender Alpha ✓" in fl[1] and "Ender Beta ?" in fl[1] and "Old ops" not in fl[1] and "EVE " in fl[1], "Upcoming events lists the fleet once, with its owner, EVE time and every pilot's answer", fl)
+
+@scenario
+async def lp_store(t):
+    corps = await t.js("lpCorps()")
+    t.eq(corps, [[1000035, "Caldari Navy"], [1000125, "CONCORD"]], "the NPC corporations are read with their names, A to Z")
+    t.ok(await t.js("[LOYALTY_SCOPE, CALENDAR_SCOPE].every(s=>ESI_SCOPE.includes(s) && SCOPE_USE[s] && !requestedScopes().includes(s))"), "the Loyalty points and Calendar permissions are listed and start unticked")
+    await t.js("async()=>{state.chars[0].lp={at:Date.now(),list:(await esiAuthGet('/characters/9001/loyalty/points/','tok')).map(x=>[x.corporation_id,x.loyalty_points])}; saveLocal();}")
+    t.ok(await t.js("!!document.querySelector('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab=lp]')"), "LP store is in the Market menu")
+    await t.tab("lp", 0.4)
+    t.ok(await t.until("!!lpOffers['1000035'] && !lpBusy && document.querySelectorAll('#lp-offers tbody tr:not(.group)').length===3", 20), "the store with the most LP opens by itself", await t.text("#lp-offers"))
+    sq = lambda s: "".join(ch for ch in s if not ch.isspace() and ch not in ",  ")   # numbers follow the browser's locale
+    pts = await t.text("#lp-points"); t.ok("CaldariNavy" in sq(pts) and "2500" in sq(pts), "Your loyalty points shows the corporation and the LP", pts)
+    r = t.show("rows", await t.js("(()=>{const tax=salesTax().pct/100; return {tax, rows:Object.fromEntries(lpRows('1000035').map(o=>[o.t,[o.value,o.cost,o.perLp]]))}})()"))
+    tax = r["tax"]; rows = r["rows"]
+    t.ok(abs(rows["32880"][2] - (300000 * (1 - tax) - 100000 - 4000) / 1000) < 1e-6, "ISK per LP = (sells for after tax − ISK − other items) ÷ LP", rows["32880"])
+    t.ok(abs(rows["35"][2] - 9 * 1000 * (1 - tax) / 100) < 1e-6, "a stack counts its quantity", rows["35"])
+    t.eq(rows["999001"], [None, 0, None], "an item with no price leaves its ISK per LP unknown, never 0")
+    t.ok(await t.until("lpRows('1000035').find(o=>o.t===32880).sold===100", 10), "Sold per day comes from The Forge's market history", await t.js("lpRows('1000035').map(o=>[o.t,o.sold])"))
+    tb = t.show("table", await t.js("[...document.querySelectorAll('#lp-offers tbody tr:not(.group)')].map(r=>r.innerText.replace(/\\s+/g,' '))"))
+    t.ok(any("Venture" in x and "Tritanium×1000" in sq(x) and sq(x).endswith("2") for x in tb),"the Venture row lists the other items and how many times your LP buys it", tb)
+    t.ok(any("T999001" in x and "no price" in x for x in tb), "the unpriced offer shows no price", tb)
+    t.ok(await t.js("!document.querySelector('#lp-offers tr.group') && document.getElementById('lp-offers').tBodies.length===1"), "the offers are one list, not grouped by what the items are")
+    t.ok(tb[0].strip().startswith("Venture"), "the best ISK per LP is first", tb)
+    t.ok("no price in" in (await t.text("#lp-note")), "the page says which items have no price")
+    t.ok("Venture" in (await t.text("#lp-summary")), "the best offer you can afford is the Venture")
+    await t.pg.screenshot(path=SP + "lp_store.png", full_page=True)
+    # Another pricing for what you sell: the numbers follow it
+    await t.pg.select_option("#lp-bar select[data-lp=sell]", "jbv"); await asyncio.sleep(0.5)
+    v2 = await t.js("lpRows('1000035').find(o=>o.t===32880).perLp")
+    t.ok(abs(v2 - (330000 * (1 - tax) - 104000) / 1000) < 1e-6 and await t.js("lpCfg().sell") == "jbv", "changing the sell pricing reprices the offers", v2)
+    # A corporation without a store
+    await t.pg.select_option("#lp-corp", "1000125"); t.ok(await t.until("!lpBusy && /couldn't be read/.test(document.getElementById('lp-offers').innerText)", 10), "a corporation whose store can't be read says so", await t.text("#lp-offers"))
+
+@scenario
+async def server_status(t):
+    t.ok(await t.until("srv && srv.state==='online'", 10), "the server status is read", await t.js("srv"))
+    t.eq(await t.js("[srv.players, !document.getElementById('srv-status').hidden, document.getElementById('srv-status').textContent.includes('Online')]"), [23456, True, True], "the header shows the server online with its players")
+    up = t.show("back online", await t.js("[document.getElementById('srv-status').textContent, new Date(srv.start).toISOString().slice(11,16), document.getElementById('srv-status').title]"))
+    t.ok(f"since {up[1]} EVE" in up[0] and f"back online at {up[1]} EVE time" in up[2], "the header says when the server came back, to the minute, in EVE time", up)
+    # Downtime: from 11:00 EVE time until the server says it started again, at most 20 minutes when it can't be read
+    dt = t.show("downtime", await t.js("""(()=>{const s=dtStart(Date.now()), keep=srv, at=(m)=>s+m*60e3, out={};
+      srv=null; out.before=esiDown(at(-1)); out.noStatus=esiDown(at(5)); out.after=esiDown(at(25));
+      srv={at:at(5),state:'online',start:at(-600)}; out.oldStart=esiDown(at(5));
+      srv={at:at(5),state:'online',start:at(4)}; out.back=esiDown(at(5));
+      srv={at:at(5),state:'offline'}; out.offline=esiDown(at(5)); srv=keep; return out})()"""))
+    t.eq(dt, {"before": False, "noStatus": True, "after": False, "oldStart": True, "back": False, "offline": True}, "downtime starts at 11:00 EVE time and ends when the server is back")
+    # While down: no sync, market reads refused (prices keep what they had), the header says so
+    r = t.show("while down", await t.js("""(async()=>{const real=esiDown; esiDown=()=>true; renderSrv(); const pill=document.getElementById('srv-status').textContent;
+      let sync=''; try { await syncChar(state.chars[0]); } catch(e) { sync=e.message }
+      const mk=(await esiMarket('https://esi.evetech.net/latest/markets/10000002/orders/?type_id=34')).status; esiDown=real; renderSrv(); return {pill, sync, mk}})()"""))
+    t.ok("Downtime" in r["pill"] and "downtime" in r["sync"] and r["mk"] == 503, "during downtime the header says so, syncs wait and market reads are refused", r)
+
+@scenario
+async def map_danger(t):
+    await supply_setup(t)
+    await t.js("loadKills(true)")
+    t.eq(await t.js("[killsIn(30000002), isDanger(30000002), killsIn(30000006), isDanger(30000006), killsIn(30000001)]"), [8, True, 1, False, 0], "kills in the last hour: ships and pods count, from 5 a system is dangerous")
+    # A leg warns about the dangerous systems it crosses by gate and those it jumps into (the cyno there can be caught)
+    lg = await t.js("(()=>{const m=mapIndex(), s=(id)=>m.byId.get(id), n=(L)=>legDanger(L).map(x=>[x.s.n,x.jump]); return [n({path:[s(30000001),s(30000002),s(30000004)],ga:1,gb:0}), n({path:[s(30000004),s(30000002),s(30000001)],ga:0,gb:1}), n({path:[s(30000001),s(30000004),s(30000006)],ga:0,gb:0}), n({path:[s(30000001),s(30000002),s(30000003)],gatesOnly:true}), n({path:[s(30000001),s(30000002),s(30000004)],ga:0,gb:0})]})()")
+    t.eq(lg, [[["Bravo", False]], [["Bravo", True]], [], [["Bravo", False]], [["Bravo", True]]], "a leg warns about dangerous systems it crosses by gate or jumps into")
+    await t.js("mapSelect(30000002)"); await asyncio.sleep(0.3)
+    info = await t.text("#map-info"); t.ok("Dangerous" in info and "6 ships, 2 pods, 10 NPCs killed" in info, "the system info shows the last hour's kills", info)
+    t.ok(await sc_plan(t), "planning the trips")
+    sc = t.show("supply", await t.js("({risky:scLast.trips.filter(t=>legDanger(t.main).length||(t.rep.path.length>1&&legDanger(t.rep).length)).map(t=>t.n), warn:document.querySelectorAll('#sc-box tbody .label[data-tip*=\"killed\"]').length, note:(document.querySelector('#sc-box .notice b')||{}).textContent||''})"))
+    t.ok(sc["risky"] and sc["warn"] >= len(sc["risky"]) and "dangerous system" in sc["note"], "supply chain legs through Bravo are flagged", sc)
+    # A higher danger level: Bravo isn't dangerous any more
+    await t.pg.fill("#map-danger", "10"); await t.pg.dispatch_event("#map-danger", "change"); await asyncio.sleep(0.3)
+    t.ok(await t.js("dangerMin()===10 && !isDanger(30000002) && !document.querySelector('#sc-box tbody .label[data-tip*=\"killed\"]')"), "raising the danger level clears the warnings")
+
+@scenario
+async def todo_slots(t):
+    H = 3600e3
+    await t.js(f"()=>{{const n=Date.now(); state.chars[0].jobs=[{{id:1,activity:1,end:n+{H},status:'active'}},{{id:2,activity:9,end:n-{H},status:'ready'}}]; state.chars[1].jobs=[]; saveLocal();}}")
+    exp = t.show("expected", await t.js("state.chars.filter(hasJobData).map(c=>{const s=slotsOf(c),u=usedOf(c),can={M:1,S:lv(c,'Science')>0,R:lv(c,'Reactions')>0}; return [c.name,'MSR'.split('').filter(k=>can[k]&&s[k]>u[k]).map(k=>[k,s[k]-u[k]])]})"))
+    t.ok(not any(k == "R" for e in exp if e[0] == "Ender Beta" for k, _ in e[1]), "a pilot without the Reactions skill has no reaction slot to fill", exp)
+    await t.tab("todo", 0.4)
+    li = t.show("slots", await t.js("[!document.getElementById('todo-sl-panel').hidden, [...document.querySelectorAll('#todo-sl-table tbody tr')].map(r=>[...r.cells].map(c=>c.innerText.replace(/[✕\\s]+/g,' ').trim())), [...document.querySelectorAll('#todo-sl-table thead th')].map(h=>h.innerText.split('\\n')[0].trim())]"))
+    t.ok(li[0] and len(li[1]) == len([e for e in exp if e[1]]) and "Solo Gamma" not in str(li[1]), "Empty job slots lists pilots with job data and free slots", li)
+    t.eq(li[2], ["Pilot", "Empty manufacturing slots", "Empty science slots", "Empty reactions slots", "Finished jobs to deliver"], "Empty job slots is a table with a column per kind of slot")
+    t.ok(any(r[0] == "Ender Alpha" and r[4] == "1" for r in li[1]), "a finished job still holding its slot is listed", li)
+    # Counting them on the To-Do tab: off by default, a tick box turns it on
+    b0 = await t.js("+(document.querySelector('.tabs button[data-tab=todo]').dataset.alert||0)")
+    t.ok(await t.js("!document.getElementById('todo-sl-count').checked && !state.misc.todoSlCount"), "empty job slots aren't counted on the tab by default")
+    await t.pg.click("#todo-sl-count"); await asyncio.sleep(0.2)
+    t.eq(await t.js("+(document.querySelector('.tabs button[data-tab=todo]').dataset.alert||0)"), b0 + len(li[1]), "ticking Count adds the pilots with empty slots to the tab's number")
+    await t.pg.click("#todo-sl-count"); await asyncio.sleep(0.2)
+    t.ok(await t.js("[...document.querySelectorAll('#todo-nav a')].some(a=>a.textContent==='Empty job slots')"), "Empty job slots is in the To-Do navigation")
+    n0 = await t.js("document.querySelectorAll('#todo-sl [data-slot-off]').length")
+    await t.pg.click("#todo-sl [data-slot-off] >> nth=0"); await asyncio.sleep(0.2)
+    t.ok(await t.js(f"document.querySelectorAll('#todo-sl [data-slot-off]').length==={n0 - 1} && !!document.querySelector('[data-slot-show]')"), "✕ hides one kind of slot for a pilot")
+    await t.pg.click("[data-slot-show]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("document.querySelectorAll('#todo-sl [data-slot-off]').length"), n0, "Show them again brings it back")
+
+@scenario
+async def market_history(t):
+    st = t.show("stats", await t.js("(async()=>{const R=await mktHistory(10000002,[34]); const s=mhStats(R[34]); return {d1:+s.d1.toFixed(4), d7:+s.d7.toFixed(4), perDay:s.perDay}})()"))
+    t.eq(st, {"d1": 0.1, "d7": 0.375, "perDay": 100}, "market history: daily average change over 1 and 7 days, sold per day over the last 7 days")
+    # Trading board: a new table gets its 24 h and 7 days columns from the history (marked ~) and how much sells
+    await t.js("()=>{tbList().push({id:'bh',name:'History test',market:'st:60003760',sel:[{k:'item',id:34,name:'Tritanium'}],snaps:{}}); saveMisc();}")
+    await t.tab("trading", 0.3); await t.js("refreshBoard(tbList().find(b=>b.id==='bh'))")
+    t.ok(await t.until("!!document.querySelector('#tb-list table tbody tr:not(.group)')", 15), "the board refreshed")
+    row = t.show("row", await t.js("[...document.querySelectorAll('#tb-list table tbody tr:not(.group)')].map(r=>[...r.cells].map(c=>c.innerText.trim()))[0]"))
+    t.ok(row and row[3].startswith("~") and "10.0%" in row[3] and row[4].startswith("~") and "37.5%" in row[4] and row[8] == "100", "a new table's 24 h and 7 days come from the history (~) and Sold per day shows", row)
+    # Once your own refreshes are a day old, they win
+    await t.js("()=>{const b=tbList().find(b=>b.id==='bh'); b.snaps[34].unshift([Date.now()-25*3600e3, 2, 1]); renderBoards();}")
+    row2 = await t.js("[...document.querySelectorAll('#tb-list table tbody tr:not(.group)')].map(r=>r.cells[3].innerText.trim())[0]")
+    t.ok(not row2.startswith("~") and "100.0%" in row2, "your own day-old refresh replaces the history", row2)
+    # Tables in your own order: ↑ / ↓ swap a table with its neighbour and the order is saved
+    await t.js("()=>{tbList().push({id:'bo',name:'Order test',market:'st:60003760',sel:[],snaps:{}}); saveMisc(); renderBoards();}")
+    names = lambda: t.js("[...document.querySelectorAll('#tb-list > .fc-box h3')].map(h=>h.childNodes[0].textContent.trim())")
+    before = await names(); t.ok(before[-2:] == ["History test", "Order test"], "the new table comes last", before)
+    t.ok(await t.js("document.querySelector('[data-tb-move=\"bo|-1\"]').disabled===false && document.querySelector('[data-tb-move=\"bo|1\"]').disabled"), "the last table can move up but not down", before)
+    await t.pg.click('[data-tb-move="bo|-1"]'); await asyncio.sleep(0.2)
+    after = await names(); t.ok(after[-2:] == ["Order test", "History test"], "↑ moves a table above the one before it", after)
+    t.eq(await t.js("JSON.parse(localStorage.getItem('eve-industry-misc')).boards.map(b=>b.id).slice(-2)"), ["bo", "bh"], "the new order is saved")
+    await t.pg.click('[data-tb-move="bo|1"]'); await asyncio.sleep(0.2)
+    t.ok((await names())[-2:] == ["History test", "Order test"], "↓ moves it back down", await names())
+
+@scenario
+async def client_deliveries(t):
+    D = 864e5
+    await t.js(f"""async()=>{{const n=Date.now(), iso=(x)=>new Date(x).toISOString(); state.misc.cm=[{{id:'c1',client:'Bob Client',created:n-2*{D},items:{{34:1000,35:50}},names:{{34:'Tritanium',35:'Pyerite'}},sends:[]}}]; saveMisc();
+      const raw=[{{contract_id:8801,type:'item_exchange',issuer_id:9001,assignee_id:777001,status:'finished',date_issued:iso(n-{D}),date_completed:iso(n-{D}/2),price:0}},{{contract_id:8802,type:'item_exchange',issuer_id:9001,assignee_id:777001,status:'rejected',date_issued:iso(n-{D}),price:0}},
+        {{contract_id:8803,type:'item_exchange',issuer_id:9001,assignee_id:9001,status:'finished',date_issued:iso(n-{D}),price:0}},{{contract_id:8804,type:'courier',issuer_id:9001,assignee_id:777001,status:'outstanding',date_issued:iso(n-{D}),price:0}}];
+      state.contracts['char:9001']={{at:n,list:[],sent:await cmDeliveries('char:9001',raw,9001,'tok')}}; saveContracts();}}""")
+    sent = t.show("deliveries", await t.js("state.contracts['char:9001'].sent.map(d=>[d.id,d.status,d.toName,d.items])"))
+    t.eq(sent, [[8801, "finished", "Bob Client", [[34, 400]]], [8802, "rejected", "Bob Client", [[35, 50]]]], "item exchanges to someone outside your pilots are kept with their items and who they're for")
+    await t.tab("contracts", 0.3); await t.js("cmOpen='c1'; renderContracts()")
+    t.ok("1 in game to record" in (await t.text("#cm-list")), "the client's order says a delivery in game isn't recorded yet")
+    det = await t.text("#cm-detail"); t.ok("Accepted" in det and "Rejected" in det and "Record as sent" in det, "the opened order lists its in-game deliveries", det[:600])
+    await t.pg.click("[data-cm-rec='8801']"); await asyncio.sleep(0.2)
+    t.eq(await t.js("[state.misc.cm[0].sends.length, state.misc.cm[0].sends[0].contract, cmMissing(state.misc.cm[0]).find(x=>x.t===34).left, document.querySelectorAll('[data-cm-rec]').length]"), [1, 8801, 600, 0], "recording a delivery adds its items as a send (a rejected one isn't offered)")
+    # A recorded delivery that later fails is flagged
+    await t.js("state.contracts['char:9001'].sent[0].status='expired'; renderContracts()")
+    t.ok("1 not delivered" in (await t.text("#cm-list")) and "Recorded, but not delivered" in (await t.text("#cm-detail")), "a recorded delivery whose contract expired is flagged")
+    # Made for the corporation, and to the client's other character: found once linked
+    await t.js(f"""async()=>{{const n=Date.now(), iso=(x)=>new Date(x).toISOString(); state.chars[0].corpId=98000001;
+      const raw=[{{contract_id:8806,type:'item_exchange',issuer_id:9001,issuer_corporation_id:98000001,for_corporation:true,assignee_id:777001,status:'outstanding',date_issued:iso(n-{D}),price:0}},{{contract_id:8805,type:'item_exchange',issuer_id:9001,assignee_id:777002,status:'finished',date_issued:iso(n-{D}),price:0}}];
+      state.contracts['corp:98000001']={{at:n,list:[],sent:await cmDeliveries('corp:98000001',raw,null,'tok',98000001)}}; state.contracts['char:9001'].sent.push(...await cmDeliveries('char:9001',raw,9001,'tok')); saveContracts(); renderContracts();}}""")
+    t.eq(await t.js("cmGameDeliveries(state.misc.cm[0]).map(d=>[d.id,d.corp])"), [[8801, False], [8802, False], [8806, True]], "a contract a pilot made for the corporation is found too")
+    t.ok("Bob Alt" in (await t.js("document.getElementById('cm-detail').textContent")), "item exchanges to other characters are offered for linking")
+    await t.js("document.querySelector('#cm-detail details').open=true"); await t.pg.click("[data-cm-alias='Bob Alt']"); await asyncio.sleep(0.2)
+    t.eq(await t.js("[state.misc.cm[0].game, cmGameDeliveries(state.misc.cm[0]).some(d=>d.id===8805)]"), [["Bob Alt"], True], "linking the client's other character brings its deliveries in")
+    await t.pg.locator("#cm-detail").screenshot(path=SP + "cm_deliveries.png")
+    # Nothing found: the box still says what it looked for and when
+    await t.js("()=>{state.misc.cm.push({id:'c2',client:'Nobody Here',created:Date.now(),items:{34:1},names:{34:'Tritanium'},sends:[]}); cmOpen='c2'; saveMisc(); renderContracts();}")
+    nb = await t.text("#cm-detail"); t.ok("In-game deliveries" in nb and "None since this order was created" in nb, "with nothing found, the box says what it looked for and when it was read", nb[:400])
+
+@scenario
+async def public_contracts(t):
+    await plan(t, "Venture Blueprint", 10)
+    await t.pg.click("[data-pc-check]"); t.ok(await t.until("buildState.plan.pc && !buildState.plan.pc.busy", 20), "the public contracts check finished", await t.js("buildState.plan.pc && buildState.plan.pc.msg"))
+    pc = t.show("contracts", await t.js("(()=>{const R=buildState.plan.pc.res, r=buildState.plan.res; return {prod:R.prod.map(x=>[x.id,x.q,x.unit]), read:R.read, build:(r.fullTotal||r.total)/r.qty}})()"))
+    t.eq(pc["prod"], [[7001, 2, 250000], [7003, 1, 900000]], "only contracts holding the Ventures alone count (both pages read, cheapest each first)")
+    t.eq(pc["read"], 4, "every page is read, item exchanges only")
+    box = await t.text("#plan-out")
+    want = "Buying beats building" if pc["build"] > 250000 else "Building is cheaper"
+    t.ok(want in box and "Public contracts" in box, f"the plan says: {want}", box[box.find("Public contracts"):][:400] if "Public contracts" in box else box[:300])
+    t.ok(await t.js("[...document.querySelectorAll('#plan-nav a')].some(a=>a.textContent==='Public contracts')"), "Public contracts is in the plan's navigation")
+
+@scenario
 async def jump_planner_and_blueprint_calc(t):
     await ships(t); await map_(t)
     t.ok(await t.until("(s=>s.includes('Incursion (no cynos) · 1 system') && !s.includes('1 systems'))(document.getElementById('map-legend').innerText)", 8), "incursions show on the map legend", await t.text("#map-legend"))
@@ -647,6 +907,119 @@ async def profit_and_loss(t):
     await t.tab("forecast", 0.8)
     fc = t.show("forecast", await t.js("[$('fc-summary').textContent.includes('Actual profit'), $('fc-chart').innerText.includes('Actual profit (cumulative'), document.querySelectorAll('#fc-chart path[stroke=\"#a16207\"]').length]"))
     t.eq(fc, [True, True, 1], "the Forecast has an actual profit tile and line")
+
+@scenario
+async def own_ore(t):
+    """Your own ore is reprocessed in the system where its minerals are used, at your best refinery there (none known: not reprocessed, with a warning), and hauled there compressed."""
+    await ships(t); await map_(t); await structs(t)
+    await t.js("""()=>{state.misc.indy={list:[{id:'x1',n:'Delta Athanor',type:'Athanor',sys:30000004,sysName:'Delta',rigs:['Standup M-Set Reprocessing Monitor II']}]};
+      state.typeMeta[1230]=[462,25]; state.typeMeta[62520]=[460,25];
+      state.assets['char:9001'].rows.push({t:1230,loc:60000001,h:'Hangar',q:200000},{t:62520,loc:60000002,h:'Hangar',q:3000}); saveMisc(); saveAssets();}""")
+    t.eq(await t.js("(refineryIn(30000004)||{}).name"), "Delta Athanor", "the refinery known in Delta")
+    read = """(()=>{const r=buildState.plan.res, O=r.stockUse.ore||{use:[]};
+      return {use:O.use.map(u=>[u.name,u.sysName,+u.y.toFixed(4),+pilotYield((refineryIn(u.sys)||{base:NaN}).base,(state.misc.reproc[u.t]||{}).sk).y.toFixed(4),u.local,u.hauled,u.ref&&u.ref.name]),
+        noRef:(O.noRef||[]).map(x=>[x.name,x.ores]),
+        usedIn:[...new Set(r.shop.filter(x=>x.fromOre).flatMap(x=>Object.keys(x.fromOreAt).map(l=>r.locs[l]&&r.locs[l].name)))],
+        ships:r.shipments.filter(s=>s.item.cat==='Own ore to reprocess').map(s=>[s.item.name,s.from,r.locs[s.to]&&r.locs[s.to].name,s.item.qty,s.item.unit])}})()"""
+    # The minerals are used in Golf, where no refinery is known: no guessed 50% yield, a warning instead
+    await plan(t, "Venture Blueprint", 10)
+    await t.pg.check("#plan-stock"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy && !!buildState.plan.res.stockUse", 25)
+    r = t.show("no refinery", await t.js(read))
+    t.ok(any(n == "Golf" for n, _ in r["noRef"]), "Golf, using your ore's minerals without a known refinery, is listed", r["noRef"])
+    t.ok(all(u[1] != "Golf" for u in r["use"]), "no ore is reprocessed in a system without a known refinery", r)
+    ui = await t.text("#plan-out"); t.ok(ui and "No refinery detected in Golf" in ui, "the plan warns: No refinery detected in Golf", (ui or "")[:300])
+    # With a refinery there, the ore is used
+    await t.js("""()=>{state.misc.indy.list.push({id:'x2',n:'Golf Tatara',type:'Tatara',sys:30000007,sysName:'Golf',rigs:[]}); saveMisc();}""")
+    await plan(t, "Venture Blueprint", 10); await t.until("!buildState.plan.busy && !!buildState.plan.res.stockUse", 25)
+    r = t.show("own ore", await t.js(read))
+    if t.ok(r["use"], "your ore is used for what's still to buy", r):
+        t.ok(all(u[2] == u[3] for u in r["use"]), "each ore's yield is your best refinery in that system with your best pilot", r["use"])
+        t.ok(all(u[1] in r["usedIn"] for u in r["use"]), "ore is reprocessed in a system where its minerals are used", r)
+        t.ok(all(u[6] == f"{u[1]} " + ("Athanor" if u[1] == "Delta" else "Tatara") for u in r["use"]), "each system's own refinery reprocesses what's used there", r["use"])
+        hauled = sum(u[5] for u in r["use"] if u[0] == "Veldspar")
+        t.ok(hauled > 0 and sum(s[3] for s in r["ships"] if s[0] == "Veldspar") == hauled, "Veldspar from the delivery system is hauled to where it's reprocessed", r)
+        t.ok(all(s[1] == "D" and s[4] == 0.001 for s in r["ships"]), "your ore is hauled compressed (its compressed form's volume)", r["ships"])
+    t.ok(not any(n == "Golf" for n, _ in r["noRef"]), "Golf isn't warned about once it has a refinery", r["noRef"])
+    ui = await t.text("#plan-out"); t.ok(ui and "Reprocessed in" in ui, "the ore table says where each ore is reprocessed", (ui or "")[:200])
+
+@scenario
+async def corporation(t):
+    """Corporation page: fuel from online services (each module once, the structure's role bonus on its own kind), To-Do refuel list and count; extractions and mining ledgers."""
+    await t.js("""async()=>{const n=Date.now(); state.chars[0].corpId=98000001; state.corpNames[98000001]='Fake Corp';
+      noteStruct(1,{solar_system_id:30000004,type_id:35825,owner_id:98000001,fuel_expires:new Date(n+2*864e5).toISOString(),services:[{name:'Manufacturing (Standard)',state:'online'},{name:'Blueprint Copying',state:'online'},{name:'Time Efficiency Research',state:'online'},{name:'Invention',state:'offline'}]},'corp');
+      noteStruct(2,{solar_system_id:30000005,type_id:35835,owner_id:98000001,fuel_expires:new Date(n+20*864e5).toISOString(),services:[{name:'Reprocessing',state:'online'},{name:'Moon Drilling',state:'online'},{name:'Something New',state:'online'}]},'corp');
+      state.misc.structs['1'].typeName='Raitaru'; state.misc.structs['2'].typeName='Athanor'; saveMisc();
+      await minSync(9001,'Ender Alpha',98000001,'tok','esi-industry.read_corporation_mining.v1 esi-industry.read_character_mining.v1');}""")
+    await t.tab("corp"); t.ok(await t.until("!corpBusy && !!fuelData.mods && Object.keys(fuelData.types).length===2", 20), "the game data for fuel was read")
+    f = t.show("fuel", await t.js("['1','2'].map(k=>{const u=fuelUse(state.misc.structs[k]); return [u.perDay,u.unknown]})"))
+    t.eq(f, [[432, []], [312, ["Something New"]]], "fuel per day: each module once, less the structure's role bonus on its own kind; an unknown service isn't counted")
+    fb = await t.js("fuelBlockPrice()"); t.ok(fb and fb["p"] > 0, "a fuel block is priced", fb)
+    tiles = await t.text("#corp-fuel-sum"); t.ok(tiles and "≥ 744" in tiles, "the total says some fuel isn't known", tiles)
+    grp = await t.js("[...document.querySelectorAll('#corp-fuel tr.group')].map(r=>r.textContent)"); t.ok(len(grp) == 1 and "Fake Corp" in grp[0], "structures are grouped by corporation", grp)
+    ext = await t.text("#corp-ext"); t.ok(ext and "Delta I - Moon 1" in ext and "extracting" in ext, "the extraction shows its moon and state", ext)
+    LED = "s=>[...document.querySelectorAll(s+' tbody tr')].map(r=>r.classList.contains('group')?r.cells[0].textContent.replace(/^[▾▸]\\s*/,'').split(/\\s+\\d/)[0].trim():[r.cells[0].textContent.trim(),+r.cells[1].dataset.v,r.cells[3].dataset.v===''?null:+r.cells[3].dataset.v])"
+    led = t.show("ledger", await t.js(LED, "#corp-led"))
+    t.eq([x if isinstance(x, str) else x[:2] for x in led], ["Bob Client", ["Veldspar", 1500], "Gas Supplier", ["Compressed Scordite", 300]], "who mined what over 30 days (an older day left out)")
+    v = await t.js("[oreValue(1230,'jbv'), oreValue(62520,'jbv')]")
+    t.ok(len(led) == 4 and v[0] and abs(led[1][2] - 1500 * v[0]) < 1 and abs(led[3][2] - 300 * v[1]) < 1, "ore valued as its minerals at the best possible yield", [led, v])
+    own = await t.js(LED, "#corp-own"); t.eq([x if isinstance(x, str) else x[:2] for x in own], ["Ender Alpha", ["Veldspar", 200]], "your pilots' own mining")
+    await t.pg.select_option("#corp-days", "90"); await asyncio.sleep(0.3); await t.until("!corpBusy", 10)
+    t.eq([x[1] for x in await t.js(LED, "#corp-led") if not isinstance(x, str) and x[0] == "Compressed Scordite"], [300 + 9999], "90 days takes the older day in")
+    await t.pg.select_option("#corp-as", "ore"); await asyncio.sleep(0.3); await t.until("!corpBusy", 10)
+    led2 = await t.js(LED, "#corp-led"); p = await t.js("priceIn('jbv',1230)")
+    t.ok(p and abs(led2[1][2] - 1500 * p) < 1, "or at the ore's own price", [led2, p])
+    # To-Do: the Raitaru runs out in 2 days (warning 7 days), the Athanor in 20
+    t.eq(await t.js("fuelLow().map(s=>s.id)"), ["1"], "structures to refuel")
+    await t.tab("todo"); txt = await t.text("#todo-fuel-panel")
+    t.ok(txt and "structures to refuel" in txt.lower() and "432 blocks a day" in txt, "To-Do lists it with its fuel use", txt)
+    t.ok("structure to refuel" in (await t.js("document.querySelector('.tabs button[data-tab=todo]').title") or ""), "the To-Do tab counts it")
+
+@scenario
+async def customs_offices(t):
+    """PI customs tax from your corporation's customs offices: members pay the corporation's rate, the alliance its own; colonies show it, the PI planner uses it when its field is empty."""
+    t.ok(await t.js("ESI_SCOPE.includes(POCO_SCOPE) && !!SCOPE_USE[POCO_SCOPE] && !requestedScopes().includes(POCO_SCOPE)"), "the customs office permission is listed and starts unticked")
+    await t.js("""async()=>{const C=state.chars; C[0].corpId=98000001; C[1].corpId=98000002; C[1].allyId=99000001; state.corpNames[98000001]='Fake Corp'; state.corpNames[98000002]='Other Corp';
+      await pocoSync(98000001,'Ender Alpha','tok'); await pocoSync(98000002,'Ender Beta','tok');
+      const pl={id:40000010,name:'Delta II',type:'barren',system:'Delta',sys:30000004,lastUpdate:Date.now(),factories:0,extractors:[],inputs:[],makes:[],stock:[],unneeded:[]};
+      C[0].planets=[pl, {...pl,id:40000012,name:'Echo II',system:'Echo',sys:30000005}]; C[1].planets=[{...pl,id:40000011,name:'Delta III'}, {...pl,id:40000013,name:'Echo I',system:'Echo',sys:30000005}];
+      const P=piCfg(); P.v=2; P.poco=0; P.planetSys=''; saveLocal(); saveMisc(); render();}""")
+    O = t.show("offices", await t.js("state.misc.pocos"))
+    t.eq([O["98000001"]["ally"], O["98000001"]["list"], O["98000002"]["err"]], [99000001, [[1001, 30000004, 0.05, 0.1], [1002, 30000004, 0.08, 0.1], [1003, 30000005, 0.03, None]], "no Director role (tried with Ender Beta)"],
+         "offices are kept with their member and alliance rates (none without alliance access); a refused read says why")
+    t.eq(await t.js("[pocoRate(30000004,[state.chars[0]]), pocoRate(30000004,[state.chars[1]]), pocoRate(30000005,[state.chars[1]]), pocoRate(30000001)]"),
+         [{"rate": 0.08, "lo": 0.05, "n": 2}, {"rate": 0.1, "lo": 0.1, "n": 2}, None, None], "a member pays the corporation's rate, the alliance its own, nothing known otherwise")
+    await t.tab("planets", 0.5)
+    rows = t.show("colonies", await t.js("Object.fromEntries([...document.querySelectorAll('#pi-table tbody tr:not(.group)')].map(r=>[r.cells[4].firstChild.textContent.trim(), r.cells[4].querySelector('.label').textContent]))"))
+    t.ok(rows and "customs 5% to 8%" in rows["Delta II"] and "customs 3%" in rows["Echo II"] and "customs 10%" in rows["Delta III"] and "customs" not in rows["Echo I"], "each colony shows the tax its pilot pays", rows)
+    await t.tab("pimgmt"); t.ok(await t.until("!!state.misc.piAt && !piBusy", 15), "PI prices didn't load")
+    t.eq(await t.js("[piCfg().v, piCfg().poco, piEnv().poco]"), [3, "", 0], "the old default 0% becomes empty; with no planets' system the tax is 0")
+    await t.pg.fill("[data-pi=planetSys]", "Echo"); await t.pg.dispatch_event("[data-pi=planetSys]", "change")
+    t.ok(await t.until("Math.abs(piEnv().poco-0.03)<1e-9", 10), "empty: the tax of your customs office in the planets' system", await t.js("piEnv().poco"))
+    txt = t.show("setup", await t.text("#pi-setup")); t.ok(txt and "customs office in Echo" in txt and "Other Corp: no Director role" in txt, "the planner says where the tax comes from and what couldn't be read", txt)
+    await t.pg.fill("[data-pi=planetSys]", "Delta"); await t.pg.dispatch_event("[data-pi=planetSys]", "change")
+    t.ok(await t.until("Math.abs(piEnv().poco-0.1)<1e-9", 10), "several rates: the highest any of your pilots pays", await t.js("piEnv().pocoAuto"))
+    await t.pg.fill("[data-pi=poco]", "4"); await t.pg.dispatch_event("[data-pi=poco]", "change"); await asyncio.sleep(0.2)
+    t.eq(await t.js("[piEnv().poco, piEnv().pocoAuto]"), [0.04, None], "a value typed in wins")
+
+@scenario
+async def intel(t):
+    """Intel page: notifications of every pilot once (with who got them), names for their ids, alerts of the last 3 days and the tab count, Mark all as seen."""
+    t.ok(await t.js("[NOTIF_SCOPE, CORP_MINING_SCOPE, CHAR_MINING_SCOPE].every(s=>ESI_SCOPE.includes(s) && SCOPE_USE[s] && !requestedScopes().includes(s))"), "the Notifications and mining permissions are listed and start unticked")
+    await t.js("async()=>{await intelSync(9001,'Ender Alpha','tok'); await intelSync(9001,'Ender Beta','tok');}")
+    kept = t.show("kept", await t.js("Object.values(intelData.n).map(o=>[o.type,o.to]).sort()"))
+    both = ["Ender Alpha", "Ender Beta"]
+    t.eq(kept, [["CorpAppNewMsg", both], ["MoonminingExtractionFinished", both], ["StructureUnderAttack", both]], "each notification once with who got it; one older than 90 days dropped")
+    t.eq(await t.js("document.querySelector('.tabs button[data-tab=intel]').dataset.alert"), "2", "the Intel tab counts what needs attention")
+    await t.tab("intel"); await t.until("!intelBusy && !!intelData.names[40000001]", 10); await asyncio.sleep(0.3)
+    al = t.show("alerts", await t.text("#intel-alerts"))
+    t.ok(al and "Delta - Sotiyo in Delta is under attack: shield 46%, armour 100%, hull 100% by Gas Supplier · Pirates · Bad Guys" in al, "an attack says where, how bad and by whom", al)
+    t.ok(al and "Chunk ready at Delta I - Moon 1" in al, "a chunk ready names its moon", al)
+    G = "[...document.querySelectorAll('#intel-list tr.group th')].map(th=>th.textContent.replace(/^[▾▸]\\s*/,'').replace(/\\s*\\d+$/,''))"
+    t.eq(await t.js(G), ["Structures", "Moon mining", "Corporation"], "notifications grouped by kind")
+    await t.pg.select_option("#intel-days", "1"); await asyncio.sleep(0.3)
+    t.eq(await t.js(G), ["Structures", "Moon mining"], "the period hides older ones")
+    await t.pg.click("[data-intel-seen]"); await asyncio.sleep(0.3)
+    t.ok(await t.js("!document.querySelector('.tabs button[data-tab=intel]').dataset.alert") and "Nothing needs attention" in (await t.text("#intel-alerts") or ""), "Mark all as seen clears the alerts and the count")
 
 @scenario
 async def shared_ui(t):

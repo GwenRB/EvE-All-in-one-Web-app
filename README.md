@@ -50,7 +50,7 @@ Everything is stored in your browser (localStorage and IndexedDB). **Settings �
 
 ## How it works
 
-- **One page, many tabs.** The tab bar groups pages into menus (Industry, Market, Stock, Pilots, Tools). Any page except Settings can be hidden in Settings. Each page has its own web address (e.g. `#overview`, `#profit-and-loss`), so bookmarks and the back button work.
+- **One page, many tabs.** The tab bar groups pages into menus (Industry, Market, Stock, Pilots, Other). Any page except Settings can be hidden in Settings. Each page has its own web address (e.g. `#overview`, `#profit-and-loss`), so bookmarks and the back button work.
 - **Sync.** Linked pilots are read from ESI (CCP's official API) when you sync: skills, queues, jobs, assets, planets, wallets, contracts, calendar, notifications… Prices and market history are read on demand, through one shared queue that stays under ESI's rate limit.
 - **Downtime aware.** The header shows the server status. During the daily downtime (from 11:00 EVE time) syncs and market reads wait; prices keep what they had.
 - **Pages read each other, but don't write into each other.** A new tool can use another page's data; it only changes it when you asked for that link (for example Reactions and PI feed the Forecast).
@@ -60,26 +60,26 @@ Everything is stored in your browser (localStorage and IndexedDB). **Settings �
 
 ## Pages
 
-Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Stock ▾ · Pilots ▾ · Tools ▾ · Settings · Notes · Profit and loss · LP store · Corporation · Intel**
+Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Stock ▾ · Pilots ▾ · Other ▾ · Settings · Notes · Intel**
 
 ### Overview
 - **Forecast:** where your ISK is heading. Manual weekly activities, plus plans linked from Reactions and PI (kept up to date), planned builds from Orders management dated by their timeline, and your actual profit from Profit and loss. Omega costs are counted; click a legend line to hide it and take it out of the totals.
 - **Calendar** of jobs (manufacturing, reactions, copying, invention, research) and fleets.
-- **Upcoming fleets:** every pilot's in-game calendar, each event once with every pilot's answer.
+- **Upcoming events:** every pilot's in-game calendar, each event once with every pilot's answer.
 - **EvE News:** the EVE launcher's news, patch notes, forums, or any RSS/Atom/JSON feed you add.
 - **Time zones:** EVE time and your own list of cities.
 
 ### To-Do
-Everything waiting on you, in one list: Omega to renew, structures to refuel, skill queues to fill, empty job slots per pilot, ongoing contracts, trips for a freight service, and what to buy for reactions, PI and builds.
+Everything waiting on you, in one list: Omega to renew, structures to refuel, skill queues to fill (pilots idle for more than 7 days only when ticked), empty job slots per pilot (a table; tick to count them on the tab), ongoing contracts, trips for a freight service, and what to buy for reactions, PI and builds.
 
 ### Map
-3D/2D map with security and sovereignty colours, your structures, planets, capital ships, clones and incursions; **kills in the last hour** with a danger level you set; a **jump planner** that waits out fatigue in the best places; and the **Supply chain** (below).
+3D/2D map with security and sovereignty colours, your structures (their type's icon), planets, capital ships, clones and incursions, drawn the same way in the legend, the system panel and the hover box; **kills in the last hour** with a danger level you set; a **jump planner** that waits out fatigue in the best places; and the **Supply chain** (below).
 
 #### Supply chain (on the Map)
 Plans every jump freighter / Rorqual trip needed by your orders, reaction cycles and PI pickups, up to a horizon (3 days to 8 weeks):
 - Each ship flies every leg: a trip starts where its last one ended (flying back empty if needed). A pilot flies one ship at a time and carries their fatigue; they change ships by shuttle or jump clone.
 - The whole plan is optimised at once (lowest fuel, or fastest delivery), never one trip at a time, and shows how much it saves.
-- Moves are marked done from your assets as goods arrive (with Undo); trips no ship can do go to a freight-service list on To-Do; gate legs through dangerous systems are flagged.
+- Moves are marked done from your assets as goods arrive (with Undo); trips no ship can do go to a freight-service list on To-Do; legs through dangerous systems are flagged, by gate or jumping into them.
 
 ### Industry
 - **PI Management:** P4 planner from CCP's planet schematics: profit per week, hauling, your real customs office taxes, shopping for N days of stock (with how long current stock lasts). Profit goes to the Forecast.
@@ -93,10 +93,12 @@ Every pilot's colonies, ordered by when they stop, with the customs tax paid at 
 
 ### Market
 - **Prices:** import calculator and price comparison between markets.
-- **Trading board:** market watch tables with 24 h / 7 day changes, sold per day and ISK per day (from ESI market history), and **Arbitrage** from citadel sell orders.
+- **Trading board:** market watch tables, in your own order, with 24 h / 7 day changes, sold per day and ISK per day (from ESI market history), and **Arbitrage** from citadel sell orders.
 - **Suppliers:** a supplier's stock from a Google Sheet, a link or a paste, priced as listed or as a % of a pricing.
 - **Contract management:** client orders, what's been sent and what's missing; in-game deliveries are found and can be recorded in one click; "Open in Janice".
 - **Shortages:** doctrine fittings checked against a citadel's market: what's missing, what's low, what to seed.
+- **Profit and loss:** Real ISK in and out of every linked wallet (pilots and corporation divisions), sorted by activity (Manufacturing, Reactions, PI, Science, Trading, Hauling…, or your own). Nothing is counted twice, transfers between your own wallets are left out, contracts are split by what they held. You can move any item, client, kind of entry or single entry to another activity. History is kept beyond ESI's 30 days.
+- **LP store:** Your loyalty points per corporation and pilot, and any NPC corporation's store in one list ranked by ISK per LP in your pricings (whatever the items are), with how fast each item sells.
 
 ### Stock
 - **Assets:** personal and corporation hangars with filters and value in a chosen pricing. The search also finds items in your open contracts and outside the hangars (ship cargo, deliveries, containers…), shown but never counted as stock.
@@ -104,27 +106,19 @@ Every pilot's colonies, ordered by when they stop, with the customs tax paid at 
 
 ### Pilots
 - **Characters:** implants and pilot cards (slots, ranges, reactions level, reprocessing, skill queue end…), roles.
-- **Skills:** who can build or invent a blueprint, skill queues, key skills, skill matrix.
+- **Skills:** who can build or invent a blueprint (saved blueprints can be removed), skill queues (pilots training; the others when ticked), key skills, skill matrix.
 - **Omega:** Omega end dates.
 - **Fittings:** EFT paste or in-game fittings; who can fly it now, and when the others will (from their queue or the training time left). Mark fits as doctrines.
 
-### Tools
+### Other
 - **Misc:** Blueprint calculator (ME research and breakeven), jump freighters and Rorqual, jump fuel cost, mining fleet, ships and structures you can build, Quotation, Wallets.
+- **Corporation:** Structure fuel (blocks per day from the online services, ISK per month, refuel warning on To-Do), moon extractions, and who mined what (moon drills and your own pilots) with its value.
 
 ### Settings
 Pilots and backup, page visibility, **Pricings** (Jita buy / split / sell, a % of another pricing, or a citadel's own market), reprocessing yield, market taxes, jump drive skills, EvE News channels, time zones, citadel and structure imports.
 
 ### Notes
 Free notes, kept with your data.
-
-### Profit and loss
-Real ISK in and out of every linked wallet (pilots and corporation divisions), sorted by activity (Manufacturing, Reactions, PI, Science, Trading, Hauling…, or your own). Nothing is counted twice, transfers between your own wallets are left out, contracts are split by what they held. You can move any item, client, kind of entry or single entry to another activity. History is kept beyond ESI's 30 days.
-
-### LP store
-Your loyalty points per corporation and pilot, and any NPC corporation's store ranked by ISK per LP in your pricings, with how fast each item sells.
-
-### Corporation
-Structure fuel (blocks per day from the online services, ISK per month, refuel warning on To-Do), moon extractions, and who mined what (moon drills and your own pilots) with its value.
 
 ### Intel
 Your pilots' in-game notifications in plain lines (attacks, reinforcements, low fuel, moon chunks, wars…), grouped by kind, with a "needs attention" list counted on the tab.
