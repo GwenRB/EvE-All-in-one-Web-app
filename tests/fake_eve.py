@@ -248,4 +248,14 @@ async def handle(route):
         return await j([n(1,"StructureUnderAttack",3600,"allianceName: Bad Guys\narmorPercentage: 100.0\ncharID: 556\ncorpName: Pirates\nhullPercentage: 100.0\nshieldPercentage: 45.5\nsolarsystemID: 30000004\nstructureID: &id001 1\nstructureShowInfoData:\n- showinfo\n- 35825\n- *id001\nstructureTypeID: 35825\n"),
             n(2,"MoonminingExtractionFinished",7200,"autoTime: %d\nmoonID: 40000001\nsolarSystemID: 30000004\nstructureID: 1\nstructureTypeID: 35835\n" % ft(now+3*3600)),
             n(3,"CorpAppNewMsg",5*86400,"applicationText: hi\ncharID: 777001\ncorpID: 98000001\n"), n(4,"StructureFuelAlert",100*86400,"solarsystemID: 30000004\nstructureID: 1\n")])
+    # market orders of pilot 9001 (Net worth): a sell order (1,000 Tritanium left at 5), a buy order (100 Pyerite at 10, 600 in escrow), one for the corporation,
+    # one that expired; the corporation's own list is refused (no Accountant or Trader role)
+    if path.rstrip("/")=="/characters/9001/orders":
+        o=lambda i,t,buy,p,left,tot,esc=None,corp=False,ago=86400,dur=90: {"order_id":i,"type_id":t,"is_buy_order":buy,"price":p,"volume_remain":left,"volume_total":tot,**({"escrow":esc} if esc is not None else {}),"location_id":60003760,"region_id":10000002,"issued":iso(now-ago),"duration":dur,"range":"station","is_corporation":corp}
+        return await j([o(11,34,False,5.0,1000,2000),o(12,35,True,10.0,100,100,600.0),o(13,16633,False,600.0,10,10,corp=True),o(14,34,False,4.0,50,50,ago=40*86400,dur=30)])
+    if path.rstrip("/")=="/corporations/98000001/orders": return await j({"error":"Character does not have required role(s)"},403)
+    # dogma attributes (Item database): two with names, the rest unknown
+    if path.startswith("/dogma/attributes/"):
+        aid=int(path.rstrip("/").split("/")[-1]); A={38:{"attribute_id":38,"name":"capacity","display_name":"Capacity","unit_id":9,"published":True},12:{"attribute_id":12,"name":"lowSlots","display_name":"Low Slots","published":True},1137:{"attribute_id":1137,"name":"rigSlots","display_name":"","published":False}}
+        return await (j(A[aid]) if aid in A else j({"error":"not found"},404))
     return await j([],404)

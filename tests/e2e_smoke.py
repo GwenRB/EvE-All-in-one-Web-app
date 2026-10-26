@@ -118,7 +118,7 @@ async def tabs_and_menus(t):
     t.eq(await t.js("getComputedStyle(document.querySelector('.tabs .tabgrp:has(button[data-tab=omega]) .tabmenu')).display"), "none", "a menu closes on a click elsewhere")
     t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab]')].map(b=>b.dataset.tab)"), ["prices", "trading", "suppliers", "contracts", "shortages", "pnl", "lp"], "Market menu pages, Profit and loss and LP store included")
     t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=misc]) button[data-tab]')].map(b=>b.dataset.tab)"), ["misc", "corp"], "the Other menu holds Misc and Corporation")
-    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-3)"), ["settings", "notes", "intel"], "Settings, Notes and Intel stay on the bar")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-5)"), ["settings", "notes", "intel", "cbrowse", "itemdb"], "Settings, Notes and Intel stay on the bar, then the Contracts browser and the Item database at the end")
     await t.tab("misc"); h = await t.js("document.querySelector('#page-misc h2').textContent"); t.ok(h.endswith("Blueprint calculator"), "Misc's first panel is the Blueprint calculator", h)
 
 @scenario
@@ -390,12 +390,13 @@ async def characters_and_contracts(t):
     await t.pg.click("[data-cm-janice='cm-goods']"); await asyncio.sleep(0.2)
     t.eq(await t.js("window._opened"), "https://janice.e-351.com/", "Open in Janice opens Janice")
     # Assets: items in your open contracts are found by the search (read once per contract, never counted)
-    await t.js("()=>contractItems('char:9001',(window._ct=[{id:900,type:'item_exchange',status:'outstanding',issuer:9001,price:1,reward:0,expires:Date.now()+864e5,title:'Two Ventures',from:60003760},{id:901,type:'item_exchange',status:'outstanding',issuer:555,price:1,reward:0,expires:Date.now()+864e5,from:60003760}]),(cid)=>`/characters/9001/contracts/${cid}/items/`,'tok','',(c)=>c.issuer===9001).then(()=>{state.contracts['char:9001']={at:Date.now(),list:window._ct}; saveContracts();})")
-    t.eq(await t.js("window._ct.map(c=>c.items||null)"), [[[32880, 2, 0]], None], "the items of your own open contracts are read")
+    await t.js("()=>contractItems('char:9001',(window._ct=[{id:900,type:'item_exchange',status:'outstanding',issuer:9001,price:1,reward:0,expires:Date.now()+864e5,title:'Two Ventures',from:60003760},{id:901,type:'item_exchange',status:'outstanding',issuer:555,price:1,reward:0,expires:Date.now()+864e5,from:60003760}]),(cid)=>`/characters/9001/contracts/${cid}/items/`,'tok','').then(()=>{state.contracts['char:9001']={at:Date.now(),list:window._ct}; saveContracts();})")
+    t.eq(await t.js("window._ct.map(c=>c.items||null)"), [[[32880, 2, 0]], [[16633, 1000, 0], [9100, 500, 0]]], "the items of open contracts are read (yours and those offered to you)")
     await t.tab("stock", 0.4); await t.pg.fill("#st-search", "venture"); await asyncio.sleep(0.4)
     st = t.show("asset search", await t.text("#st-table"))
     t.ok(st and "Venture" in st and "in a contract" in st and "Two Ventures" in st, "the Assets search finds an item in a contract", st)
     t.ok(await t.js("!stockSources().some(s=>s.rows.some(r=>r.t===32880))"), "contract items aren't counted as stock")
+    t.ok(await t.js("!contractRows().some(r=>r.t===16633)"), "a contract offered to you holds someone else's items: not in your Assets")
     # Assets outside the hangars (ship cargo and fittings, Deliveries, nested containers, asset safety): found by the search, never counted
     ag = t.show("aggregate", await t.js("""(()=>{const L=[{item_id:1,type_id:587,location_id:60003760,location_flag:'Hangar',quantity:1},{item_id:2,type_id:34,location_id:1,location_flag:'Cargo',quantity:500},{item_id:3,type_id:2048,location_id:1,location_flag:'LoSlot0',quantity:1},
       {item_id:4,type_id:3467,location_id:60003760,location_flag:'Hangar',quantity:1},{item_id:5,type_id:3467,location_id:4,location_flag:'Unlocked',quantity:1},{item_id:6,type_id:32881,location_id:5,location_flag:'Unlocked',quantity:1,is_blueprint_copy:true},
@@ -1020,6 +1021,161 @@ async def intel(t):
     t.eq(await t.js(G), ["Structures", "Moon mining"], "the period hides older ones")
     await t.pg.click("[data-intel-seen]"); await asyncio.sleep(0.3)
     t.ok(await t.js("!document.querySelector('.tabs button[data-tab=intel]').dataset.alert") and "Nothing needs attention" in (await t.text("#intel-alerts") or ""), "Mark all as seen clears the alerts and the count")
+
+@scenario
+async def custom_filters(t):
+    """Filters built from conditions (like jEveAssets): the tests themselves, match all / any, switching one off, saved filters, and the bar on Assets driven by hand."""
+    T = t.show("tests", await t.js("""(()=>{const now=Date.now(), F={n:{k:'n',n:'N',t:'num',get:r=>r.v}, s:{k:'s',n:'S',t:'text',get:r=>r.s}, d:{k:'d',n:'D',t:'date',get:r=>r.d}, l:{k:'l',n:'L',t:'list',get:r=>r.l}};
+      const T=(f,op,a,b,row)=>cfTest(F[f],{f,op,a,b},row);
+      return [T('n','gt','1.5b','',{v:2e9}), T('n','gt','1.5b','',{v:1e9}), T('n','btw','10','20',{v:15}), T('n','btw','20','10',{v:15}), T('n','gt','0','',{v:null}), T('n','empty','','',{v:null}), T('n','ne','5','',{v:null}),
+        T('s','has','TRIT','',{s:'Tritanium'}), T('s','not','trit','',{s:'Tritanium'}), T('s','is','tritanium','',{s:'Tritanium'}), T('s','start','tri','',{s:['Pyerite','Tritanium']}), T('s','end','um','',{s:'Pyerite'}),
+        T('d','last','7','',{d:now-3*864e5}), T('d','last','7','',{d:now-9*864e5}), T('d','older','7','',{d:now-9*864e5}), T('d','next','2','',{d:now+864e5}), T('d','after','2026-01-01','',{d:Date.parse('2026-02-01T00:00:00')}), T('d','before','2026-01-01','',{d:Date.parse('2026-02-01T00:00:00')}),
+        T('l','is','a','',{l:['b','a']}), T('l','isnt','a','',{l:['b','a']}), T('l','is','3','',{l:3})]})()"""))
+    t.eq(T, [True, False, True, True, False, True, False, True, False, True, True, False, True, False, True, True, True, False, True, False, True], "each condition (an unknown number never passes a comparison; is empty finds it)")
+    # all / any, a switched-off condition, an incomplete one
+    r = t.show("apply", await t.js("""(()=>{CF_REG.x={fields:[{k:'v',n:'Value',t:'num',get:r=>r.v},{k:'s',n:'Name',t:'text',get:r=>r.s}],onChange:()=>0}; const c=cfCfg('x'), rows=[{v:1,s:'a'},{v:5,s:'b'},{v:9,s:'c'}];
+      c.rules=[{f:'v',op:'gt',a:'3'},{f:'s',op:'is',a:'c'}]; const all=cfApply('x',rows).map(r=>r.s); c.match='any'; const any=cfApply('x',rows).map(r=>r.s);
+      c.rules[0].off=true; const off=cfApply('x',rows).map(r=>r.s); c.rules=[{f:'v',op:'gt',a:''}]; const inc=cfApply('x',rows).length; return {all,any,off,inc}})()"""))
+    t.eq(r, {"all": ["c"], "any": ["b", "c"], "off": ["c"], "inc": 3}, "match all or any; a condition switched off or not filled in doesn't count")
+    # the Assets bar, by hand: a condition on the name, then on the value; save it, clear, load it back, delete it
+    await t.js("()=>{Object.assign(state.typeNames,{34:'Tritanium',35:'Pyerite',16633:'Hydrocarbons',28844:'Rhea'}); saveAssets();}")
+    await t.tab("stock", 0.5)
+    await t.pg.click("#st-cf [data-cf-act=open]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("document.querySelectorAll('#st-cf .cf-row').length===1"), "opening Filters starts with one condition")
+    await t.pg.fill("#st-cf [data-cf-v=a]", "trit"); await asyncio.sleep(0.5)
+    names = "[...document.querySelectorAll('#st-table tbody tr:not(.group):not(.subgroup) th')].map(th=>th.textContent.trim())"
+    t.eq(await t.js(names), ["Tritanium"], "Item contains trit")
+    t.ok("1 of" in (await t.text("[data-cf-count=stock]") or ""), "the bar says how many rows pass", await t.text("[data-cf-count=stock]"))
+    await t.pg.select_option("#st-cf select[data-cf-act=f]", "status"); await asyncio.sleep(0.3)
+    await t.pg.select_option("#st-cf select[data-cf-v=a]", "yes"); await asyncio.sleep(0.4)
+    t.eq(sorted(await t.js(names)), ["Hydrocarbons", "Pyerite", "Rhea", "Tritanium"], "Status is Counted (a list condition)")
+    await t.pg.click("#st-cf [data-cf-act=add]"); await asyncio.sleep(0.2)
+    await t.pg.select_option("#st-cf .cf-row:nth-of-type(2) select[data-cf-act=f]", "q"); await asyncio.sleep(0.2)
+    await t.pg.fill("#st-cf .cf-row:nth-of-type(2) [data-cf-v=a]", "1000"); await asyncio.sleep(0.5)
+    t.eq(sorted(await t.js(names)), ["Pyerite", "Tritanium"], "and Quantity more than 1000")
+    await t.js("document.getElementById('st-cf').scrollIntoView()"); await t.pg.screenshot(path=SP + "filters.png")
+    await t.pg.fill("#st-cf [data-cf-act=name]", "Big stacks"); await t.pg.click("#st-cf [data-cf-act=save]"); await asyncio.sleep(0.2)
+    await t.pg.click("#st-cf [data-cf-act=clear]"); await asyncio.sleep(0.3)
+    t.eq(len(await t.js(names)), 4, "Clear shows everything again")
+    await t.pg.select_option("#st-cf select[data-cf-act=load]", "Big stacks"); await asyncio.sleep(0.4)
+    t.eq(sorted(await t.js(names)), ["Pyerite", "Tritanium"], "a saved filter loads back")
+    t.eq(await t.js("state.misc.cf.stock.saved.map(s=>[s.n,s.rules.length])"), [["Big stacks", 2]], "saved per table, in state.misc (so in backups)")
+    await t.pg.click("#st-cf .cf-row:nth-of-type(2) [data-cf-act=on]"); await asyncio.sleep(0.4)
+    t.eq(sorted(await t.js(names)), ["Hydrocarbons", "Pyerite", "Rhea", "Tritanium"], "unticking a condition switches it off")
+    await t.pg.click("#st-cf [data-cf-act=unsave]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("state.misc.cf.stock.saved.length"), 0, "a saved filter can be deleted")
+    # the same bar on Profit and loss, Intel, the skill matrix and the ships list
+    await t.tab("overview", 0.4); t.ok(await t.js("!!document.querySelector('#matrix-cf [data-cf-act=open]')"), "the skill matrix has Filters")
+    await t.js("()=>{cfCfg('matrix').rules=[{f:'name',op:'is',a:'Industry'}]; renderMatrix();}"); await asyncio.sleep(0.2)
+    t.eq(await t.js("[...document.querySelectorAll('#matrix tbody tr:not(.group) th')].map(th=>th.textContent.trim())"), ["Industry"], "the skill matrix filters by its own columns")
+    await t.tab("pnl", 0.5); t.ok(await t.js("!!document.querySelector('#pnl-ent-cf [data-cf-act=open]') && !!document.querySelector('#pnl-items-cf [data-cf-act=open]')"), "Profit and loss has Filters on Entries and Items")
+    await t.tab("intel", 0.5); t.ok(await t.js("!!document.querySelector('#intel-cf [data-cf-act=open]')"), "Intel has Filters")
+
+@scenario
+async def net_worth(t):
+    """Net worth on the Overview: market orders read from ESI, each day's parts and owners, the journal-filled wallet days, the owner choice, and orders in the Forecast's total."""
+    t.ok(await t.js("[ORDERS_SCOPE, CORP_ORDERS_SCOPE].every(s=>ESI_SCOPE.includes(s) && SCOPE_USE[s] && !requestedScopes().includes(s))"), "the Market orders permissions are listed and start unticked")
+    o = t.show("orders", await t.js("async()=>{const L=slimOrders(await esiAuthGet('/characters/9001/orders/','tok')); const c=state.chars.find(x=>x.esiId===9001); c.corpId=98000001; c.wallet=1e9; c.orders={at:Date.now(),list:L}; state.corpNames[98000001]='Fake Corp'; saveLocal(); return {n:L.length, now:ordersNow(), list:mktOrders().map(x=>[x.id,x.key])}}"))
+    t.eq(o["n"], 4, "the pilot's orders are read")
+    t.eq(sorted(o["list"]), [[11, "char:9001"], [12, "char:9001"], [13, "corp:98000001"]], "an order for the corporation goes under it; an expired order is left out")
+    t.eq([o["now"]["sell"], o["now"]["esc"], o["now"]["cover"], o["now"]["ns"], o["now"]["nb"]], [5000 + 6000, 600, 400, 2, 1], "sell orders at price × what's left, buy orders' escrow, what they still need")
+    # history: two recorded days with owners, plus journal balances for the days between
+    await t.js("""async()=>{const d=(n)=>dayKey(Date.now()-n*864e5); state.forecast.history=[{d:d(6),isk:5e8,stock:1e8,c:0,hs:1e8,ms:0,so:0,esc:0,by:{'char:9001':[5e8,1e8,0,0]}},{d:d(3),isk:8e8,stock:2e8,c:0,hs:2e8,ms:0,by:{'char:9001':[8e8,2e8,0,0]}}];
+      await pnlLoad(); pnlData.w['char:9001']={kind:'char',id:9001,name:'Ender Alpha',at:Date.now(),j:{1:[Date.now()-5*864e5,'bounty_prizes',1e8,0,0,0,'','','',6e8],2:[Date.now()-4*864e5,'bounty_prizes',1e8,0,0,0,'','','',7e8],3:[Date.now()-2*864e5,'bounty_prizes',3e8,0,0,0,'','','',1e9]},t:{}}; saveForecast();}""")
+    J = t.show("journal days", await t.js("(()=>{const j=nwJournal(null); return [...j.days.entries()].filter(([d])=>d>=dayKey(Date.now()-6*864e5)).map(([d,v])=>[Math.round((Date.now()-new Date(d+'T12:00:00'))/864e5),v])})()"))
+    t.eq(J, [[6, 5e8], [5, 6e8], [4, 7e8], [3, 7e8], [2, 1e9], [1, 1e9]], "wallets per day from the journal: the balance before the first entry, then after each day's last entry")
+    await t.tab("forecast", 0.6); await t.until("!!document.querySelector('#nw-chart svg')", 5)
+    nw = t.show("net worth", await t.js("({tiles:[...document.querySelectorAll('#nw-summary .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' ')), legend:[...document.querySelectorAll('#nw-chart .lg')].map(b=>b.textContent.trim()), hollow:document.querySelectorAll('#nw-chart circle[fill=\"var(--panel)\"]').length, orders:document.querySelectorAll('#nw-orders tbody tr').length, rows:document.querySelectorAll('#fc-history tbody tr').length, nav:[...document.querySelectorAll('#fc-nav a')].map(a=>a.textContent)})"))
+    t.ok(any(x.lower().startswith("market orders") and "2 sell orders" in x for x in nw["tiles"]), "a Market orders tile", nw["tiles"])
+    t.ok({"Net worth", "Wallets", "Assets", "Sell orders", "Buy order escrow"} <= set(nw["legend"]), "one line per part", nw["legend"])
+    t.ok(nw["hollow"] >= 3, "days between recorded points show wallets from the journals (hollow dots)", nw["hollow"])
+    t.eq(nw["orders"], 3, "the open orders are listed")
+    t.ok(nw["rows"] >= 2 and "Net worth" in nw["nav"] and "Day by day" in nw["nav"], "the day by day table and the rail", nw)
+    await t.js("document.getElementById('nw-title').scrollIntoView()"); await t.pg.screenshot(path=SP + "net-worth.png")
+    fc = t.show("forecast tile", await t.js("document.querySelector('#fc-summary .slot-tile').innerText"))
+    t.ok(await t.js("document.querySelector('#fc-summary .slot-tile').innerText.includes('orders '+isk(11600))"), "the Forecast's total value includes market orders", fc)
+    t.ok(await t.js("[...document.querySelectorAll('#fc-chart .lg')].some(b=>b.textContent.includes('Market orders'))"), "the Forecast has a Market orders line")
+    # today's point keeps the parts and the owners
+    p = t.show("today", await t.js("(()=>{recordSnapshot(true); const p=state.forecast.history.find(x=>x.d===dayKey(Date.now())); return {so:p.so, esc:p.esc, by:p.by}})()"))
+    t.ok(p["so"] == 11000 and p["esc"] == 600 and p["by"]["char:9001"][0] == 1e9 and p["by"]["corp:98000001"][2] == 6000, "a recorded day keeps orders and what each owner held", p)
+    # pick an owner: only the corporation
+    await t.pg.click("#nw-owners [data-nw-own='corp:98000001']"); await asyncio.sleep(0.4)
+    t1 = t.show("corp only", await t.js("document.querySelector('#nw-summary .slot-tile').innerText.replace(/\\s+/g,' ')"))
+    t.ok(await t.js("document.querySelector('#nw-summary .slot-tile').innerText.includes(isk(6000))") and "Only these owners" in (await t.text("#nw-note") or ""), "one owner: only its wallets, hangars and orders", t1)
+    await t.pg.click("#nw-owners [data-nw-own='']"); await asyncio.sleep(0.3)
+    t.eq(await t.js("state.forecast.nw.owners"), [], "Everyone again")
+
+@scenario
+async def contracts_browser(t):
+    """Contracts browser: ended contracts kept, every contract's items read once (given and asked), sides, worth in a pricing, filters, details."""
+    p = t.show("past", await t.js("""(()=>{const now=Date.now(), iso=(t)=>new Date(t).toISOString(); state.contracts['char:9001']={at:now-1000,list:[],past:[{id:800,type:'item_exchange',status:'finished',issuer:9001,done:now-80*864e5,issued:now-81*864e5,expires:0,items:[[34,1,0]],ask:[]},{id:801,type:'item_exchange',status:'deleted',issuer:9001,done:0,issued:now-100*864e5,expires:now-95*864e5}]};
+      const raw=[{contract_id:900,type:'item_exchange',status:'outstanding',issuer_id:9001,price:700000,date_issued:iso(now-864e5),date_expired:iso(now+5*864e5),title:'Two Ventures',start_location_id:60003760,availability:'personal',assignee_id:555},
+        {contract_id:802,type:'courier',status:'finished',issuer_id:556,acceptor_id:9001,reward:5e6,collateral:1e8,date_issued:iso(now-3*864e5),date_completed:iso(now-2*864e5),date_expired:iso(now+864e5),start_location_id:60003760,end_location_id:60000002,volume:12000}];
+      const P=pastContracts('char:9001',raw); return P.map(c=>[c.id,c.status,!!c.items]).sort()})()"""))
+    t.eq(p, [[800, "finished", True], [802, "finished", False]], "ended contracts are kept 90 days (with their items); active ones aren't in the past list")
+    it = t.show("items", await t.js("async()=>{const L=[{id:900,type:'item_exchange',status:'outstanding',issuer:9001},{id:901,type:'item_exchange',status:'outstanding',issuer:556,assignee:9001},{id:903,type:'item_exchange',status:'outstanding',issuer:9001}]; await contractItems('char:9001',L,(cid)=>`/characters/9001/contracts/${cid}/items/`,'tok',''); return L.map(c=>[c.id,c.items||null,c.ask||null,c.noItems||0])}"))
+    t.eq(it, [[900, [[32880, 2, 0]], [], 0], [901, [[16633, 1000, 0], [9100, 500, 0]], [[34, 5]], 0], [903, None, None, 1]], "every contract's items: what it gives and what it asks for; one that can't be read isn't asked again")
+    now = "Date.now()"
+    await t.js(f"""async()=>{{const now={now}; state.chars.find(c=>c.esiId===9001).corpId=98000001; state.misc.cbNames={{555:'Bob Client',556:'Gas Supplier'}};
+      state.contracts['char:9001']={{at:now,list:[{{id:900,type:'item_exchange',status:'outstanding',issuer:9001,assignee:555,price:700000,reward:0,collateral:0,issued:now-864e5,expires:now+5*864e5,title:'Two Ventures',from:60003760,avail:'personal',items:[[32880,2,0]],ask:[]}},
+        {{id:901,type:'item_exchange',status:'outstanding',issuer:556,assignee:9001,price:3000000,reward:0,collateral:0,issued:now-864e5,expires:now+3600e3,title:'',from:60003760,avail:'personal',items:[[16633,1000,0],[9100,500,0]],ask:[[34,5]]}},
+        {{id:904,type:'courier',status:'in_progress',issuer:556,acceptor:9001,price:0,reward:5e6,collateral:1e8,issued:now-864e5,expires:now+864e5,title:'',from:60003760,to:60000002,vol:12000,avail:'personal',items:[],ask:[]}},
+        {{id:905,type:'item_exchange',status:'outstanding',issuer:9001,price:1e6,reward:0,collateral:0,issued:now-9*864e5,expires:now-864e5,title:'Old offer',from:60003760,avail:'public',items:[[34,10,0],[32881,1,1]],ask:[]}}],
+        past:[{{id:802,type:'item_exchange',status:'finished',issuer:9001,acceptor:556,price:2e6,reward:0,collateral:0,issued:now-3*864e5,done:now-2*864e5,expires:now+864e5,title:'Sold',from:60003760,avail:'personal',items:[[9101,10,0]],ask:[]}}]}};
+      state.contracts['corp:98000001']={{at:now-5000,list:[{{id:900,type:'item_exchange',status:'outstanding',issuer:9001,assignee:555,price:700000,expires:now+5*864e5,from:60003760}}],past:[]}};
+      cbCfg().price='jsv'; saveMisc(); saveContracts();}}""")
+    await t.tab("cbrowse", 0.6); await t.until("!cbBusy", 10); await asyncio.sleep(0.3)
+    G = "[...document.querySelectorAll('#cb-table tr.group th')].map(th=>th.textContent.replace(/^[▾▸]\\s*/,'').replace(/\\s*\\d+$/,''))"
+    t.eq(await t.js(G), ["Waiting", "In progress"], "active contracts grouped by status; a contract seen twice shows once")
+    rows = t.show("rows", await t.js("[...document.querySelectorAll('#cb-table tbody tr:not(.group)')].map(r=>[...r.cells].map(c=>c.innerText.replace(/\\s+/g,' ').trim()))"))
+    by = {r[1]: r for r in rows}
+    v = t.show("values", await t.js("Object.fromEntries([...document.querySelectorAll('#cb-table tbody tr:not(.group)')].map(r=>[r.cells[1].textContent, [+r.cells[3].dataset.v, +r.cells[4].dataset.v, +r.cells[5].dataset.v, r.cells[3].innerText.includes('collateral '+isk(1e8))]]))"))
+    t.ok("Two Ventures" in by["You sell"][0] and v["You sell"][:3] == [700000, 600000, 100000], "You sell: items worth (2 × Venture at Jita sell) and how much better the price is", v.get("You sell"))
+    t.ok("asks 5 × Tritanium" in by["You buy"][0] and v["You buy"][1] == 699980 and v["You buy"][2] == 699980 - 3000000, "You buy: worth of what it gives less what it asks for, against its price", v.get("You buy"))
+    t.ok(v["You haul"][0] == 5e6 and v["You haul"][3], "a courier you accepted: reward and collateral", v.get("You haul"))
+    t.ok("Gas Supplier" in by["You buy"][2], "names of the other side", by.get("You buy"))
+    tiles = t.show("tiles", await t.js("[...document.querySelectorAll('#cb-summary .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' '))"))
+    t.ok(tiles[0].lower().startswith("active contracts 3") and any(x.lower().startswith("expire within a day 1") for x in tiles), "tiles: active contracts and one about to expire", tiles)
+    await t.pg.click("#cb-show [data-cb-show=all]"); await asyncio.sleep(0.4)
+    t.eq(await t.js(G), ["Waiting", "In progress", "Expired", "Finished"], "Everything: expired and finished too")
+    t.ok("no price" in (await t.text("#cb-table") or "") and "no price" in (await t.text("#cb-note") or ""), "an item without a price leaves the worth unknown, and says so")
+    await t.js("()=>{cfCfg('cb').rules=[{f:'side',op:'is',a:'You sell'}]; renderCbrowse();}"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[...document.querySelectorAll('#cb-table tbody tr:not(.group)')].map(r=>r.cells[1].textContent)"), ["You sell", "You sell", "You sell"], "filters on the contracts' columns")
+    await t.js("()=>{cfCfg('cb').rules=[]; renderCbrowse();}"); await t.pg.fill("#cb-find", "hydrocarbons"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[...document.querySelectorAll('#cb-table tbody tr:not(.group)')].length"), 1, "the search finds a contract by an item in it")
+    await t.pg.click("#cb-table [data-cb-open='901']"); await asyncio.sleep(0.3)
+    d = t.show("detail", await t.text("#cb-table"))
+    t.ok("Gives" in d and "Asks for" in d and "Contract ID" in d, "a contract's details open below it", d)
+    await t.pg.fill("#cb-find", ""); await asyncio.sleep(0.3); await t.pg.screenshot(path=SP + "contracts-browser.png", full_page=True)
+
+@scenario
+async def item_database(t):
+    """Item database: every item from CCP's game data, by name or category, grouped; an item's facts, what makes it, what it's used in, attributes named from ESI."""
+    await t.tab("itemdb", 0.5); t.ok(await t.until("!!idbData && !!document.querySelector('#idb-table tbody tr')", 25), "the list is read from CCP's game data", await t.text("#idb-note"))
+    await t.pg.fill("#idb-find", "venture"); await asyncio.sleep(0.4)
+    names = "[...document.querySelectorAll('#idb-table tbody tr:not(.group):not(.subgroup) th')].map(th=>th.textContent.trim())"
+    t.eq(sorted(await t.js(names)), ["Venture", "Venture Blueprint"], "finding items by name")
+    t.ok(await t.js("document.querySelectorAll('#idb-table tr.group').length") >= 2, "results grouped by category")
+    await t.js("()=>{cfCfg('itemdb').rules=[{f:'made',op:'is',a:'manufacturing'}]; renderItemDb();}"); await asyncio.sleep(0.3)
+    t.eq(await t.js(names), ["Venture"], "a filter on what makes it")
+    await t.js("()=>{cfCfg('itemdb').rules=[]; renderItemDb();}")
+    await t.pg.fill("#idb-find", "tritanium"); await asyncio.sleep(0.3)
+    await t.pg.click("#idb-table [data-idb-open='34']"); await t.until("idbItem && !idbItem.busy", 15); await asyncio.sleep(0.2)
+    it = t.show("tritanium", await t.text("#idb-item"))
+    t.ok("Used in" in it and "Venture" in it and "Manufacturing" in it, "what an item is used in", it)
+    t.ok("100,000" in it or "100 000" in it or "100.000" in it, "you own: from the hangars", it)
+    await t.js("idbShow(28844)"); await t.until("idbItem && idbItem.id===28844 && !idbItem.busy", 15); await asyncio.sleep(0.2)
+    rh = t.show("rhea", await t.text("#idb-item"))
+    t.ok("Capacity" in rh and await t.js("document.querySelector('#idb-item').innerText.includes(idbUnit(144000,9))") and "Low Slots" in rh, "attributes with their names and units from ESI", rh)
+    t.ok("Jump Freighters" in rh and "Bonuses" in rh, "skills to use it and its bonuses", rh)
+    t.ok("Attribute 866" not in rh, "attributes the game hides aren't shown")
+    await t.pg.check("[data-idb-all]"); await asyncio.sleep(0.2)
+    t.ok("Attribute 866" in (await t.text("#idb-item") or ""), "every attribute when asked")
+    await t.js("idbShow(32880)"); await t.until("idbItem && idbItem.id===32880 && !idbItem.busy", 15); await asyncio.sleep(0.2)
+    v = t.show("venture", await t.text("#idb-item"))
+    t.ok("Made by" in v and "Venture Blueprint" in v and await t.js("document.querySelector('#idb-item').innerText.includes((20000).toLocaleString())"), "what makes it, with the materials a run", v)
+    t.ok("Jita sell" in v and await t.js("document.querySelector('#idb-item').innerText.includes(isk(300000))"), "its prices", v)
+    await t.pg.screenshot(path=SP + "item-database.png", full_page=True)
 
 @scenario
 async def shared_ui(t):

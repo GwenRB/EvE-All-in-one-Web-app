@@ -29,7 +29,7 @@
 
 ## Ideas from ESI (not built yet)
 Suggested on 2026-10-20 (built since: Profit and loss; skill queues on Skills, To-Do and Fittings; Upcoming events; LP store; danger on the Map; server status; empty job slots on To-Do; market history on the Trading board and LP store; client deliveries; public contracts vs building; fleets on the calendar; moon mining, structure fuel and running costs (Corporation page); in-game notifications (Intel page); customs office taxes (PI Management and Planets)). Each new ESI read needs its scope added to `ESI_SCOPE` / `SCOPE_USE` (new scopes start unticked), to the user's application on developers.eveonline.com, and a new login for every pilot.
-- **Market orders** (`/characters/{id}/orders/`, `/orders/history/`, corporation orders; `esi-markets.read_character_orders.v1`, `esi-markets.read_corporation_orders.v1`): your orders against the Jita / citadel orders already read (undercut or not), order slots used vs the skill maximum, relist cost. Market menu.
+- **Market orders, what's left** (orders are read since Net worth: `c.orders`, `state.misc.corpOrders`): your orders against the Jita / citadel orders already read (undercut or not), order slots used vs the skill maximum, relist cost, order history (`/orders/history/`). Market menu.
 - **Skill queues, what's left**: "when can this pilot build that blueprint" on the Skill check (`readyFor` does it for fittings); the same on Roles and the jump freighter table.
 - **Public contracts, what's left**: a blueprint copy is only found by its title (every copy has the same volume); buy orders and a client's courier contracts aren't checked; contracts can't be opened in game from the page (needs `esi-ui.open_window.v1`).
 - **Customs office taxes, what's left**: offices are only known per system (ESI gives no planet); offices of other corporations and standings-based rates aren't read (their tax stays unknown); a list of your offices with their reinforcement times (Corporation page).
@@ -43,6 +43,12 @@ Suggested on 2026-10-20 (built since: Profit and loss; skill queues on Skills, T
   - **Job history** (jobs with `include_completed`, already read for Profit and loss): how busy each pilot's slots were over the last 30 days and what was built (empty slots right now are on To-Do).
   - **Blueprint library** (owned blueprints): ME/TE, runs left on copies, which originals are worth researching (Blueprint calculator).
   - **Clone and implant planner** (clones and implants): which jump clone has the industry implants and where it is compared with your build structures.
+
+## Filters, Net worth, Contracts browser, Item database
+- Filters: conditions are all or any (no groups of conditions inside each other); a condition compares a column with a value, not two columns.
+- Net worth: days are only as good as what was read that day (hangars and orders at the last sync); days filled from the wallet journals only have the wallets. Days recorded before owners were kept don't show when owners are picked. Industry jobs' value and contract collateral aren't counted.
+- Contracts browser: ESI gives contracts of the last 30 days; older ones exist here only if a sync saw them. Auction bids aren't read. Idea: open a contract in game (`esi-ui.open_window.v1`).
+- Item database: names in English only; no side-by-side comparison of several items; blueprint costs aren't priced here (Build planning does that).
 
 ## Data and other limits
 - EVE Ref is now only a fallback (game data lookups, map, reaction formulas). Prices come from ESI; `esiNames` too. `resolveIds` (name → type ID) answers from CCP's static data (`ccpNames`) and only asks ESI about leftovers (max 100 characters a name, else ESI refuses the whole request).
