@@ -29,6 +29,6 @@ Broker fees only follow an item when ESI ties them to a transaction: otherwise g
 ## Panels
 - **Summary:** pick a period (this or last month, 7 / 30 / 90 days, this year, everything). Tiles: Income, Spending, Profit, Not assigned, Left out; by activity and kind.
 - **By month:** each activity's profit, month by month (EVE time).
-- **Items**, **Who you dealt with**, **Kinds of entry**, **Entries:** where you make your choices.
+- **Items**, **Who you dealt with**, **Kinds of entry**, **Entries:** where you make your choices. Items and Entries also have [Filters](The-basics#filters) (date, wallet, kind, item, who, amount, quantity, activity…).
 
 The [Overview's Forecast](Overview) shows your actual profit from here, next to the planned one.

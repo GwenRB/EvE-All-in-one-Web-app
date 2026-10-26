@@ -1,4 +1,4 @@
-<!-- tracks: Assets, hangars, asset search, Stock management -->
+<!-- tracks: Assets, hangars, asset search, Stock management, Filters -->
 
 **Stock → Assets.** What sits in your personal hangars and corporation hangar divisions, valued in the [pricing](Pricings) you choose (**Value at**).
 
@@ -17,6 +17,8 @@ The search box finds an item, group or category (for example *Tritanium*, *Miner
 - items **outside the hangars**: ship cargo and fittings, Deliveries, asset safety, containers in containers…, shown with where they are and marked "not counted".
 
 These are shown so you can find them, but never count as stock on this or any other page.
+
+**Filters** under the search box test each stack (one item in one hangar, container, ship or contract) on its item, group, category, quantity, unit price, value, owner, owner type, location, hangar or place, status (counted, not counted, in a contract) or blueprint copy. Like the search, they look in every hangar: add *Status is Counted* to keep only what counts. See [Filters](The-basics#filters).
 
 ## Stock management
 Under **Stock ▾**, a placeholder for now: nothing is built there yet.

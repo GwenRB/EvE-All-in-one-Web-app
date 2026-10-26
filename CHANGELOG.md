@@ -9,6 +9,22 @@ How entries are kept:
 
 ---
 
+## 2026-10-26 — Filters, net worth, Contracts browser and Item database
+
+### Added
+- **Filters** on every table that had filters (Assets, Profit and loss's Entries and Items, Intel, the skill matrix, Ships you can build) and on the two new pages: add conditions on any column (contains, is, more than, between, in the last N days…), show rows that match all of them or any, switch one off for a moment, and save a set under a name to load it again.
+- **Net worth** on the Overview, like a tracker: day by day, your wallets, assets, sell orders, buy orders' escrow and contracts, for everyone or only the pilots and corporations you pick, with the change over the period and your highest day. Days you didn't open the tool are filled in from your wallet journals. A day is now also saved at each sync.
+- **Market orders** read from ESI (new "Market orders" and "Corporation market orders" permissions): listed under Net worth, and counted in the Forecast's total value (sell orders at their price, buy orders' escrow).
+- **Contracts browser** page (at the end of the tab bar): every contract of your pilots and corporations in one place, active or ended (kept 90 days), with what each one gives and asks for, your side (you sell, you buy, you haul…), who's in it, where, and what its items are worth against its price.
+- **Item database** page (last tab): every item in the game from CCP's own data, by name or by category and group; open one to see what it is, its prices, how many you own, what makes it, what it's used in, what it reprocesses into, its bonuses and its attributes.
+
+### Changed
+- The browser tab shows the EVE Online logo as its icon.
+- The Forecast's History is now the Net worth panel's **Day by day** table, with a column per part.
+- Contracts: the items of every contract are read (also those offered to you, and what a contract asks for), not only your own; Assets still only lists what you put in contracts.
+
+---
+
 ## 2026-10-25 — User guide wiki
 
 ### Added

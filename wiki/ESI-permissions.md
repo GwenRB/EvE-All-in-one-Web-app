@@ -21,8 +21,10 @@ Some corporation data also needs an **in-game role** on at least one linked pilo
 | `esi-corporations.read_divisions.v1` | Hangar and wallet division names | Director |
 | `esi-wallet.read_character_wallet.v1` | Wallets, Profit and loss | |
 | `esi-wallet.read_corporation_wallets.v1` | Corporation wallets, Profit and loss | Accountant |
-| `esi-contracts.read_character_contracts.v1` | Contracts (ongoing contracts, in-game deliveries, Profit and loss, Assets search) | |
+| `esi-contracts.read_character_contracts.v1` | Contracts (Contracts browser, ongoing contracts, in-game deliveries, Profit and loss, Assets search) | |
 | `esi-contracts.read_corporation_contracts.v1` | Corporation contracts | |
+| `esi-markets.read_character_orders.v1` | Market orders (Net worth on the Overview, the Forecast's total) | |
+| `esi-markets.read_corporation_orders.v1` | Corporation market orders | Accountant or Trader |
 | `esi-universe.read_structures.v1` | Structure names | |
 | `esi-search.search_structures.v1` | Find citadels by name | |
 | `esi-corporations.read_structures.v1` | Corporation structures and fuel | Station Manager |

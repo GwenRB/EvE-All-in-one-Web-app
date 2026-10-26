@@ -40,6 +40,8 @@
 - [Misc](Misc)
 - [Corporation](Corporation)
 - [Intel](Intel)
+- [Contracts browser](Contracts-browser)
+- [Item database](Item-database)
 - [Settings and backups](Settings-and-backups)
 
 **Help**

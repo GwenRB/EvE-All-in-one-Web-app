@@ -18,7 +18,7 @@ ISK per light year for each pilot who can fly a jump freighter or the Rorqual, c
 Pick a barge or exhumer, strip miners and crystal: who can fly it and roughly how much ore (or ice) each mines per hour. Boosts, implants and critical yields aren't counted.
 
 ## Ships and structures you can build
-Every ship and Upwell structure with a manufacturing blueprint, checked against your whole roster: **Fully buildable**, **Can do last build**, **Missing skills**; filter by name and tech level.
+Every ship and Upwell structure with a manufacturing blueprint, checked against your whole roster: **Fully buildable**, **Can do last build**, **Missing skills**; filter by name and tech level, or with [Filters](The-basics#filters) (class, race, build steps not covered, who can do it all…).
 - **Scan ships and structures** the first time (a few thousand requests, sent slowly). It's kept in your browser and in backups; use **Rescan** after a game patch.
 
 ## Quotation

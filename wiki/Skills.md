@@ -15,4 +15,4 @@ What each pilot is training, levels left, when the queue ends and time left; the
 Each line is a skill at the level you count as a requirement; change a target with its dropdown. A green cell means that pilot meets it.
 
 ## Skill matrix
-Every skill of every pilot, grouped (the groups fold, and appear in the left navigation).
+Every skill of every pilot, grouped (the groups fold, and appear in the left navigation). Besides the search, [Filters](The-basics#filters) work on the skill, its group, the highest and lowest level, how many pilots have it, who has it at V, or one pilot's level.

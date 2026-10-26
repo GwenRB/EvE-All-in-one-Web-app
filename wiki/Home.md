@@ -1,7 +1,7 @@
 <!-- tracks: wiki, user guide, header, server status, tab bar -->
 # EVE Industry Management
 
-A personal web tool for running EVE Online industry across several characters, in one place: skills, jobs, assets, prices, build planning, reactions, planetary industry (PI), client orders, jump freighter logistics, wallets and forecasts.
+A personal web tool for running EVE Online industry across several characters, in one place: skills, jobs, assets, prices, build planning, reactions, planetary industry (PI), client orders, contracts, jump freighter logistics, wallets, net worth and forecasts.
 
 It is one HTML page that runs in your browser. A small launcher serves it on your own computer: nothing is hosted anywhere and your data never leaves your browser.
 
@@ -31,6 +31,8 @@ The tab bar, left to right:
 | **Settings** | [Settings and backups](Settings-and-backups) | Pilots, backups, pricings, taxes, news, clocks |
 | **Notes** | [Settings and backups](Settings-and-backups#notes) | Your own notes |
 | **Intel** | [Intel](Intel) | In-game notifications, with what needs attention |
+| **Contracts browser** | [Contracts browser](Contracts-browser) | Every contract of your pilots and corporations, with what it holds and is worth |
+| **Item database** | [Item database](Item-database) | Every item in the game: what it is, what makes it, what it's used in |
 
 ## When something looks wrong
 See [FAQ and troubleshooting](FAQ-and-troubleshooting).

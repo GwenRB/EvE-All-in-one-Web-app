@@ -1,7 +1,7 @@
-<!-- tracks: tab bar, tables, sort, fold, panels, navigation rail, How this page works, sync, downtime, server status, market reads -->
+<!-- tracks: tab bar, tables, sort, fold, panels, navigation rail, How this page works, sync, downtime, server status, market reads, Filters -->
 
 ## Tabs and menus
-The tab bar groups pages into menus: **Industry**, **Market**, **Stock**, **Pilots** and **Other** open when you hover or click them; the menu holding the open page shows that page's name.
+The tab bar groups pages into menus: **Industry**, **Market**, **Stock**, **Pilots** and **Other** open when you hover or click them; the menu holding the open page shows that page's name. The bar wraps onto a second line when the window is too narrow for every tab.
 
 Each page has its own web address (for example `http://localhost:8642/#build-planning`), so bookmarks and the browser's back button work.
 
@@ -25,6 +25,15 @@ From **11:00 EVE time** until the server is back, the header says so, and syncs,
 - **Click a column title to sort**, click again to reverse. Your sort is remembered (and saved in backups).
 - Before you click, a table is A→Z by its first column, **except** tables whose order means something (by date, by value, cheapest first…). Those show an arrow on the column they're sorted by.
 - **Grouped tables** fold by group: click a group's title (▾ / ▸) to hide its rows; it shows "· n hidden". Rows sort inside their group, and totals stay last.
+
+## Filters
+Tables with filters (Assets, Profit and loss, Intel, the skill matrix, Ships you can build, the Contracts browser, the Item database) have a **Filters** button under their search box:
+1. Click **Filters**: a first condition appears. Pick a **column**, what it should be (*contains*, *is*, *more than*, *between*, *in the last … days*, *is empty*…) and a **value**. Amounts take `1.5b`, `200m` or `12k`; text boxes suggest values from the table.
+2. **Add a condition** for more. With two or more, choose **Show rows that match all of them** or **any of them**.
+3. Untick a condition to switch it off for a moment; ✕ removes it. The conditions in use show as chips next to the button, with how many rows pass.
+4. Type a **Name** and **Save filter** to keep the set; load it again from **Saved filters…** (saved per table, in backups). **Clear** removes every condition.
+
+A value that isn't known (an item with no price, a missing date) never passes a comparison: use **is empty** to find those.
 
 ## Panels and navigation
 - Every **panel folds from its title** (▾ / ▸), and stays folded.
