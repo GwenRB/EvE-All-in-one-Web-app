@@ -24,15 +24,12 @@ The tab bar, left to right:
 | **Map** | [Map and jump planner](Map-and-jump-planner), [Supply chain](Supply-chain) | Map of New Eden, jump routes, jump freighter logistics |
 | **Industry ▾** | [PI Management](PI-Management), [Reactions management](Reactions-management), [Build planning](Build-planning), [Orders management and Jobs](Orders-management-and-Jobs) | Plan and run production |
 | **Planets** | [Planets](Planets) | Your colonies, ordered by when they stop |
-| **Market ▾** | [Prices](Prices), [Trading board](Trading-board), [Suppliers](Suppliers), [Contract management](Contract-management), [Shortages](Shortages), [Profit and loss](Profit-and-loss), [LP store](LP-store) | Buying, selling, clients and money |
+| **Market ▾** | [Prices](Prices), [Trading board](Trading-board), [Suppliers](Suppliers), [Contract management](Contract-management), [Contracts browser](Contracts-browser), [Shortages](Shortages), [Profit and loss](Profit-and-loss), [LP store](LP-store) | Buying, selling, clients and money |
 | **Stock ▾** | [Assets](Assets) | What you own and where |
 | **Pilots ▾** | [Characters](Characters), [Skills](Skills), [Omega](Omega), [Fittings](Fittings) | Your pilots |
-| **Other ▾** | [Misc](Misc), [Corporation](Corporation) | Calculators, wallets, structure fuel, moon mining |
+| **Other ▾** | [Misc](Misc), [Corporation](Corporation), [Intel](Intel), [Item database](Item-database) | Calculators, wallets, structure fuel, moon mining, in-game notifications, every item in the game |
 | **Settings** | [Settings and backups](Settings-and-backups) | Pilots, backups, pricings, taxes, news, clocks |
 | **Notes** | [Settings and backups](Settings-and-backups#notes) | Your own notes |
-| **Intel** | [Intel](Intel) | In-game notifications, with what needs attention |
-| **Contracts browser** | [Contracts browser](Contracts-browser) | Every contract of your pilots and corporations, with what it holds and is worth |
-| **Item database** | [Item database](Item-database) | Every item in the game: what it is, what makes it, what it's used in |
 
 ## When something looks wrong
 See [FAQ and troubleshooting](FAQ-and-troubleshooting).

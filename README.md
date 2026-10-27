@@ -4,7 +4,7 @@ A personal web tool for running EVE Online industry across several characters, i
 
 It is a single HTML page that runs in your browser. A small launcher serves it on your own computer; nothing is hosted anywhere and your data never leaves your browser.
 
-> **README last updated:** 2026-10-25 · what changed and when: [CHANGELOG.md](CHANGELOG.md) · how to use each page, step by step: [the wiki](https://github.com/GwenRB/EvE-All-in-one-Web-app/wiki)
+> **README last updated:** 2026-10-26 · what changed and when: [CHANGELOG.md](CHANGELOG.md) · how to use each page, step by step: [the wiki](https://github.com/GwenRB/EvE-All-in-one-Web-app/wiki)
 
 ---
 
@@ -39,7 +39,7 @@ The address has to be `http://localhost:8642/`: it is the callback EVE's login c
 ### Link your characters (one-time setup)
 1. On [developers.eveonline.com](https://developers.eveonline.com/applications), create an application ("Authentication & API Access") with the callback URL `http://localhost:8642/`, and add the permissions (scopes) you want to use.
 2. In the tool, open **Link EVE characters** at the top of the page, tick the same permissions, and paste the application's **Client ID**. Only the Client ID is needed: never paste the secret key.
-3. Click **Log in with EVE Online** and pick a character. Repeat for each character.
+3. Click **Log in with EVE Online** and pick a character. It's linked at once and syncs in the background: log in the next character straight away.
 
 Every feature only needs the permissions it reads. New permissions start unticked; when you add one, add it to your EVE application too and log each pilot in again.
 
@@ -60,7 +60,7 @@ Everything is stored in your browser (localStorage and IndexedDB). **Settings �
 
 ## Pages
 
-Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Stock ▾ · Pilots ▾ · Other ▾ · Settings · Notes · Intel**
+Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Stock ▾ · Pilots ▾ · Other ▾ · Settings · Notes**
 
 ### Overview
 - **Forecast:** where your ISK is heading. Manual weekly activities, plus plans linked from Reactions and PI (kept up to date), planned builds from Orders management dated by their timeline, and your actual profit from Profit and loss. Omega costs are counted; click a legend line to hide it and take it out of the totals.
@@ -73,7 +73,7 @@ Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · 
 Everything waiting on you, in one list: Omega to renew, structures to refuel, skill queues to fill (pilots idle for more than 7 days only when ticked), empty job slots per pilot (a table; tick to count them on the tab), ongoing contracts, trips for a freight service, and what to buy for reactions, PI and builds.
 
 ### Map
-3D/2D map with security and sovereignty colours, your structures (their type's icon), planets, capital ships, clones and incursions, drawn the same way in the legend, the system panel and the hover box; **kills in the last hour** with a danger level you set; a **jump planner** that waits out fatigue in the best places; and the **Supply chain** (below).
+3D/2D map with security and sovereignty colours, your pilots' last location, your citadels (gold diamonds), planets, capital ships (the game's overview brackets), clones and incursions, drawn the same way in the legend, the system panel and the hover box; **kills in the last hour** with a danger level you set; a **jump planner** that waits out fatigue in the best places; and the **Supply chain** (below).
 
 #### Supply chain (on the Map)
 Plans every jump freighter / Rorqual trip needed by your orders, reaction cycles and PI pickups, up to a horizon (3 days to 8 weeks):
@@ -96,6 +96,7 @@ Every pilot's colonies, ordered by when they stop, with the customs tax paid at 
 - **Trading board:** market watch tables, in your own order, with 24 h / 7 day changes, sold per day and ISK per day (from ESI market history), and **Arbitrage** from citadel sell orders.
 - **Suppliers:** a supplier's stock from a Google Sheet, a link or a paste, priced as listed or as a % of a pricing.
 - **Contract management:** client orders, what's been sent and what's missing; in-game deliveries are found and can be recorded in one click; "Open in Janice".
+- **Contracts browser:** every contract of your pilots and corporations, active or ended, with what each gives and asks for and what its items are worth.
 - **Shortages:** doctrine fittings checked against a citadel's market: what's missing, what's low, what to seed.
 - **Profit and loss:** Real ISK in and out of every linked wallet (pilots and corporation divisions), sorted by activity (Manufacturing, Reactions, PI, Science, Trading, Hauling…, or your own). Nothing is counted twice, transfers between your own wallets are left out, contracts are split by what they held. You can move any item, client, kind of entry or single entry to another activity. History is kept beyond ESI's 30 days.
 - **LP store:** Your loyalty points per corporation and pilot, and any NPC corporation's store in one list ranked by ISK per LP in your pricings (whatever the items are), with how fast each item sells.
@@ -113,15 +114,14 @@ Every pilot's colonies, ordered by when they stop, with the customs tax paid at 
 ### Other
 - **Misc:** Blueprint calculator (ME research and breakeven), jump freighters and Rorqual, jump fuel cost, mining fleet, ships and structures you can build, Quotation, Wallets.
 - **Corporation:** Structure fuel (blocks per day from the online services, ISK per month, refuel warning on To-Do), moon extractions, and who mined what (moon drills and your own pilots) with its value.
+- **Intel:** your pilots' in-game notifications in plain lines (attacks, reinforcements, low fuel, moon chunks, wars…), grouped by kind, with a "needs attention" list counted on the tab and the Other menu.
+- **Item database:** every item in the game from CCP's own data: what it is, its prices, how many you own, what makes it, what it's used in, what it reprocesses into.
 
 ### Settings
 Pilots and backup, page visibility, **Pricings** (Jita buy / split / sell, a % of another pricing, or a citadel's own market), reprocessing yield, market taxes, jump drive skills, EvE News channels, time zones, citadel and structure imports.
 
 ### Notes
 Free notes, kept with your data.
-
-### Intel
-Your pilots' in-game notifications in plain lines (attacks, reinforcements, low fuel, moon chunks, wars…), grouped by kind, with a "needs attention" list counted on the tab.
 
 Each page that computes numbers explains how in **How this page works**, folded at its bottom.
 
@@ -146,7 +146,7 @@ CCP's own data first:
 - **EVE Ref** (`ref-data.everef.net`): only when CCP's data can't be read.
 - The EVE launcher's news and the feeds you add; images from `images.evetech.net`.
 
-Pages the browser can't read directly (CCP's data zip, supplier sheets, news) go through the launcher's `/proxy`.
+Pages the browser can't read directly (CCP's data zip, supplier sheets, news) go through the launcher's `/proxy`, which only the tool itself can use and which always answers as plain data.
 
 ---
 

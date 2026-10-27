@@ -19,7 +19,7 @@ Its pricing has no order for it, for example a citadel nobody sells it in. This 
 Every page's market reads share one queue that stays under ESI's limit; big builds wait their turn. A status at the bottom left shows when reads are held back. During the daily downtime (from 11:00 EVE) market reads wait until the server is back.
 
 ### Supplier sheets, news or CCP's data can't be read
-These go through the launcher. Start the tool with the launcher, not by opening the file.
+These go through the launcher. Start the tool with the launcher, not by opening the file. Only the tool can use the launcher's page reader: other websites are refused. After updating the tool, close the launcher's window and start it again so it runs the new version.
 
 ### My data is gone
 Data lives in the browser you used, on that computer. Another browser, a private window, or clearing site data starts empty. Import your last backup (**Settings → Import backup**). Export one regularly.

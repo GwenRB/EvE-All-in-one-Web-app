@@ -1,6 +1,6 @@
 <!-- tracks: To-Do, Omega to renew, Structures to refuel, Skill queues to fill, Empty job slots, Ongoing contracts, Trips for a freight service, Buy for reactions, Buy for PI, Buy for builds -->
 
-Everything waiting on you, in one list. The left navigation only shows the lists that have something in them, and the To-Do tab shows a red count.
+Everything waiting on you, in one list. The left navigation lists the panels that have something in them (one line each), and the To-Do tab shows a red count.
 
 | List | What's in it | Where it comes from |
 |---|---|---|

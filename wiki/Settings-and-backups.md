@@ -7,6 +7,8 @@
 ## Backups
 Everything is stored in your browser. A backup is a file with everything the tool keeps: pilots, jobs, planets, wallets and their history, hangars, contracts, forecast, fittings, the ship scan, the map, citadels, settings and your Client ID.
 
+**When the browser's storage is full** the tool says "Your browser blocked saving" once: changes from then on may not be kept. Export a backup right away.
+
 **Not in backups:** login tokens (log in again after a move), moon mining and in-game notifications (kept 90 days in the browser only).
 
 To move to another browser or computer:

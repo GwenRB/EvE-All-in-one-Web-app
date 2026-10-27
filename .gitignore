@@ -2,3 +2,7 @@ tests/out/
 __pycache__/
 *.pyc
 .DS_Store
+industry-management-*.json
+*.xlsx
+skills_export.csv
+Uprising_*/

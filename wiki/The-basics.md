@@ -7,7 +7,7 @@ Each page has its own web address (for example `http://localhost:8642/#build-pla
 
 Pages you don't use can be hidden in **Settings → Pages** (Settings itself always stays).
 
-Some tabs show a **red number**: To-Do counts what waits on you, Intel counts notifications that need attention.
+Some tabs show a **red number**: To-Do counts what waits on you, Intel (and its Other menu) counts notifications that need attention.
 
 ## The header
 - **Link EVE characters:** add or re-log characters, choose permissions. See [Getting started](Getting-started#4-link-your-characters).
