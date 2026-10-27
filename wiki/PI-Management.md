@@ -1,4 +1,4 @@
-<!-- tracks: PI Management, P4 planner, PI, customs office tax, Remaining, Planet batches, Buy for PI -->
+<!-- tracks: PI Management, P4 planner, PI, customs office tax, Remaining, Planet batches, Buy for PI, Round up to -->
 
 **Industry → PI Management.** A P4 planner for **factory-only planets**: you buy the P1 and P2, your planets make the P3 and the P4, you sell the P4. Recipes come from CCP's planet schematics.
 
@@ -14,6 +14,8 @@ Which P4 pays best right now per planet, grouped "P1 + two P3" and "three P3". S
 ## Shopping
 Every P1 and P2 the planets need for the **days of stock** you choose, minus what your hangars hold:
 - **Needed**, **In stock**, **Remaining** (how long your stock lasts at the planets' use, red under a day), **To buy**, **Cost**.
+- **Round up to:** type a number (for example 1,000) and every quantity to buy is rounded up to a multiple of it. Leave it empty to buy exactly what's missing.
+- **Copy multibuy** copies the list; **Import calculator** opens it on the [Prices](Prices) page to compare buying locally with importing.
 - The same list shows on [To-Do](To-Do) as **Buy for PI**, with ticks.
 
 ## Output and Planet batches

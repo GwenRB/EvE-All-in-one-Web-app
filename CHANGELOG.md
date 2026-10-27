@@ -9,6 +9,18 @@ How entries are kept:
 
 ---
 
+## 2026-10-27 — Import calculator with suppliers, map legend toggles, materials needed
+
+### Added
+- Prices → Import calculator: a "Look at your suppliers too" tick box (their stock is bought when it's cheaper; picked up in Jita pays the hauling), a "Sync markets" button to read both markets again after you bought there, and item names copy on click.
+- Map: click a line of the legend to hide or show those markers on the map (struck out while hidden); homes and incursions get their own tick boxes too.
+- Build planning: a "Materials needed" summary near the top: every raw material the build uses (needed, from your stock, to buy) and the components built on the way, with a button to copy the raw materials.
+- To-Do → Empty job slots: "Show" chips to list only some kinds of slot (manufacturing, science, reactions) and only some pilots; the To-Do tab's count follows them.
+- PI Management → Shopping: "Round up to" rounds every quantity to buy up to a multiple you choose (To-Do's Buy for PI too), and an "Import calculator" button next to Copy multibuy opens the list there.
+
+### Fixed
+- Import calculator: an item without enough for sale no longer counts as if every unit was bought. Only what is for sale is counted (cheapest first, wherever it is); the missing units are shown per item and left out of the totals.
+
 ## 2026-10-27 — Unused code removed
 
 ### Removed

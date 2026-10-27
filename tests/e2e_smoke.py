@@ -160,7 +160,10 @@ async def build_plan(t):
     t.ok(any(j[0] == "Fake Component" and j[2].startswith("M:") and j[2] != "M:s1" for j in r["jobs"]) or True, "components go where they're cheapest")
     t.ok(await t.js("document.querySelectorAll('#plan-out svg[aria-label=\"Build timeline\"] rect').length") > 0, "the timeline is drawn")
     nav = await t.js("[...document.querySelectorAll('#plan-nav a')].map(a=>a.textContent)")
-    t.ok("Timeline" in nav and "Hauling" in nav and "Materials to buy" in nav, "Build planning's left rail", nav)
+    t.ok("Timeline" in nav and "Hauling" in nav and "Materials to buy" in nav and "Materials needed" in nav, "Build planning's left rail", nav)
+    mats = t.show("materials needed", await t.js("[[...document.querySelectorAll('#pl-mats-table tr.group')].map(r=>r.innerText.split(' · ')[0].replace(/[▾▸]/g,'').trim()), [...document.querySelectorAll('#pl-mats-table tbody tr:not(.group)')].map(r=>[r.cells[0].innerText.trim(), r.cells[1].innerText.trim()])]"))
+    want = t.show("shop", await t.js("buildState.plan.res.shop.filter(x=>!x.ore).map(x=>[x.name,(x.need??x.qty).toLocaleString()])"))
+    t.ok([g.lower() for g in mats[0]] == ["raw materials", "components built on the way"] and all(w in mats[1] for w in want) and any(m[0] == "Fake Component" for m in mats[1]), "Materials needed lists every raw material and the components built", [mats, want])
     # stock in hangars is used first
     await t.pg.check("#plan-stock"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy && !!buildState.plan.res.stockUse", 20)
     su = t.show("stock use", await t.js("buildState.plan.res.stockUse.items.map(x=>[x.name,x.need,x.fromLocal,x.fromD,x.qty,x.elsewhere.map(e=>e.name+':'+e.q)])"))
@@ -175,7 +178,7 @@ async def build_plan(t):
     await t.pg.click("#plan-out [data-btoggle='4051']"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy", 20)
     t.ok("Nitrogen Fuel Block" in await t.js("buildState.plan.res.jobs.map(j=>j.name)"), "a bought item can be built instead")
     await t.pg.select_option("#plan-out select[data-bwho='500']", "b"); await asyncio.sleep(0.3)
-    who = await t.js("[...document.querySelectorAll('#plan-out table')[0].querySelectorAll('tbody tr')].map(r=>r.innerText.replace(/\\s+/g,' ')).filter(t=>t.includes('Component'))")
+    who = await t.js("[...document.querySelector('#pl-who + .scroller table').querySelectorAll('tbody tr')].map(r=>r.innerText.replace(/\\s+/g,' ')).filter(t=>t.includes('Component'))")
     t.ok(any("Ender Beta" in w for w in who), "picking who builds a job", who)
     await t.pg.click("#plan-out [data-haul-map]"); await asyncio.sleep(0.4)
     t.ok(await t.js("!document.getElementById('page-map').hidden && Array.isArray(mapUI.haul) && mapUI.haul.length>0"), "the hauling shows on the map")
@@ -351,6 +354,25 @@ async def overview_news(t):
     await t.pg.screenshot(path=SP + "overview.png")
 
 @scenario
+async def import_calc(t):
+    # Only what is for sale is bought (cheapest first); missing units aren't counted
+    f = t.show("fill", await t.js("(()=>{const F=impFill([{k:'loc',unit:12,avail:5,base:12},{k:'imp',unit:10.5,avail:20,base:10},{k:'imp',unit:10.1,avail:30,base:10},{k:'sup',src:'Bob',unit:9,avail:10,base:9}],100); return {loc:F.by.loc.q, imp:F.by.imp.q, sup:F.by.sup.q, bob:F.sups.get('Bob'), miss:F.miss, cost:+(F.by.loc.c+F.by.imp.c+F.by.sup.c).toFixed(2)}})()"))
+    t.eq(f, {"loc": 5, "imp": 50, "sup": 10, "bob": 10, "miss": 35, "cost": 60 + 303 + 210 + 90}, "the calculator fills from the cheapest offers and counts only what is for sale")
+    await t.tab("prices")
+    await t.js("()=>{state.misc.imp={local:'st:60011866',src:'st:60008494',mode:'sell',rate:'0',coll:'0'}; supList().push({id:'s1',name:'Bob',stock:{34:{q:100,price:3}}}); saveMisc(); renderImportCalc();}")
+    await t.pg.fill("#imp-text", "Tritanium 100"); await t.pg.click("#imp-go")
+    t.ok(await t.until("/compared/.test(document.getElementById('imp-status').textContent)", 10), "the calculator ran", await t.text("#imp-status"))
+    tiles = t.show("tiles", await t.js("[...document.querySelectorAll('#imp-out .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' ').toLowerCase())"))
+    I = await t.js("[204,30,234,300].map(v=>isk(v))")
+    t.ok(len(tiles) == 3 and tiles[1].startswith("import " + I[0]) and tiles[0].startswith("buy locally " + I[1]) and "total " + I[2] in tiles[2] and "not fully for sale" in tiles[2], "only the 55 units for sale are counted: 50 imported, 5 locally", [tiles, I])
+    t.ok(await t.js("!!document.querySelector('#imp-out button.copyname[data-copy=\"Tritanium\"]')"), "item names copy on click")
+    await t.pg.check("#imp-sup"); await t.pg.click("#imp-sync")
+    t.ok(await t.until("/markets read again/.test(document.getElementById('imp-status').textContent)", 10), "Sync markets reads the markets again", await t.text("#imp-status"))
+    tiles = t.show("with suppliers", await t.js("[...document.querySelectorAll('#imp-out .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' ').toLowerCase())"))
+    t.ok(len(tiles) == 4 and "suppliers " + I[3] in tiles[2] and "from bob" in tiles[2] and "total " + I[3] in tiles[3] and "not fully" not in tiles[3], "ticked, the supplier's cheaper stock is bought first", tiles)
+    t.ok(await t.js("state.misc.imp.sup===true"), "the tick box is kept")
+
+@scenario
 async def pi_page(t):
     await t.tab("pimgmt"); t.ok(await t.until("!!state.misc.piAt && !piBusy", 15), "PI prices didn't load")
     await t.pg.fill("[data-pi-n='2869']", "12"); await t.pg.dispatch_event("[data-pi-n='2869']", "change"); await asyncio.sleep(0.3)
@@ -368,6 +390,11 @@ async def pi_page(t):
     t.ok([h.rstrip(" ▲▼↕") for h in shop["head"]][:6] == ["Item", "Needed", "In stock", "Remaining", "To buy", "Cost"] and not any("m³" in h for h in shop["head"]), "PI Shopping: Remaining sits between In stock and To buy, no m³ column", shop)
     t.ok(abs(shop["v"] - (t1[1] / 2) / t1[1] * t1[2] * 86400) < 0.01 * t1[2] * 86400, "Remaining = stock ÷ the plan's use per day", [shop, t1])
     t.ok(await t.js("typeof piWeekly()==='number'"), "PI's weekly profit for the Forecast", await t.js("piWeekly()"))
+    await t.pg.fill("[data-pi=roundTo]", "1,000"); await t.pg.dispatch_event("[data-pi=roundTo]", "change"); await asyncio.sleep(0.3)
+    lst = t.show("rounded", await t.js("document.querySelector('#pi-shop [data-imp-send]').dataset.impSend.split('\\n').map(l=>+l.split('\\t')[1])"))
+    t.ok(lst and all(q > 0 and q % 1000 == 0 for q in lst), "Round up to 1,000: every quantity to buy is a multiple of 1,000", lst)
+    await t.pg.click("#pi-shop [data-imp-send] >> nth=0"); await asyncio.sleep(0.4)
+    t.ok(await t.js("!document.getElementById('page-prices').hidden && document.getElementById('imp-text').value.split('\\n').length===" + str(len(lst))), "the Import calculator button opens the list there")
     await t.tab("forecast", 0.6)
     t.ok(await t.js("state.forecast.activities.some(a=>a.linked==='pi')"), "the PI plan is linked into the Forecast")
 
@@ -535,6 +562,11 @@ async def map_pilots(t):
     t.ok("1 without one" in (await t.text("#map-legend")), "the legend says how many linked pilots have no location yet", await t.text("#map-legend"))
     await t.pg.click("[data-ml=pilots]"); await asyncio.sleep(0.2)
     t.eq(await t.js("mapLayers().pilots"), False, "the Pilots tick box hides them")
+    t.ok(await t.js("document.querySelector('#map-legend [data-ml-leg=pilots]').classList.contains('off')"), "the legend shows the hidden layer struck out")
+    await t.pg.click("#map-legend [data-ml-leg=pilots]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("mapLayers().pilots===true && document.querySelector('[data-ml=pilots]').checked && !document.querySelector('#map-legend [data-ml-leg=pilots]').classList.contains('off')"), "clicking the legend line shows them again, tick box too")
+    await t.pg.click("#map-legend [data-ml-leg=homes]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("mapLayers().homes===false && !document.querySelector('[data-ml=homes]').checked"), "the legend hides homes")
 
 @scenario
 async def upcoming_fleets(t):
@@ -693,6 +725,12 @@ async def todo_slots(t):
     t.ok(await t.js(f"document.querySelectorAll('#todo-sl [data-slot-off]').length==={n0 - 1} && !!document.querySelector('[data-slot-show]')"), "✕ hides one kind of slot for a pilot")
     await t.pg.click("[data-slot-show]"); await asyncio.sleep(0.2)
     t.eq(await t.js("document.querySelectorAll('#todo-sl [data-slot-off]').length"), n0, "Show them again brings it back")
+    await t.pg.click("#todo-sl [data-sl-k=S]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("![...document.querySelectorAll('#todo-sl-table thead th')].some(h=>h.innerText.includes('science')) && state.misc.slotShow.K.S===false"), "Show: a kind of slot can be left out")
+    await t.pg.click("#todo-sl [data-sl-c=a]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("![...document.querySelectorAll('#todo-sl-table tbody th')].some(h=>h.innerText==='Ender Alpha') && !slotsToFill().some(x=>x.c.id==='a')"), "Show: a pilot can be left out")
+    await t.pg.click("#todo-sl [data-sl-k=S]"); await t.pg.click("#todo-sl [data-sl-c=a]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("document.querySelectorAll('#todo-sl-table tbody tr').length"), len(li[1]), "Show: everything back")
 
 @scenario
 async def market_history(t):

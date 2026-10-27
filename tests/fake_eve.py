@@ -189,6 +189,11 @@ async def handle(route):
     if "/markets/10000002/orders" in path:
         tid=int(parse_qs(urlparse(u).query)["type_id"][0]); p=PRICE.get(tid,0)
         return await j([{"location_id":60003760,"price":p*1.1},{"location_id":60003760,"price":p},{"location_id":1,"price":p*0.5}] if p else [], pages=1)
+    # Amarr and Dodixie (Import calculator): sell orders with quantities, Amarr 30 at the price + 20 at +5%, Dodixie 5 at +50%; no buy orders
+    if "/markets/10000043/orders" in path or "/markets/10000032/orders" in path:
+        tid=int(parse_qs(urlparse(u).query)["type_id"][0]); p=PRICE.get(tid,0)
+        if "order_type=buy" in u or not p: return await j([], pages=1)
+        return await j([{"location_id":60008494,"price":p,"volume_remain":30},{"location_id":60008494,"price":p*1.05,"volume_remain":20}] if "10000043" in path else [{"location_id":60011866,"price":p*1.5,"volume_remain":5}], pages=1)
     # wallets (Profit and loss): pilot 9001's journal and market transactions, its jobs with completed ones; the corporation refuses (no Accountant role)
     if path.startswith("/characters/9001/wallet/journal"): return await j(WALLET_J, pages=1)
     if path.startswith("/characters/9001/wallet/transactions"): return await j(WALLET_T)

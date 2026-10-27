@@ -1,4 +1,4 @@
-<!-- tracks: Build planning, invention, decryptor, relic, ore instead of minerals, reprocessing, refinery, left-over, Public contracts, Timeline, Who builds what, Structures and settings, Quotation -->
+<!-- tracks: Build planning, Materials needed, invention, decryptor, relic, ore instead of minerals, reprocessing, refinery, left-over, Public contracts, Timeline, Who builds what, Structures and settings, Quotation -->
 
 **Industry → Build planning.** Pick a blueprint and a quantity; the page works out the whole build: every component and reaction, what to buy and where, who runs each job, the hauling, and a timeline.
 
@@ -6,6 +6,7 @@
 1. Type a blueprint in the search box (for example *Sleipnir Blueprint*) and a **Quantity**.
 2. Click **Plan the build**.
 3. Read the result top to bottom, using the left navigation:
+   - **Materials needed**: the summary of everything the build uses: each raw material (needed, from your stock, still to buy) and the components built on the way. **Copy raw materials** copies the full list.
    - **Final build** and **Components to manufacture**: the build tree. Switch any component between **build** and **buy**.
    - **Materials you already own**, **Components you already own**: your stock is used first (from [Assets](Assets)).
    - **Materials to buy**: with where to buy each (Jita, a local citadel market, your [suppliers](Suppliers)) and a copy button per source, ready to paste in game.
