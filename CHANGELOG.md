@@ -9,6 +9,24 @@ How entries are kept:
 
 ---
 
+## 2026-10-27 — Background sync after logins, pilots on the map, safer launchers
+
+### Added
+- Overview → Forecast: a stock line from hangars can count only one location or one hangar (for example the corporation hangar you sell composites from, not the one kept for your own use), and can take everything there instead of one kind of item.
+- Map: every pilot's last location (from the "Character location" permission, read at each sync), marked around the system's dot with the game's own-ship bracket; the hover box and the system panel say who is there, docked or in space, in which ship and when it was seen. A **Pilots** tick box hides them.
+
+### Changed
+- Linking or re-logging a character no longer makes you wait: it's linked as soon as you approve, and its skills, jobs, assets and the rest sync in the background (one pilot at a time, the others wait their turn), so you can log in the next character straight away. The login panel, the Characters page and the pilot cards show who is syncing and who is waiting.
+- **To-Do**'s left navigation lists the panels only, without their sub-lists.
+- Tab bar: **Intel** and the **Item database** moved to the Other menu (Intel's alert count shows on the menu), the **Contracts browser** to the Market menu.
+- Map: your citadels are a gold diamond under the system's dot again (friendly ones a hollow pale diamond), instead of a structure icon hidden behind the dot.
+
+### Fixed
+- Launchers: other websites can no longer use the launcher's page reader, and what it reads always comes back as plain data, never as a page that could run as the tool (it could have read your logins). Restart the launcher to get this.
+- When the browser's storage is full, the tool now says so once ("Use Export backup") instead of losing changes without a word.
+- Pages respond faster: the Skills page and the Overview are only redrawn while open.
+- Map: capital ship icons are the game's own overview brackets again, built into the page; they had turned into plain triangles because the website they came from stopped answering. The planet icon no longer depends on that website either.
+
 ## 2026-10-26 — Filters, net worth, Contracts browser and Item database
 
 ### Added

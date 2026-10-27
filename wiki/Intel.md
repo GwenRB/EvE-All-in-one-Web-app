@@ -1,6 +1,6 @@
 <!-- tracks: Intel, notifications, Needs attention -->
 
-**Intel** tab (the last one). Every linked pilot's in-game notifications in plain lines (needs the **Notifications** permission). Read at each sync and with **Refresh**. ESI only keeps recent notifications, so sync often.
+**Intel**, in the **Other** menu (a red count on the menu and the page when something needs attention). Every linked pilot's in-game notifications in plain lines (needs the **Notifications** permission). Read at each sync and with **Refresh**. ESI only keeps recent notifications, so sync often.
 
 ## Needs attention
 From the last 3 days: structures attacked, shields or armour lost (with when the reinforcement ends), low fuel, low power or services offline, wars declared, moon chunks ready. The Intel tab counts them until you click **Mark all as seen**.

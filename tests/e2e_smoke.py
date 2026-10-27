@@ -104,6 +104,32 @@ async def forecast_orders(t):
     t.ok(await t.js("![...document.querySelectorAll('#fc-chart .lg')].some(b=>b.textContent.includes('Planned orders'))"), "no line once every order is done")
 
 @scenario
+async def forecast_stock_place(t):
+    """A Forecast stock line from hangars limited to one place: the corporation hangar you sell composites from, not the one for your own use."""
+    await t.js("""()=>{state.assets['corp:500']={at:Date.now(),owner:'Ender Corp',kind:'Corporation',via:'Ender Alpha',divisions:{3:'Sell',4:'Own use'},rows:[{t:16671,loc:60000002,h:'CorpSAG3',q:1000},{t:16671,loc:60000002,h:'CorpSAG4',q:600},{t:16671,loc:60000003,h:'CorpSAG3',q:50}]};
+      state.typeMeta[16671]=[429,4]; state.groupNames[429]='Composite'; state.catNames[4]='Material'; saveAssets(); render();}""")
+    await t.tab("stock", 0.3)
+    t.ok(await t.until("stockPrice(16671)>0", 10), "Titanium Carbide has a price")
+    p = await t.js("stockPrice(16671)")
+    await t.tab("forecast", 0.4)
+    sell, own = "h:corp:500|60000002|CorpSAG3", "h:corp:500|60000002|CorpSAG4"
+    opts = t.show("places", await t.js("[...$('fc-hstock-at').options].map(o=>[o.value,o.textContent])"))
+    t.ok(any(v == sell and "Ender Corp · Sell" in n for v, n in opts) and any(v == "l:60000002" for v, n in opts), "the place list has the locations and each hangar by its division name", opts)
+    await t.pg.select_option("#fc-hstock-at", sell); await asyncio.sleep(0.1)
+    kinds = t.show("kinds", await t.js("[...$('fc-hstock-kind').options].map(o=>[o.value,o.textContent])"))
+    t.ok(any(v == "g:429" and n.startswith("Composite") for v, n in kinds) and kinds[0][0] == "a:0", "the kinds are those in that hangar, Everything there first", kinds)
+    t.eq(await t.js("[...$('fc-hstock-kind').options].find(o=>o.value==='g:429').textContent"), await t.js(f"'Composite · '+isk({1000 * p})"), "the kind is valued in that hangar only")
+    await t.pg.select_option("#fc-hstock-kind", "g:429"); await t.pg.click("#fc-hstock-form button[type=submit]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("state.forecast.stock.map(x=>x.match)"), [{"type": "g", "id": 429, "at": sell}], "the line keeps its place")
+    t.eq(await t.js("Math.round(stockNow())"), round(1000 * p), "only the sell hangar counts in the Forecast's stock")
+    li = t.show("line", await t.text("#fc-stock li"))
+    t.ok("Composite in Ender Corp · Sell · Delta station" in li, "the line says where it counts from", li)
+    vals = await t.js(f"[hangarMatchValue({{type:'g',id:429}}), hangarMatchValue({{type:'g',id:429,at:'l:60000002'}}), hangarMatchValue({{type:'a',at:'{own}'}})].map(Math.round)")
+    t.eq(vals, [round(1650 * p), round(1600 * p), round(600 * p)], "anywhere, one location, everything in one hangar")
+    await t.js("()=>{state.stockCfg.offLoc={'corp:500|60000002':true}; saveAssets(); render();}")
+    t.eq(await t.js("Math.round(stockNow())"), 0, "a location unticked on the Assets page stays out")
+
+@scenario
 async def tabs_and_menus(t):
     groups = t.show("groups", await t.js("[...document.querySelectorAll('.tabs .tabgrp')].map(g=>g.querySelector('.tabgrp-btn').innerText.replace(/\\s+/g,' ').trim())"))
     for g in ("Industry", "Market", "Stock", "Pilots", "Other"): t.ok(any(x.startswith(g) for x in groups), f"tab menu {g} is missing", groups)
@@ -116,9 +142,9 @@ async def tabs_and_menus(t):
     t.eq(await t.js("getComputedStyle(document.querySelector('.tabs .tabgrp:has(button[data-tab=omega]) .tabmenu')).display"), "block", "a menu opens on click")
     await t.pg.mouse.click(700, 900); await asyncio.sleep(0.2)
     t.eq(await t.js("getComputedStyle(document.querySelector('.tabs .tabgrp:has(button[data-tab=omega]) .tabmenu')).display"), "none", "a menu closes on a click elsewhere")
-    t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab]')].map(b=>b.dataset.tab)"), ["prices", "trading", "suppliers", "contracts", "shortages", "pnl", "lp"], "Market menu pages, Profit and loss and LP store included")
-    t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=misc]) button[data-tab]')].map(b=>b.dataset.tab)"), ["misc", "corp"], "the Other menu holds Misc and Corporation")
-    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-5)"), ["settings", "notes", "intel", "cbrowse", "itemdb"], "Settings, Notes and Intel stay on the bar, then the Contracts browser and the Item database at the end")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab]')].map(b=>b.dataset.tab)"), ["prices", "trading", "suppliers", "contracts", "cbrowse", "shortages", "pnl", "lp"], "Market menu pages, the Contracts browser, Profit and loss and LP store included")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=misc]) button[data-tab]')].map(b=>b.dataset.tab)"), ["misc", "corp", "intel", "itemdb"], "the Other menu holds Misc, Corporation, Intel and the Item database")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-2)"), ["settings", "notes"], "Settings and Notes end the bar")
     await t.tab("misc"); h = await t.js("document.querySelector('#page-misc h2').textContent"); t.ok(h.endswith("Blueprint calculator"), "Misc's first panel is the Blueprint calculator", h)
 
 @scenario
@@ -260,6 +286,7 @@ async def todo_page(t):
     panels = t.show("panels", await t.js("[...document.querySelectorAll('#page-todo section')].filter(s=>!s.hidden).map(s=>s.querySelector('h2').textContent)"))
     for p in ("Omega to renew", "Buy for builds"): t.ok(any(x.endswith(p) for x in panels), f"To-Do shows {p}", panels)
     t.ok(await t.js("document.querySelectorAll('#todo-nav a').length") > 0, "the To-Do page has its navigation")
+    t.eq(await t.js("document.querySelectorAll('#todo-nav a.sub').length"), 0, "the To-Do navigation lists its panels only")
     await t.pg.click("[data-todo-ord] >> nth=0"); await asyncio.sleep(0.2)
     t.ok(await t.text("#todo-ord .toolbar .muted"), "ticking a build purchase counts it")
     # Buy for PI: PI Management's shopping (days of stock, minus the stock held), P1 and P2 lists, tickable
@@ -480,7 +507,7 @@ async def map_markers(t):
     await t.js("()=>{state.misc.structs={...(state.misc.structs||{}), 1077:{name:'Bravo - Test Astrahus',system:30000002,type:35832,typeName:'Astrahus'}}; state.misc.map={...(state.misc.map||{}),homes:[30000002]}; saveMisc(); renderMap(); mapSelect(30000002, true);}")
     await asyncio.sleep(0.4)
     info = t.show("panel", await t.js("[...document.querySelectorAll('#map-info .map-sel canvas.mk-ico')].map(c=>c.dataset.mk+':'+(c.dataset.mkArg||''))"))
-    t.ok("struct:astrahus" in info and "home:" in info, "the system panel shows the map's markers (structure type, home)", info)
+    t.ok("struct:" in info and "home:" in info, "the system panel shows the map's markers (citadel, home)", info)
     leg = t.show("legend", await t.js("[...document.querySelectorAll('#map-legend canvas.mk-ico')].map(c=>c.dataset.mk)"))
     t.ok(set(leg) >= {k for k in await t.js("Object.keys(MK).filter(k=>MK[k].draw)")}, "the legend shows every marker the map draws", leg)
     t.ok(await t.js("[...document.querySelectorAll('#map-legend canvas.mk-ico')].every(c=>c.getContext('2d').getImageData(0,0,32,32).data.some((v,i)=>i%4===3&&v>0))"), "every legend icon is painted")
@@ -488,8 +515,26 @@ async def map_markers(t):
     await t.pg.mouse.move(pos[0], pos[1]); await asyncio.sleep(0.2)
     hv = t.show("hover", await t.js("(()=>{const h=document.getElementById('map-hover'); return [h.hidden, [...h.querySelectorAll('canvas.mk-ico')].map(c=>c.dataset.mk+':'+(c.dataset.mkArg||'')), h.innerText]})()"))
     await t.pg.screenshot(path=SP + "map_markers.png", full_page=True)
-    t.ok(not hv[0] and "struct:astrahus" in hv[1] and "home:" in hv[1] and "Bravo - Test Astrahus" in hv[2], "the hover box uses the same markers as the system panel", hv)
+    t.ok(not hv[0] and "struct:" in hv[1] and "home:" in hv[1] and "Bravo - Test Astrahus" in hv[2], "the hover box uses the same markers as the system panel", hv)
+    t.ok(await t.js("BRACKET_ORDER.every(k=>BRACKET_SRC[k].startsWith('data:image/png'))") and not await t.js("/eveuniversity/.test(bracketIcon.toString()+MK.pi.draw.toString())"), "capital brackets come with the page (CCP's icons), nothing is read from the wiki")
     t.ok(not await t.js("(()=>{const p=document.querySelector('#map-info .map-sel').cloneNode(true); p.querySelectorAll('button').forEach(b=>b.remove()); return /[◆□●♟◇✷▪⛴⌂]/.test(document.getElementById('map-hover').innerText + p.innerText)})()"), "no old text symbols are left in the hover box or the system panel")
+
+@scenario
+async def map_pilots(t):
+    # Every pilot's last location (ESI "Character location") on the map, with the same marker in the panel, the hover box and the legend
+    await map_(t)
+    await t.js("()=>{state.chars[0].loc={sys:30000002,station:60000001,structure:null,at:Date.now()-2*3600e3}; state.chars[2].loc={sys:30000002,station:null,structure:null,at:Date.now()}; saveLocal(); renderMap(); mapSelect(30000002, true);}")
+    await asyncio.sleep(0.4)
+    t.eq(await t.js("(mapPilots().get(30000002)||[]).map(p=>p.c.name).sort()"), ["Ender Alpha", "Solo Gamma"], "both pilots are placed in their last system")
+    pn = t.show("panel", await t.js("[...document.querySelectorAll('#map-info .map-sel canvas.mk-ico[data-mk=pilot]')].map(c=>c.parentElement.innerText.replace(/\\s+/g,' ').trim())"))
+    t.ok(any("Ender Alpha" in x and "docked at Bravo station" in x and "2 h ago" in x for x in pn) and any("Solo Gamma" in x and "in space" in x for x in pn), "the system panel says where each pilot is docked, and when it was seen", pn)
+    t.eq(await t.js("document.querySelector('#map-info .map-sel canvas.mk-ico:not([data-mk=home]):not([data-mk=kills]):not([data-mk=incursion])').dataset.mk"), "pilot", "pilots come first in the system's list")
+    leg = t.show("legend", await t.text("#map-legend"))
+    t.ok("Your pilots (last location)" in leg and "without one" not in leg, "the legend shows the pilot marker", leg)
+    await t.js("()=>{delete state.chars[0].loc; renderMap();}"); await asyncio.sleep(0.2)
+    t.ok("1 without one" in (await t.text("#map-legend")), "the legend says how many linked pilots have no location yet", await t.text("#map-legend"))
+    await t.pg.click("[data-ml=pilots]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("mapLayers().pilots"), False, "the Pilots tick box hides them")
 
 @scenario
 async def upcoming_fleets(t):
@@ -558,6 +603,55 @@ async def server_status(t):
       let sync=''; try { await syncChar(state.chars[0]); } catch(e) { sync=e.message }
       const mk=(await esiMarket('https://esi.evetech.net/latest/markets/10000002/orders/?type_id=34')).status; esiDown=real; renderSrv(); return {pill, sync, mk}})()"""))
     t.ok("Downtime" in r["pill"] and "downtime" in r["sync"] and r["mk"] == 503, "during downtime the header says so, syncs wait and market reads are refused", r)
+
+@scenario
+async def launcher_proxy(t):
+    """The launcher's proxy: only the tool may use it, and what it reads never comes back as a page (an SVG or HTML page would run as the tool)."""
+    import urllib.request, urllib.parse, urllib.error, http.server, threading
+    class Svg(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200); self.send_header("Content-Type", "image/svg+xml"); self.end_headers(); self.wfile.write(b"<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>")
+        def log_message(self, *a): pass
+    svg = http.server.HTTPServer(("127.0.0.1", 0), Svg); threading.Thread(target=svg.serve_forever, daemon=True).start()
+    def get(headers):
+        req = urllib.request.Request("http://localhost:8642/proxy?url=" + urllib.parse.quote(f"http://127.0.0.1:{svg.server_port}/x.svg"), headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=10) as r: return [r.status, r.headers.get("Content-Type"), r.headers.get("X-Content-Type-Options")]
+        except urllib.error.HTTPError as e: return [e.code, None, None]
+    t.eq(await asyncio.to_thread(get, {"Sec-Fetch-Site": "same-origin"}), [200, "application/octet-stream", "nosniff"], "an SVG read through the proxy comes back as plain bytes, never as a page")
+    t.eq((await asyncio.to_thread(get, {"Sec-Fetch-Site": "cross-site"}))[0], 403, "another website can't use the proxy")
+    t.ok((await asyncio.to_thread(get, {"Host": "evil.example:8642"}))[0] in (400, 403), "a website whose name was pointed at this computer can't use it either")
+    svg.shutdown()
+
+@scenario
+async def storage_full(t):
+    """When the browser refuses a save (its storage full), the tool says so once instead of losing changes without a word."""
+    r = await t.js("""(()=>{ const real=Storage.prototype.setItem; Storage.prototype.setItem=function(){ throw new DOMException('full','QuotaExceededError') };
+      try { $('toast').textContent=''; saveMisc(); const first=$('toast').textContent; $('toast').textContent=''; saveForecast(); saveToken(1, 'rt'); return [first, $('toast').textContent, ls.set('x', 1)]; }
+      finally { Storage.prototype.setItem=real; } })()""")
+    t.ok("storage may be full" in r[0] and r[1] == "" and r[2] is False, "the first refused save is said, the next ones aren't repeated", r)
+
+@scenario
+async def login_background_sync(t):
+    """Logging in several characters in a row: each is linked at once, the full read runs in the background (one at a time)."""
+    await t.js("""()=>{ window._sync={on:0,max:0,calls:0,done:[],release:null}; const gate=new Promise(r=>window._sync.release=r);
+      const jwt=(id,name)=>'h.'+btoa(JSON.stringify({sub:'CHARACTER:EVE:'+id,name,scp:['esi-skills.read_skills.v1']})).replace(/=+$/,'').replace(/\\+/g,'-').replace(/\\//g,'_')+'.s';
+      window._jwt=jwt; tokenRequest=async(p)=>({access_token:jwt(+p.code,'Pilot '+p.code),refresh_token:'rt'+p.code,expires_in:1199});
+      applyToken=async(tok)=>{ const p=jwtPayload(tok.access_token), id=+p.sub.split(':').pop(); _sync.calls++; _sync.on++; _sync.max=Math.max(_sync.max,_sync.on); await gate;
+        const c=state.chars.find(x=>x.esiId===id); Object.assign(c,{skills:{Industry:5},syncedAt:Date.now()}); _sync.on--; _sync.done.push(id); saveLocal(); render(); return c; }; }""")
+    t0 = await t.js("Date.now()")
+    for i, code in enumerate(["9101", "9102", "9103"]):
+        await t.js("c => { ls.set('eve-industry-esi-pending',{state:'s'+c,verifier:'v'}); return finishLogin(c,'s'+c) }", code)
+    linked = t.show("linked", await t.js("({ms:Date.now()-%d, chars:state.chars.filter(c=>c.esiId>9100).map(c=>[c.name,!!esiTokens()[c.esiId],syncState(c)]), msg:document.getElementById('esi-msg').textContent, bg:document.getElementById('esi-sync-bg').textContent})" % t0))
+    t.eq(linked["chars"], [["Pilot 9101", True, "run"], ["Pilot 9102", True, "wait"], ["Pilot 9103", True, "wait"]], "each login links the pilot at once; one syncs, the others wait")
+    t.ok("background" in linked["msg"] and "2 waiting" in linked["bg"] and "log in the next character" in linked["bg"], "the login panel says the sync runs in the background", linked)
+    await t.tab("characters"); txt = await t.text("#chars-table")
+    t.ok("Syncing…" in txt and "Waiting to sync" in txt, "the Characters page shows who is syncing and who waits", txt)
+    # A second sync of a pilot already syncing waits for the same read
+    await t.js("(()=>{const c=state.chars.find(x=>x.esiId===9101); syncChar(c); syncChar(c)})()")
+    await t.js("_sync.release()")
+    t.ok(await t.until("_sync.done.length===3 && !state.chars.some(c=>syncState(c))", 5), "every pilot syncs in the end", await t.js("_sync"))
+    t.eq(await t.js("[_sync.max, _sync.calls, state.chars.filter(c=>c.esiId>9100).every(c=>c.skills.Industry===5 && c.syncedAt), document.getElementById('esi-sync-bg').hidden]"), [1, 3, True, True], "one at a time, each pilot read once (a sync asked while one runs waits for it), all synced, the status line gone")
 
 @scenario
 async def map_danger(t):
@@ -1010,7 +1104,7 @@ async def intel(t):
     kept = t.show("kept", await t.js("Object.values(intelData.n).map(o=>[o.type,o.to]).sort()"))
     both = ["Ender Alpha", "Ender Beta"]
     t.eq(kept, [["CorpAppNewMsg", both], ["MoonminingExtractionFinished", both], ["StructureUnderAttack", both]], "each notification once with who got it; one older than 90 days dropped")
-    t.eq(await t.js("document.querySelector('.tabs button[data-tab=intel]').dataset.alert"), "2", "the Intel tab counts what needs attention")
+    t.eq(await t.js("[document.querySelector('.tabs button[data-tab=intel]').dataset.alert, document.querySelector('.tabs .tabgrp:has(button[data-tab=intel]) .tabgrp-btn').dataset.alert]"), ["2", "2"], "the Intel tab and its menu count what needs attention")
     await t.tab("intel"); await t.until("!intelBusy && !!intelData.names[40000001]", 10); await asyncio.sleep(0.3)
     al = t.show("alerts", await t.text("#intel-alerts"))
     t.ok(al and "Delta - Sotiyo in Delta is under attack: shield 46%, armour 100%, hull 100% by Gas Supplier · Pirates · Bad Guys" in al, "an attack says where, how bad and by whom", al)
@@ -1020,7 +1114,7 @@ async def intel(t):
     await t.pg.select_option("#intel-days", "1"); await asyncio.sleep(0.3)
     t.eq(await t.js(G), ["Structures", "Moon mining"], "the period hides older ones")
     await t.pg.click("[data-intel-seen]"); await asyncio.sleep(0.3)
-    t.ok(await t.js("!document.querySelector('.tabs button[data-tab=intel]').dataset.alert") and "Nothing needs attention" in (await t.text("#intel-alerts") or ""), "Mark all as seen clears the alerts and the count")
+    t.ok(await t.js("!document.querySelector('.tabs button[data-tab=intel]').dataset.alert && !document.querySelector('.tabs .tabgrp:has(button[data-tab=intel]) .tabgrp-btn').dataset.alert") and "Nothing needs attention" in (await t.text("#intel-alerts") or ""), "Mark all as seen clears the alerts and the count")
 
 @scenario
 async def custom_filters(t):

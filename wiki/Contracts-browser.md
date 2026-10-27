@@ -1,6 +1,6 @@
 <!-- tracks: Contracts browser, contracts of your pilots, contract items -->
 
-**Contracts browser** tab (near the end of the bar). Every contract of your linked pilots and corporations in one place: what each one gives and asks for, who's in it, where, and what its items are worth. Needs the **Contracts** permission (and **Corporation contracts** for your corporation's). For orders you deliver to clients, see [Contract management](Contract-management).
+**Contracts browser**, in the **Market** menu. Every contract of your linked pilots and corporations in one place: what each one gives and asks for, who's in it, where, and what its items are worth. Needs the **Contracts** permission (and **Corporation contracts** for your corporation's). For orders you deliver to clients, see [Contract management](Contract-management).
 
 ## What you see
 - **Tiles:** active contracts (waiting, in progress), what you sell and buy on them, courier contracts you ship or haul (with their rewards and collateral), and how many still waiting expire within a day.

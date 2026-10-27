@@ -9,6 +9,7 @@ What each pilot has plugged in right now, by slot (needs the **Implants** permis
 A card per pilot: job slots, remote ranges, manufacturing time, **Reactions level**, reprocessing, orders, and when the skill queue ends (or that it's empty / paused).
 - Remote range is one jump per level of Supply Chain Management, Scientific Networking and Remote Reactions.
 - The reprocessing figure is from Reprocessing and Reprocessing Efficiency only (before ore skills, rigs and implants).
+- Right after a login, a card says **Syncing from ESI…** or **Waiting to sync**: the pilot is linked and its data is still being read in the background (one pilot at a time). Its numbers fill in when it's done.
 
 ## Roles
 Define a role (for example *Hauler* or *Fleet booster*) from ships, fittings and skills, and see who can fill it. A role can need **all** its requirements, or **any one** of them.

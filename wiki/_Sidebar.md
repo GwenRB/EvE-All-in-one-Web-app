@@ -25,6 +25,7 @@
 - [Trading board](Trading-board)
 - [Suppliers](Suppliers)
 - [Contract management](Contract-management)
+- [Contracts browser](Contracts-browser)
 - [Shortages](Shortages)
 - [Profit and loss](Profit-and-loss)
 - [LP store](LP-store)
@@ -40,7 +41,6 @@
 - [Misc](Misc)
 - [Corporation](Corporation)
 - [Intel](Intel)
-- [Contracts browser](Contracts-browser)
 - [Item database](Item-database)
 - [Settings and backups](Settings-and-backups)
 

@@ -73,6 +73,6 @@ Line numbers drift; grep the section markers (`/* ---------- … */` or `// ----
 ## External services
 - ESI `https://esi.evetech.net` (public + authenticated, `esiGet`, `esiAuthGet` (a path may carry its own query, e.g. `?from_id=`), `fetchRetry`), SSO `login.eveonline.com`.
 - CCP static data `https://developers.eveonline.com/static-data/…` (via `/proxy` when CORS blocks): game data index, map, reaction formulas, planet schematics.
-- EVE launcher news `https://launcher.eveonline.com/resources/eve-online/news_v4/en.json` and other news channels (RSS/Atom/JSON feeds), all via `/proxy`.
+- EVE launcher news `https://launcher.eveonline.com/resources/eve-online/news_v4/en.json` and other news channels (RSS/Atom/JSON feeds), all via `/proxy`. The proxy answers only the tool (`Sec-Fetch-Site` same-origin, and in the Python launcher the `Host` localhost:8642 / 127.0.0.1:8642) and always as `application/octet-stream` + `nosniff` (a page read through it must never run as the tool: tokens are in localStorage). Saves go through `ls.set`, which says once when the browser refuses (storage full).
 - EVE Ref `https://ref-data.everef.net`: fallback only (game data lookups, map, reaction formulas).
-- Images `images.evetech.net`; overview bracket icons from the EVE University wiki.
+- Images `images.evetech.net`; overview bracket icons (`BRACKET_SRC`) and Upwell structure icons (`STRUCT_ICON_SRC`) are CCP's, inline in the page.

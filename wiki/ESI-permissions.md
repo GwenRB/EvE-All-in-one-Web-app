@@ -32,7 +32,7 @@ Some corporation data also needs an **in-game role** on at least one linked pilo
 | `esi-characters.read_standings.v1` | Standings (broker fees) | |
 | `esi-fittings.read_fittings.v1` | Fittings saved in game | |
 | `esi-characters.read_fatigue.v1` | Jump fatigue | |
-| `esi-location.read_location.v1` | Character location (supply chain: where ships are) | |
+| `esi-location.read_location.v1` | Character location (the map and the supply chain: where pilots and ships are) | |
 | `esi-location.read_ship_type.v1` | Current ship (supply chain) | |
 | `esi-calendar.read_calendar_events.v1` | Calendar (upcoming events on the Overview) | |
 | `esi-characters.read_loyalty.v1` | Loyalty points (LP store) | |

@@ -470,13 +470,14 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <div id="esi-scopes" class="scope-list"></div>
         <div class="row"><label class="label" for="esi-client">Client ID</label><input type="text" id="esi-client" placeholder="Paste the application's Client ID" style="flex:1 1 260px" autocomplete="off"></div>
         <span class="muted">Only the Client ID is needed. Never paste the secret key here.</span></li>
-      <li><b>Log in.</b> Pick the character in the EVE login window that opens.<span class="auto-only"> When you approve, the window closes by itself and the character is linked and synced. Repeat for each character.</span>
+      <li><b>Log in.</b> Pick the character in the EVE login window that opens.<span class="auto-only"> When you approve, the window closes by itself and the character is linked; its data syncs in the background, so you can log in the next character straight away.</span>
         <div class="row"><a id="esi-login" class="button" target="_blank" rel="noopener" aria-disabled="true">Log in with EVE Online</a></div></li>
       <li class="manual-only"><b>Paste the return address.</b> After you approve, the new tab lands on a page that won't load. Copy the full address from that tab's address bar and paste it here.
         <form id="esi-finish" class="row"><input type="text" id="esi-return" placeholder="http://localhost:8642/?code=…" style="flex:1 1 300px" autocomplete="off" aria-label="Return address"><button class="primary" type="submit">Finish linking</button></form>
         <div class="muted" style="margin-top:6px">To skip this step, open the tool with the launcher file instead of opening the HTML file directly. Logging in then completes by itself.</div></li>
     </ol>
     <div id="esi-msg" class="notice" hidden></div>
+    <div id="esi-sync-bg" class="muted" style="margin-top:6px" hidden></div>
     <div style="display:flex;justify-content:flex-end;margin-top:8px"><button type="button" id="esi-close">Close</button></div>
     </section>
 
@@ -489,18 +490,15 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="tabmenu" role="menu" aria-label="Industry"><button type="button" data-tab="pimgmt">PI Management</button><button type="button" data-tab="reactions">Reactions management</button><button type="button" data-tab="plan">Build planning</button><button type="button" data-tab="orders">Orders management</button><button type="button" data-tab="jobs">Jobs</button></div></div>
     <button type="button" data-tab="planets">Planets</button>
     <div class="tabgrp"><button type="button" class="tabgrp-btn" aria-haspopup="true" aria-expanded="false">Market<span class="tabcur" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
-      <div class="tabmenu" role="menu" aria-label="Market"><button type="button" data-tab="prices">Prices</button><button type="button" data-tab="trading">Trading board</button><button type="button" data-tab="suppliers">Suppliers</button><button type="button" data-tab="contracts">Contract management</button><button type="button" data-tab="shortages">Shortages</button><button type="button" data-tab="pnl">Profit and loss</button><button type="button" data-tab="lp">LP store</button></div></div>
+      <div class="tabmenu" role="menu" aria-label="Market"><button type="button" data-tab="prices">Prices</button><button type="button" data-tab="trading">Trading board</button><button type="button" data-tab="suppliers">Suppliers</button><button type="button" data-tab="contracts">Contract management</button><button type="button" data-tab="cbrowse">Contracts browser</button><button type="button" data-tab="shortages">Shortages</button><button type="button" data-tab="pnl">Profit and loss</button><button type="button" data-tab="lp">LP store</button></div></div>
     <div class="tabgrp"><button type="button" class="tabgrp-btn" aria-haspopup="true" aria-expanded="false">Stock<span class="tabcur" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
       <div class="tabmenu" role="menu" aria-label="Stock"><button type="button" data-tab="stock">Assets</button><button type="button" data-tab="stockmgmt">Stock management</button></div></div>
     <div class="tabgrp"><button type="button" class="tabgrp-btn" aria-haspopup="true" aria-expanded="false">Pilots<span class="tabcur" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
       <div class="tabmenu" role="menu" aria-label="Pilots"><button type="button" data-tab="characters">Characters</button><button type="button" data-tab="overview">Skills</button><button type="button" data-tab="omega">Omega</button><button type="button" data-tab="fittings">Fittings</button></div></div>
     <div class="tabgrp"><button type="button" class="tabgrp-btn" aria-haspopup="true" aria-expanded="false">Other<span class="tabcur" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
-      <div class="tabmenu" role="menu" aria-label="Other"><button type="button" data-tab="misc">Misc</button><button type="button" data-tab="corp">Corporation</button></div></div>
+      <div class="tabmenu" role="menu" aria-label="Other"><button type="button" data-tab="misc">Misc</button><button type="button" data-tab="corp">Corporation</button><button type="button" data-tab="intel">Intel</button><button type="button" data-tab="itemdb">Item database</button></div></div>
     <button type="button" data-tab="settings">Settings</button>
     <button type="button" data-tab="notes">Notes</button>
-    <button type="button" data-tab="intel">Intel</button>
-    <button type="button" data-tab="cbrowse">Contracts browser</button>
-    <button type="button" data-tab="itemdb">Item database</button>
   </nav>
   <datalist id="skill-names"></datalist>
 
@@ -612,8 +610,8 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="fc-cols">
         <div class="fc-box">
           <h3 id="fcn-stock">Stock value</h3>
-          <p class="muted" style="margin:0;font-size:.85rem">Enter a value by hand, or pick a kind of item (PI, moon materials, minerals…) to value it live from your hangars on the Stock tab.</p>
-          <form id="fc-hstock-form" class="row-form"><input type="text" id="fc-hstock-name" placeholder="e.g. PI stock" maxlength="60" aria-label="Name for this stock line"><select id="fc-hstock-kind" aria-label="Kind of item" style="flex:2 1 200px"></select><button type="submit">Add from hangars</button></form>
+          <p class="muted" style="margin:0;font-size:.85rem">Enter a value by hand, or pick a kind of item (PI, moon materials, minerals…) to value it live from your hangars on the Stock tab: anywhere, in one location or in one hangar (e.g. only the hangar you sell from).</p>
+          <form id="fc-hstock-form" class="row-form"><input type="text" id="fc-hstock-name" placeholder="e.g. PI stock" maxlength="60" aria-label="Name for this stock line"><select id="fc-hstock-at" aria-label="Where the items are" style="flex:2 1 200px"></select><select id="fc-hstock-kind" aria-label="Kind of item" style="flex:2 1 200px"></select><button type="submit">Add from hangars</button></form>
           <form id="fc-stock-form" class="row-form"><input type="text" id="fc-stock-name" placeholder="e.g. Moon goo in Jita" maxlength="60" aria-label="Stock name" required><input type="text" id="fc-stock-value" placeholder="Value, e.g. 2.5b" aria-label="Stock value" required inputmode="decimal"><button type="submit">Add</button></form>
           <div id="fc-stock"></div>
         </div>
@@ -1135,7 +1133,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <input type="search" id="map-find" list="map-names" placeholder="Find a system" aria-label="Find a system" style="width:180px"><datalist id="map-names"></datalist>
         <label class="label" for="map-origin">Jump from</label><input type="text" id="map-origin" list="map-names" placeholder="System" style="width:140px" aria-label="Jump origin system">
         <label class="label" for="map-ship">Range</label><select id="map-ship" aria-label="Pilot and ship for jump range"></select><input type="text" id="map-range" inputmode="decimal" style="width:70px" aria-label="Custom jump range in light years" hidden>
-        <span class="map-layers"><label><input type="checkbox" data-ml="gates"> Gates</label><label><input type="checkbox" data-ml="structs"> Citadels</label><label><input type="checkbox" data-ml="stations"> Stations</label><label><input type="checkbox" data-ml="pi"> Planets</label><label><input type="checkbox" data-ml="clones"> Clones</label><label><input type="checkbox" data-ml="friendly"> Friendly</label><label><input type="checkbox" data-ml="keepstars"> Keepstars</label><label><input type="checkbox" data-ml="npc"> NPC stations</label><label><input type="checkbox" data-ml="caps"> Capitals</label><label><input type="checkbox" data-ml="danger"> Kills (last hour)</label><label title="Ships and pods killed in the last hour that make a system dangerous (supply chain gate legs warn about them)">Danger from <input type="text" id="map-danger" inputmode="numeric" style="width:44px" aria-label="Kills that make a system dangerous"> kills</label></span>
+        <span class="map-layers"><label><input type="checkbox" data-ml="gates"> Gates</label><label><input type="checkbox" data-ml="structs"> Citadels</label><label><input type="checkbox" data-ml="stations"> Stations</label><label><input type="checkbox" data-ml="pi"> Planets</label><label><input type="checkbox" data-ml="pilots"> Pilots</label><label><input type="checkbox" data-ml="clones"> Clones</label><label><input type="checkbox" data-ml="friendly"> Friendly</label><label><input type="checkbox" data-ml="keepstars"> Keepstars</label><label><input type="checkbox" data-ml="npc"> NPC stations</label><label><input type="checkbox" data-ml="caps"> Capitals</label><label><input type="checkbox" data-ml="danger"> Kills (last hour)</label><label title="Ships and pods killed in the last hour that make a system dangerous (supply chain gate legs warn about them)">Danger from <input type="text" id="map-danger" inputmode="numeric" style="width:44px" aria-label="Kills that make a system dangerous"> kills</label></span>
         <button type="button" id="map-reset">Reset view</button>
       </div>
       <div class="toolbar" id="map-tools2" style="margin-top:6px">
@@ -1237,6 +1235,8 @@ function findSkill(name) {
 }
 let toastTimer;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 2200); }
+// localStorage as JSON; a write the browser refuses (storage full) is said once, so data never stops being kept without a word
+const ls = { warned: false, get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { if (!ls.warned) { ls.warned = true; toast("Your browser blocked saving (its storage may be full). Use Export backup to keep your data."); } return false; } } };
 function sortChars() { state.chars.sort((a, b) => a.name.localeCompare(b.name)); }
 
 /* ---------- server status ---------- */
@@ -1266,10 +1266,7 @@ function renderSrv() {
 setInterval(() => { loadStatus(); if (!$("page-map").hidden) loadKills(); }, 120e3);
 
 /* ---------- storage (this browser's localStorage, plus JSON backups) ---------- */
-function saveLocal() {
-  try { localStorage.setItem("eve-industry-roster", JSON.stringify({ chars: state.chars.map(({ _mode, ...c }) => c), extra: state.extra })); }
-  catch (e) { toast("Your browser blocked saving. Use Export backup to keep your data."); }
-}
+function saveLocal() { ls.set("eve-industry-roster", { chars: state.chars.map(({ _mode, ...c }) => c), extra: state.extra }); }
 function touch(c, source, names) {
   c.updatedAt = Date.now(); c.lastSource = source;
   if (c.syncedAt) c.handEdits = [...new Set([...(c.handEdits || []), ...names])];
@@ -1392,7 +1389,7 @@ function renderPilots() {
     const linked = c.esiId && esiTokens()[c.esiId], qEnd = queueEnd(c);
     const queue = qEnd == null ? "" : `<div class="label"${qEnd > 0 ? "" : ` style="color:var(--bad)"`}>${qEnd === 0 ? "Skill queue empty" : qEnd === -1 ? "Skill queue paused" : `Queue ends ${fmtDate(qEnd)} · ${durLabel((qEnd - Date.now()) / 60000)} left`}</div>`;
     return `<article class="pilot">
-      <div class="pilot-head"><div><span class="pilot-name">${esc(c.name)}</span><div class="label">${trained} industry skills trained</div>${c.esiId ? `<div class="label">${c.syncedAt ? `Synced from ESI ${ago(c.syncedAt)}` : "Linked to ESI"}${c.totalSp ? ` · ${(c.totalSp / 1e6).toFixed(1)}M SP` : ""}</div>` : ""}${queue}</div></div>
+      <div class="pilot-head"><div><span class="pilot-name">${esc(c.name)}</span><div class="label">${trained} industry skills trained</div>${c.esiId ? `<div class="label">${syncState(c) === "run" ? "Syncing from ESI…" : syncState(c) === "wait" ? "Waiting to sync from ESI" : c.syncedAt ? `Synced from ESI ${ago(c.syncedAt)}` : "Linked to ESI"}${c.totalSp ? ` · ${(c.totalSp / 1e6).toFixed(1)}M SP` : ""}</div>` : ""}${queue}</div></div>
       <div class="stats">
         <div class="stat"><span class="label" title="Manufacturing job slots">M slots</span><b>${d.mfg}<small>/11</small></b></div>
         <div class="stat"><span class="label" title="Science job slots (research, copying, invention)">S slots</span><b>${d.sci}<small>/11</small></b></div>
@@ -1407,7 +1404,7 @@ function renderPilots() {
         <dt>PI planets</dt><dd>${d.planets}</dd>
       </dl>
       <div class="chips">${d.can.map(([n, on]) => `<span class="chip${on ? " on" : ""}">${on ? "✓ " : ""}${n}</span>`).join("")}</div>
-      ${state.canWrite ? (extra || `<div class="pilot-actions">${c.esiId ? (linked ? `<button class="link" data-esi-sync="${c.id}">Sync from ESI</button>` : `<button class="link" data-esi-relink="1">Log in again to sync</button>`) : ""}<button class="link" data-act="paste" data-id="${c.id}">Paste skills</button><button class="link" data-act="rename" data-id="${c.id}">Rename</button><button class="link" data-act="delete" data-id="${c.id}">Remove</button></div>`) : ""}
+      ${state.canWrite ? (extra || `<div class="pilot-actions">${c.esiId ? (linked ? (syncState(c) ? `<button class="link" disabled>${syncState(c) === "run" ? "Syncing…" : "Waiting to sync"}</button>` : `<button class="link" data-esi-sync="${c.id}">Sync from ESI</button>`) : `<button class="link" data-esi-relink="1">Log in again to sync</button>`) : ""}<button class="link" data-act="paste" data-id="${c.id}">Paste skills</button><button class="link" data-act="rename" data-id="${c.id}">Rename</button><button class="link" data-act="delete" data-id="${c.id}">Remove</button></div>`) : ""}
     </article>`;
   }).join("");
 }
@@ -1459,7 +1456,7 @@ function render() {
   $("btn-add").hidden = !state.canWrite;
   $("custom-form").hidden = !state.canWrite;
   $("btn-sync-all").hidden = !state.chars.some(c => c.esiId && esiTokens()[c.esiId]);
-  renderPilots(); renderMatrix(); renderBp(); renderKeys(); renderQueues(); renderFleets(); renderChars(); renderShips(); renderJobs(); renderPlanets(); renderWallets(); renderFits(); renderOmega(); renderForecast(); renderStock(); renderMisc(); fillBpLists(); renderRoles(); renderMap(); renderImplants(); if (!$("page-plan").hidden) renderBuild("plan"); if (!$("page-misc").hidden) renderBuild("quote");
+  renderPilots(); if (!$("page-overview").hidden) renderMatrix(); renderBp(); renderKeys(); renderQueues(); renderFleets(); renderChars(); renderShips(); renderJobs(); renderPlanets(); renderWallets(); renderFits(); renderOmega(); if (!$("page-forecast").hidden) renderForecast(); renderStock(); renderMisc(); fillBpLists(); renderRoles(); renderMap(); renderImplants(); if (!$("page-plan").hidden) renderBuild("plan"); if (!$("page-misc").hidden) renderBuild("quote");
 }
 
 /* ---------- paste parser ---------- */
@@ -1542,7 +1539,7 @@ const ACT_ORDER = Object.keys(ACT);
 const bp = { names: null, byName: new Map(), saved: {}, current: null, loading: false, status: "", error: "" };
 const ESI_NAMES = ["https://esi.evetech.net/latest/universe/names/?datasource=tranquility", "https://esi.evetech.net/universe/names/"];
 
-function saveBpLocal() { try { localStorage.setItem("eve-industry-bp-saved", JSON.stringify(bp.saved)); } catch (e) {} }
+function saveBpLocal() { ls.set("eve-industry-bp-saved", bp.saved); }
 function setBpNames(map) {
   bp.names = map;
   bp.byName = new Map(Object.entries(map).map(([id, n]) => [n.toLowerCase(), +id]));
@@ -1990,7 +1987,7 @@ const DEFAULT_KEYS = [
   ["Reprocessing", 5], ["Reprocessing Efficiency", 5],
   ["Trade", 4], ["Retail", 4], ["Accounting", 4], ["Broker Relations", 4]
 ].map(([name, level]) => ({ name, level }));
-function saveKeys() { try { localStorage.setItem("eve-industry-keyskills", JSON.stringify(state.keys)); } catch (e) {} }
+function saveKeys() { ls.set("eve-industry-keyskills", state.keys); }
 function renderKeys() {
   const t = $("keys-table"); if (!t) return;
   const keys = state.keys || [];
@@ -2083,6 +2080,7 @@ const PAGES = { todo: "to-do", shortages: "shortages", reactions: "reactions-man
 function showPage(tab) {
   const t = PAGES[tab] ? tab : "overview";
   for (const k of Object.keys(PAGES)) $("page-" + k).hidden = k !== t;
+  if (t === "overview") renderMatrix();
   if (t === "misc") { renderMisc(); renderBpCalc(); renderBuild("quote"); }
   if (t === "map") { renderMap(); renderSupply(); }
   if (t === "plan") renderBuild(t);
@@ -3522,7 +3520,6 @@ const CONTRACTS_SCOPE = "esi-contracts.read_character_contracts.v1", CORP_CONTRA
 const CORP_MINING_SCOPE = "esi-industry.read_corporation_mining.v1", CHAR_MINING_SCOPE = "esi-industry.read_character_mining.v1", NOTIF_SCOPE = "esi-characters.read_notifications.v1", POCO_SCOPE = "esi-planets.read_customs_offices.v1";
 const ORDERS_SCOPE = "esi-markets.read_character_orders.v1", CORP_ORDERS_SCOPE = "esi-markets.read_corporation_orders.v1";
 const ESI_SCOPE = ["esi-skills.read_skills.v1", JOBS_SCOPE, CORP_JOBS_SCOPE, PLANETS_SCOPE, WALLET_SCOPE, CORP_WALLET_SCOPE, ASSETS_SCOPE, CORP_ASSETS_SCOPE, DIVISIONS_SCOPE, STRUCTURES_SCOPE, CONTRACTS_SCOPE, CORP_CONTRACTS_SCOPE, IMPLANTS_SCOPE, FITTINGS_SCOPE, CORP_STRUCTS_SCOPE, SEARCH_SCOPE, CLONES_SCOPE, BPS_SCOPE, CORP_BPS_SCOPE, FATIGUE_SCOPE, MARKET_SCOPE, STANDINGS_SCOPE, LOCATION_SCOPE, SHIP_SCOPE, QUEUE_SCOPE, CALENDAR_SCOPE, LOYALTY_SCOPE, CORP_MINING_SCOPE, CHAR_MINING_SCOPE, NOTIF_SCOPE, POCO_SCOPE, ORDERS_SCOPE, CORP_ORDERS_SCOPE].join(" ");
-const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 const esiTokens = () => ls.get("eve-industry-esi-tokens", {});
 function saveToken(id, rt) { const t = esiTokens(); if (rt) t[id] = rt; else delete t[id]; ls.set("eve-industry-esi-tokens", t); }
 function ago(t) { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; }
@@ -3681,10 +3678,8 @@ async function fetchQueue(charId, access) {
   const d = await esiAuthGet(`/characters/${charId}/skillqueue/`, access), names = await esiNames([...new Set(d.map(x => x.skill_id))]).catch(() => ({}));
   return d.sort((a, b) => a.queue_position - b.queue_position).map(x => ({ n: names[x.skill_id] || "Skill #" + x.skill_id, l: x.finished_level, start: x.start_date ? Date.parse(x.start_date) : null, end: x.finish_date ? Date.parse(x.finish_date) : null }));
 }
-async function applyToken(tok, refreshed) {
+async function applyToken(tok) {
   const p = jwtPayload(tok.access_token), charId = +String(p.sub).split(":").pop(), name = p.name;
-  // Saved right away (a token from a refresh is already saved): saving it at the end could overwrite a newer one
-  if (!refreshed && tok.refresh_token) { saveToken(charId, tok.refresh_token); accessCache[charId] = { tok, exp: Date.now() + (tok.expires_in || 1199) * 1000 }; }
   const { skills, totalSp, alpha } = await fetchSkills(charId, tok.access_token);
   let attrs = null; try { attrs = await esiAuthGet(`/characters/${charId}/attributes/`, tok.access_token); } catch (e) {}
   const scopes = [].concat(p.scp || []).join(" ");
@@ -3783,12 +3778,50 @@ async function applyToken(tok, refreshed) {
   sortChars(); saveLocal(); render();
   return c;
 }
+// Syncs running now (by ESI id): a pilot is never read twice at once, a second sync waits for the first
+const syncRuns = {};
 async function syncChar(c) {
   if (esiDown()) throw new Error(DOWNTIME_MSG);
   const rt = esiTokens()[c.esiId];
   if (!rt) throw new Error(`${c.name} needs to log in again`);
-  try { return await applyToken(await refreshTok(c.esiId), true); }
-  catch (e) { if (e.grant) { saveToken(c.esiId, null); render(); throw new Error(`${c.name}'s login has expired. Use "Log in again to sync"`); } throw e; }
+  if (syncRuns[c.esiId]) return syncRuns[c.esiId];
+  const id = c.esiId, qi = bgSyncQ.indexOf(id); if (qi >= 0) bgSyncQ.splice(qi, 1);   // synced by hand: no second read from the login queue
+  syncRuns[id] = (async () => {
+    try { return await applyToken(await refreshTok(id)); }
+    catch (e) { if (e.grant) { saveToken(id, null); throw new Error(`${c.name}'s login has expired. Use "Log in again to sync"`); } throw e; }
+  })().finally(() => { delete syncRuns[id]; render(); bgSyncMsg(); });
+  render(); bgSyncMsg();
+  return syncRuns[id];
+}
+// A new login only links the pilot (its login saved, a card with no skills yet); the full read runs in the background so the next character can log in straight away
+function linkChar(tok) {
+  const p = jwtPayload(tok.access_token), charId = +String(p.sub).split(":").pop(), name = p.name;
+  if (tok.refresh_token) { saveToken(charId, tok.refresh_token); accessCache[charId] = { tok, exp: Date.now() + (tok.expires_in || 1199) * 1000 }; }
+  let c = state.chars.find(x => x.esiId === charId) || state.chars.find(x => x.name.toLowerCase() === String(name).toLowerCase());
+  if (!c) { c = { id: "c" + Date.now().toString(36), name, skills: {}, createdAt: Date.now() }; state.chars.push(c); }
+  Object.assign(c, { esiId: charId, scopes: [].concat(p.scp || []).join(" ") });
+  sortChars(); saveLocal(); render();
+  return c;
+}
+// Background syncs after logins: one pilot at a time (two of one corporation would both read its wallets, assets and contracts), the others wait their turn
+const bgSyncQ = []; let bgSyncN = 0;
+const BG_SYNC_MAX = 1;
+function bgSync(c) { if (!bgSyncQ.includes(c.esiId) && !syncRuns[c.esiId]) bgSyncQ.push(c.esiId); bgSyncPump(); render(); }
+function bgSyncPump() {
+  while (bgSyncN < BG_SYNC_MAX && bgSyncQ.length) {
+    const c = state.chars.find(x => x.esiId === bgSyncQ[0]); bgSyncQ.shift(); if (!c) continue;
+    bgSyncN++;
+    syncChar(c).then(() => toast(`${c.name} synced`), (e) => toast(`${c.name} couldn't sync: ${e.message}`)).finally(() => { bgSyncN--; bgSyncPump(); bgSyncMsg(); });
+  }
+  bgSyncMsg();
+}
+// Where a pilot's sync stands: "run" (reading now), "wait" (queued after a login) or ""
+const syncState = (c) => !c.esiId ? "" : syncRuns[c.esiId] ? "run" : bgSyncQ.includes(c.esiId) ? "wait" : "";
+function bgSyncMsg() {
+  const run = state.chars.filter(c => syncState(c) === "run").map(c => c.name), wait = bgSyncQ.length;
+  const m = $("esi-sync-bg"); if (!m) return;
+  m.hidden = !run.length && !wait;
+  m.textContent = run.length || wait ? `Syncing in the background: ${run.join(", ") || "starting"}${wait ? ` · ${wait} waiting` : ""}. You can log in the next character now.` : "";
 }
 // What each permission is for; the login requests only the ticked ones
 const SCOPE_USE = {
@@ -3797,7 +3830,7 @@ const SCOPE_USE = {
   "esi-assets.read_assets.v1": "Personal hangars", "esi-assets.read_corporation_assets.v1": "Corporation hangars (Director)", "esi-corporations.read_divisions.v1": "Hangar division names (Director)",
   "esi-universe.read_structures.v1": "Structure names", "esi-contracts.read_character_contracts.v1": "Contracts", "esi-contracts.read_corporation_contracts.v1": "Corporation contracts",
   "esi-clones.read_implants.v1": "Implants (exact training times)", "esi-fittings.read_fittings.v1": "Fittings saved in game",
-  "esi-corporations.read_structures.v1": "Corporation structures and fuel (Station Manager)", "esi-search.search_structures.v1": "Find citadels by name", "esi-clones.read_clones.v1": "Jump clones (shown on the map)", "esi-characters.read_blueprints.v1": "Blueprints owned", "esi-corporations.read_blueprints.v1": "Corporation blueprints (Director)", "esi-characters.read_fatigue.v1": "Jump fatigue", "esi-location.read_location.v1": "Character location (supply chain: where ships are)", "esi-location.read_ship_type.v1": "Current ship (supply chain)", "esi-markets.structure_markets.v1": "Citadel markets (prices)", "esi-characters.read_standings.v1": "Standings (broker fees)", "esi-skills.read_skillqueue.v1": "Skill queues (when training ends, time to fly a fitting)", "esi-calendar.read_calendar_events.v1": "Calendar (upcoming fleets on the Overview)", "esi-characters.read_loyalty.v1": "Loyalty points (LP store)", "esi-industry.read_corporation_mining.v1": "Corporation moon mining (Station Manager / Accountant)", "esi-industry.read_character_mining.v1": "Mining ledger", "esi-characters.read_notifications.v1": "In-game notifications (Intel)", "esi-planets.read_customs_offices.v1": "Corporation customs offices and their tax (Director)", "esi-markets.read_character_orders.v1": "Market orders (net worth on the Overview)", "esi-markets.read_corporation_orders.v1": "Corporation market orders (Accountant or Trader)"
+  "esi-corporations.read_structures.v1": "Corporation structures and fuel (Station Manager)", "esi-search.search_structures.v1": "Find citadels by name", "esi-clones.read_clones.v1": "Jump clones (shown on the map)", "esi-characters.read_blueprints.v1": "Blueprints owned", "esi-corporations.read_blueprints.v1": "Corporation blueprints (Director)", "esi-characters.read_fatigue.v1": "Jump fatigue", "esi-location.read_location.v1": "Character location (the map and the supply chain: where pilots and ships are)", "esi-location.read_ship_type.v1": "Current ship (supply chain)", "esi-markets.structure_markets.v1": "Citadel markets (prices)", "esi-characters.read_standings.v1": "Standings (broker fees)", "esi-skills.read_skillqueue.v1": "Skill queues (when training ends, time to fly a fitting)", "esi-calendar.read_calendar_events.v1": "Calendar (upcoming fleets on the Overview)", "esi-characters.read_loyalty.v1": "Loyalty points (LP store)", "esi-industry.read_corporation_mining.v1": "Corporation moon mining (Station Manager / Accountant)", "esi-industry.read_character_mining.v1": "Mining ledger", "esi-characters.read_notifications.v1": "In-game notifications (Intel)", "esi-planets.read_customs_offices.v1": "Corporation customs offices and their tax (Director)", "esi-markets.read_character_orders.v1": "Market orders (net worth on the Overview)", "esi-markets.read_corporation_orders.v1": "Corporation market orders (Accountant or Trader)"
 };
 // Permissions known before contracts were added; anything newer starts unticked so a login never asks for something the application lacks
 const SCOPES_V1 = ESI_SCOPE.split(" ").slice(0, 10);
@@ -3828,12 +3861,13 @@ $("esi-cb-copy").addEventListener("click", async () => { try { await navigator.c
 async function finishLogin(code, st) {
   const pending = ls.get("eve-industry-esi-pending", null);
   if (!pending || pending.state !== st) { $("esi-panel").hidden = false; esiMsg("That login is from an older attempt. Click \"Log in with EVE Online\" again.", true); prepareLogin(); return; }
-  $("esi-panel").hidden = false; esiMsg("Linking and reading skills…");
+  $("esi-panel").hidden = false; esiMsg("Linking…");
   try {
-    const c = await applyToken(await tokenRequest({ grant_type: "authorization_code", code, code_verifier: pending.verifier }));
+    const c = linkChar(await tokenRequest({ grant_type: "authorization_code", code, code_verifier: pending.verifier }));
     ls.set("eve-industry-esi-pending", null); $("esi-return").value = ""; prepareLogin();
-    esiMsg(`${c.name} is linked and synced. To add another character, log in again.`);
-    toast(`${c.name} linked and synced`);
+    esiMsg(`${c.name} is linked; its skills, jobs, assets and the rest sync in the background. To add another character, log in again.`);
+    toast(`${c.name} linked`);
+    bgSync(c);
   } catch (err) { esiMsg(`Couldn't link the character: ${err.message}.`, true); }
 }
 $("esi-finish").addEventListener("submit", async (e) => {
@@ -3930,7 +3964,7 @@ function renderChars() {
   $("chars-sync-all").hidden = !state.chars.some(c => c.esiId && tokens[c.esiId]);
   if (!state.chars.length) { t.innerHTML = `<tbody><tr><td class="empty">No characters yet. Use "Link EVE character" to import one from ESI, or "Add pilot" to enter one by hand.</td></tr></tbody>`; return; }
   t.innerHTML = `<thead><tr><th scope="col">Character</th><th scope="col">Skills come from</th><th scope="col">ESI link</th><th scope="col">Last synced</th><th scope="col">Last change</th><th scope="col"><span class="label">Actions</span></th></tr></thead><tbody>${state.chars.map(c => {
-    const linked = c.esiId && tokens[c.esiId];
+    const linked = c.esiId && tokens[c.esiId], ss = syncState(c);
     const anySkill = Object.values(c.skills || {}).some(v => v > 0);
     let source;
     if (c.syncedAt) {
@@ -3938,10 +3972,10 @@ function renderChars() {
       source = `<span class="pill good">ESI</span>${n ? ` <span class="pill mid" title="${esc(c.handEdits.join(", "))}">${n} edited by hand since</span>` : ""}`;
     } else source = anySkill ? `<span class="pill mid">${esc(SOURCE[c.lastSource] || "Entered by hand")}</span>` : `<span class="pill bad">No skills yet</span>`;
     const link = c.esiId ? (linked ? `<span class="pill good">Linked</span>` : `<span class="pill bad">Login expired</span>`) : `<span class="muted">Not linked</span>`;
-    const synced = c.syncedAt ? `${fmtDate(c.syncedAt)}<br><span class="muted">${ago(c.syncedAt)}</span>` : `<span class="muted">Never</span>`;
+    const synced = (c.syncedAt ? `${fmtDate(c.syncedAt)}<br><span class="muted">${ago(c.syncedAt)}</span>` : `<span class="muted">Never</span>`) + (ss ? `<br><span class="pill mid">${ss === "run" ? "Syncing…" : "Waiting to sync"}</span>` : "");
     const changed = c.updatedAt ? `${fmtDate(c.updatedAt)}<br><span class="muted">${esc(SOURCE[c.lastSource] || "")}</span>` : `<span class="muted">—</span>`;
     const trained = allSkills().filter(sk => lv(c, sk.name) > 0).length;
-    const act = c.esiId ? (linked ? `<button class="link" data-esi-sync="${c.id}">${missingScopes(c).length ? "Sync now (new login needed)" : "Sync now"}</button>` : `<button class="link" data-esi-relink="1">Log in again</button>`) : `<button class="link" data-esi-relink="1">Link to ESI</button>`;
+    const act = c.esiId ? (linked ? (ss ? `<button class="link" disabled>${ss === "run" ? "Syncing…" : "Waiting to sync"}</button>` : `<button class="link" data-esi-sync="${c.id}">${missingScopes(c).length ? "Sync now (new login needed)" : "Sync now"}</button>`) : `<button class="link" data-esi-relink="1">Log in again</button>`) : `<button class="link" data-esi-relink="1">Link to ESI</button>`;
     const acts = c._mode === "delete"
       ? `<span>Remove ${esc(c.name)}?</span> <button class="danger" data-act="confirm-del" data-id="${c.id}">Remove</button> <button data-act="cancel" data-id="${c.id}">Keep</button>`
       : `${act} <button class="link" data-act="delete" data-id="${c.id}">Remove</button>`;
@@ -4106,7 +4140,7 @@ function left(ms) {
   return d ? `${d}d ${h}h` : h ? `${h}h ${mm}m` : `${mm}m`;
 }
 function slotsOf(c) { const d = derive(c); return { M: d.mfg, S: d.sci, R: d.rxn }; }
-function saveCorpJobs() { try { localStorage.setItem("eve-industry-corp-jobs", JSON.stringify(state.corpJobs)); } catch (e) {} }
+function saveCorpJobs() { ls.set("eve-industry-corp-jobs", state.corpJobs); }
 function hasJobData(c) { return Array.isArray(c.jobs) || !!(c.corpId && state.corpJobs[c.corpId]); }
 function jobsOf(c) {
   const out = new Map();
@@ -4473,7 +4507,7 @@ const mondayOf = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDa
 const CAL_TYPES = { mfg: "Manufacturing", rxn: "Reactions", copy: "Copying", inv: "Invention", res: "Research (ME/TE)" };
 const CHAR_PALETTE = ["#d9822b", "#3b82c4", "#8b5cf6", "#22a06b", "#e05d5d", "#0ea5a4", "#c2410c", "#64748b", "#db2777", "#65a30d"];
 function defaultCalColors() { return { mode: "type", type: { mfg: "#d9822b", rxn: "#3b82c4", copy: "#8b5cf6", inv: "#22a06b", res: "#0ea5a4" }, char: {}, hide: [] }; }
-function saveCalColors() { try { localStorage.setItem("eve-industry-cal-colors", JSON.stringify(state.calColors)); } catch (e) {} }
+function saveCalColors() { ls.set("eve-industry-cal-colors", state.calColors); }
 const calType = (a) => a === 1 ? "mfg" : (a === 9 || a === 11) ? "rxn" : a === 5 ? "copy" : (a === 3 || a === 4) ? "res" : "inv";
 function charColor(name) {
   if (!state.calColors.char[name]) { const used = Object.keys(state.calColors.char).length; state.calColors.char[name] = CHAR_PALETTE[used % CHAR_PALETTE.length]; saveCalColors(); }
@@ -4715,7 +4749,7 @@ for (const id of ["pi-harvest-h", "pi-harvest-m"]) $(id).addEventListener("chang
 $("pi-refresh").addEventListener("click", async () => { const b = $("pi-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; });
 
 /* ---------- wallets page ---------- */
-function saveCorpExtra() { try { localStorage.setItem("eve-industry-corp-extra", JSON.stringify({ wallets: state.corpWallets, names: state.corpNames })); } catch (e) {} }
+function saveCorpExtra() { ls.set("eve-industry-corp-extra", { wallets: state.corpWallets, names: state.corpNames }); }
 const isk = (n) => Math.abs(n) >= 1e12 ? (n / 1e12).toFixed(2) + "T" : Math.abs(n) >= 1e9 ? (n / 1e9).toFixed(2) + "B" : Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(1) + "M" : Math.round(n).toLocaleString();
 const iskFull = (n) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " ISK";
 function renderWallets() {
@@ -4755,7 +4789,7 @@ function renderWallets() {
 $("w-refresh").addEventListener("click", async () => { const b = $("w-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; });
 
 /* ---------- fittings page ---------- */
-function saveFits() { try { localStorage.setItem("eve-industry-fits", JSON.stringify(state.fits)); } catch (e) {} }
+function saveFits() { ls.set("eve-industry-fits", state.fits); }
 function parseEft(text) {
   const lines = text.replace(/\r/g, "").split("\n").map(l => l.trim());
   const head = lines.findIndex(l => /^\[.+\]$/.test(l));
@@ -5024,7 +5058,7 @@ function horizonDays() { const F = state.forecast; return Math.max(7, Math.min(1
 function spanLabel(d) { return d < 14 ? `${d} days` : d < 60 ? `${Math.round(d / 7)} weeks` : d < 365 ? `${Math.round(d / 30.4)} months` : `${(d / 365).toFixed(d % 365 ? 1 : 0)} years`; }
 function defaultForecast() { return { stock: [], activities: [], goals: [], history: [], horizon: 12, omega: { on: true, period: 30, plex: 500, rate: 0 } }; }
 document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-fc-hide]"); if (!b) return; const F = state.forecast, h = new Set(F.hidden || []), k = b.dataset.fcHide; if (h.has(k)) h.delete(k); else h.add(k); F.hidden = [...h]; saveForecast(); renderForecastChart(); });
-function saveForecast() { try { localStorage.setItem("eve-industry-forecast", JSON.stringify(state.forecast)); } catch (e) {} }
+function saveForecast() { ls.set("eve-industry-forecast", state.forecast); }
 // Accepts 2.5b, 800m, 1,200,000, 3k
 // Reads 8.526.506.016,00 · 8,526,506,016.00 · 8 526 506 016 · 2.5b · 2,5b · 800m · 1,200,000
 function parseIsk(v) {
@@ -5079,20 +5113,35 @@ function ownerWorth() {
   return by;
 }
 const ownerName = (k) => { const [kind, id] = k.split(":"); return kind === "corp" ? state.corpNames[id] || "Corporation " + id : (state.chars.find(c => String(c.esiId) === id) || {}).name || "Pilot " + id; };
-// Hangar-based stock lines: everything of one category or group in the counted hangars
+// Hangar-based stock lines: everything of one category or group (type "a" = everything) in the counted hangars, or only in one place of them:
+// at "" = every counted hangar, "l:<location>" = one location, "h:<owner key>|<location>|<hangar>" = one hangar (e.g. the corporation hangar you sell from)
+const stockAtOk = (at, src, r) => !at ? true : at.startsWith("l:") ? String(r.loc) === at.slice(2) : at === `h:${src.key}|${r.loc}|${r.h}`;
+function stockAtName(at) {
+  if (!at) return "";
+  if (at.startsWith("l:")) return locName(+at.slice(2));
+  const [key, loc, h] = at.slice(2).split("|"), src = state.assets[key] || {};
+  return `${src.owner || key} · ${HANGAR_NAME(h, src.divisions)} · ${locName(+loc)}`;
+}
+// The counted locations and their hangars, most valuable first (the place choice of a hangar line)
+function stockPlaces() {
+  const by = new Map();
+  for (const src of stockSources()) for (const r of src.rows) { if (!rowCounted(src, r)) continue; const v = r.q * priceOf(r), l = by.get(r.loc) || by.set(r.loc, { loc: r.loc, v: 0, hs: new Map() }).get(r.loc), k = `h:${src.key}|${r.loc}|${r.h}`;
+    l.v += v; const h = l.hs.get(k) || l.hs.set(k, { at: k, name: `${src.owner} · ${HANGAR_NAME(r.h, src.divisions)}`, v: 0 }).get(k); h.v += v; }
+  return [...by.values()].sort((a, b) => b.v - a.v).map(l => ({ ...l, hs: [...l.hs.values()].sort((a, b) => b.v - a.v) }));
+}
 function hangarMatchValue(m) {
   let v = 0;
-  for (const src of stockSources()) for (const r of src.rows) { if (!rowCounted(src, r)) continue; const meta = state.typeMeta[r.t]; if (meta && (m.type === "c" ? meta[1] : meta[0]) === m.id) v += r.q * priceOf(r); }
+  for (const src of stockSources()) for (const r of src.rows) { if (!rowCounted(src, r) || !stockAtOk(m.at, src, r)) continue; const meta = state.typeMeta[r.t]; if (m.type === "a" || (meta && (m.type === "c" ? meta[1] : meta[0]) === m.id)) v += r.q * priceOf(r); }
   return v;
 }
 const stockEntryValue = (x) => x.match ? hangarMatchValue(x.match) : (x.value || 0);
 const manualStock = () => state.forecast.stock.filter(x => !x.match).reduce((t, x) => t + (x.value || 0), 0);
 // With "whole hangars" switched on, hangar lines are already inside that total and aren't added twice
 const stockNow = () => manualStock() + (state.stockCfg.toForecast ? hangarStockValue() : state.forecast.stock.filter(x => x.match).reduce((t, x) => t + stockEntryValue(x), 0));
-// Kinds of item available in the counted hangars, with their current value
-function hangarKinds() {
+// Kinds of item available in the counted hangars (or in one place of them), with their current value
+function hangarKinds(at) {
   const c = {}, g = {};
-  for (const src of stockSources()) for (const r of src.rows) { if (!rowCounted(src, r)) continue; const meta = state.typeMeta[r.t]; if (!meta) continue; const v = r.q * priceOf(r); c[meta[1]] = (c[meta[1]] || 0) + v; g[meta[0]] = (g[meta[0]] || 0) + v; }
+  for (const src of stockSources()) for (const r of src.rows) { if (!rowCounted(src, r) || !stockAtOk(at, src, r)) continue; const meta = state.typeMeta[r.t]; if (!meta) continue; const v = r.q * priceOf(r); c[meta[1]] = (c[meta[1]] || 0) + v; g[meta[0]] = (g[meta[0]] || 0) + v; }
   return [...Object.entries(c).map(([id, v]) => ({ type: "c", id: +id, name: state.catNames[id] || "Category " + id, v })), ...Object.entries(g).map(([id, v]) => ({ type: "g", id: +id, name: state.groupNames[id] || "Group " + id, v }))];
 }
 let metaLoading = null; const metaTried = new Set();
@@ -5368,17 +5417,15 @@ function renderForecastChart() {
   svg.addEventListener("mouseleave", () => { guide.setAttribute("opacity", 0); tip.hidden = true; });
   // Stock and activities lists
   // Kinds of hangar items to pick from
-  const kinds = hangarKinds(), haveAssets = Object.keys(state.assets).length;
+  const haveAssets = Object.keys(state.assets).length;
   const needMeta = haveAssets && Object.values(state.assets).some(a => a.rows.some(r => !state.typeMeta[r.t]));
   if (needMeta) setTimeout(loadTypeMeta, 0);
-  const ksel = $("fc-hstock-kind"), kcur = ksel.value;
-  ksel.innerHTML = !haveAssets ? `<option value="">No hangar data yet (see the Assets tab)</option>` : !kinds.length ? `<option value="">${needMeta ? "Reading item categories…" : "No items in the counted hangars"}</option>`
-    : `<optgroup label="Categories">${kinds.filter(k => k.type === "c").sort((a, b) => b.v - a.v).map(k => `<option value="c:${k.id}">${esc(k.name)} · ${isk(k.v)}</option>`).join("")}</optgroup><optgroup label="Groups">${kinds.filter(k => k.type === "g").sort((a, b) => b.v - a.v).map(k => `<option value="g:${k.id}">${esc(k.name)} · ${isk(k.v)}</option>`).join("")}</optgroup>`;
-  if ([...ksel.options].some(o => o.value === kcur)) ksel.value = kcur;
-  $("fc-hstock-form").querySelector("button").disabled = !kinds.length;
+  const asel = $("fc-hstock-at"), acur = asel.value;
+  if (document.activeElement !== asel) { asel.innerHTML = `<option value="">Every counted hangar</option>${stockPlaces().map(l => `<optgroup label="${esc(locName(l.loc))}"><option value="l:${l.loc}">Every hangar here · ${isk(l.v)}</option>${l.hs.map(h => `<option value="${esc(h.at)}">${esc(h.name)} · ${isk(h.v)}</option>`).join("")}</optgroup>`).join("")}`; asel.value = [...asel.options].some(o => o.value === acur) ? acur : ""; }
+  renderFcHstockKinds(haveAssets, needMeta);
   const whole = !!state.stockCfg.toForecast;
   $("fc-stock").innerHTML = F.stock.length || whole ? `<ul class="fc-list">${whole ? `<li><span class="grow">Ticked hangars <span class="muted" style="font-size:.8rem">· ${stockLocCount().on} of ${stockLocCount().all} locations ticked on the Stock tab</span></span><span class="val">${isk(hangarStockValue())}</span><span style="width:20px"></span></li>` : ""}${F.stock.map(x2 => {
-    const v = stockEntryValue(x2), src = x2.match ? `<span class="muted" style="font-size:.8rem"> · from hangars: ${esc((x2.match.type === "c" ? state.catNames[x2.match.id] : state.groupNames[x2.match.id]) || "")}${whole ? ", already in the hangar total" : ""}</span>` : "";
+    const v = stockEntryValue(x2), src = x2.match ? `<span class="muted" style="font-size:.8rem"> · from hangars: ${esc((x2.match.type === "a" ? "everything" : x2.match.type === "c" ? state.catNames[x2.match.id] : state.groupNames[x2.match.id]) || "")}${x2.match.at ? ` in ${esc(stockAtName(x2.match.at))}` : ""}${whole ? ", already in the hangar total" : ""}</span>` : "";
     return `<li><span class="grow">${esc(x2.name)}${src}</span><span class="val" style="${x2.match && whole ? "opacity:.5" : ""}">${isk(v)}</span><button class="link" data-fc-del="stock:${x2.id}" aria-label="Remove ${esc(x2.name)}">✕</button></li>`; }).join("")}<li><b class="grow">Total</b><b class="val">${isk(stockT)}</b><span style="width:20px"></span></li></ul>` : `<p class="muted" style="margin:0">No stock entered.</p>`;
   $("fc-acts").innerHTML = F.activities.length ? `<ul class="fc-list">${F.activities.map(a => `<li><input type="checkbox" data-fc-on="${a.id}" ${a.on !== false ? "checked" : ""} aria-label="Include ${esc(a.name)}"><span class="grow">${esc(a.name)}${a.linked === "rx" ? ` <span class="muted" style="font-size:.8rem">· from Reactions management, updated with the plan</span>` : a.linked === "pi" ? ` <span class="muted" style="font-size:.8rem">· from PI Management, updated with the plan</span>` : ""}</span><span class="val"${a.weekly == null ? ` title="${a.unknown || "Some"} item${a.unknown === 1 ? " has" : "s have"} no price in the plan's pricing: left out of the totals"` : ""}>${a.weekly == null ? `<span style="color:var(--bad)">unknown</span>` : isk(a.weekly) + "/w"}</span><button class="link" data-fc-del="act:${a.id}" aria-label="Remove ${esc(a.name)}">✕</button></li>`).join("")}<li><span style="width:13px"></span><b class="grow">Per week${unknownActs().length ? ` <span class="muted" style="font-weight:normal;font-size:.8rem">· without ${esc(unknownActs().map(a => a.name).join(", "))} (no price for some items)</span>` : ""}</b><b class="val">${isk(weekly)}</b><span style="width:20px"></span></li></ul>` : `<p class="muted" style="margin:0">No activities yet.</p>`;
   F.goals = F.goals || [];
@@ -5389,6 +5436,14 @@ function renderForecastChart() {
   $("om-fc-list").innerHTML = !o.rate ? `<p class="muted" style="margin:0">Enter your PLEX price to add Omega costs to the forecast.</p>`
     : !accts.length ? `<p class="muted" style="margin:0">No accounts with a future Omega date. Add dates on the Omega tab.</p>`
     : `<p style="margin:0">${renewals.length} renewal${renewals.length === 1 ? "" : "s"} in the next ${spanLabel(days)} · <b>${isk(costAll)}</b> (${isk(o.plex * o.rate)} each)</p>${renewals.length ? `<ul class="fc-list">${renewals.slice(0, 8).map(r => `<li><span class="val" style="min-width:110px">${new Date(r.t).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" })}</span><span class="grow">${esc(r.account)}</span><span class="val">−${isk(r.cost)}</span></li>`).join("")}${renewals.length > 8 ? `<li class="muted">and ${renewals.length - 8} more</li>` : ""}</ul>` : ""}`;
+}
+// The kinds offered for a hangar line, valued in the place picked ("Everything there" first)
+function renderFcHstockKinds(haveAssets, needMeta) {
+  const at = $("fc-hstock-at").value, kinds = hangarKinds(at), ksel = $("fc-hstock-kind"), kcur = ksel.value;
+  ksel.innerHTML = !haveAssets ? `<option value="">No hangar data yet (see the Assets tab)</option>` : !kinds.length ? `<option value="">${needMeta ? "Reading item categories…" : at ? "No items there" : "No items in the counted hangars"}</option>`
+    : `<option value="a:0">${at ? "Everything there" : "Everything"} · ${isk(hangarMatchValue({ type: "a", at }))}</option><optgroup label="Categories">${kinds.filter(k => k.type === "c").sort((a, b) => b.v - a.v).map(k => `<option value="c:${k.id}">${esc(k.name)} · ${isk(k.v)}</option>`).join("")}</optgroup><optgroup label="Groups">${kinds.filter(k => k.type === "g").sort((a, b) => b.v - a.v).map(k => `<option value="g:${k.id}">${esc(k.name)} · ${isk(k.v)}</option>`).join("")}</optgroup>`;
+  ksel.value = kinds.length ? ([...ksel.options].some(o => o.value === kcur) ? kcur : (ksel.options[1] || ksel.options[0]).value) : "";
+  $("fc-hstock-form").querySelector("button").disabled = !kinds.length;
 }
 /* Net worth (Overview, like jEveAssets' tracker): the recorded days split into wallets, assets (ticked hangars + stock entered by hand), sell orders,
    buy orders' escrow and contracts, for everyone or the owners picked (state.forecast.nw: v1, days, owners [] = everyone, hidden parts).
@@ -5535,12 +5590,13 @@ function addFcItem(kind, nameEl, valEl) {
 }
 $("fc-stock-form").addEventListener("submit", (e) => { e.preventDefault(); addFcItem("stock", "fc-stock-name", "fc-stock-value"); });
 $("fc-act-form").addEventListener("submit", (e) => { e.preventDefault(); addFcItem("act", "fc-act-name", "fc-act-value"); });
+$("fc-hstock-at").addEventListener("change", () => renderFcHstockKinds(Object.keys(state.assets).length, false));
 $("fc-hstock-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  const v = $("fc-hstock-kind").value; if (!v) return;
-  const [type, id] = v.split(":"), k = hangarKinds().find(x => x.type === type && x.id === +id);
-  const name = $("fc-hstock-name").value.trim() || (k ? k.name : "Hangar stock");
-  state.forecast.stock.push({ id: "x" + Date.now().toString(36), name, match: { type, id: +id } });
+  const v = $("fc-hstock-kind").value, at = $("fc-hstock-at").value; if (!v) return;
+  const [type, id] = v.split(":"), k = hangarKinds(at).find(x => x.type === type && x.id === +id);
+  const name = $("fc-hstock-name").value.trim() || (k ? k.name : at ? stockAtName(at).split(" · ").slice(0, 2).join(" · ") : "Hangar stock");
+  state.forecast.stock.push({ id: "x" + Date.now().toString(36), name, match: { type, id: +id, ...(at ? { at } : {}) } });
   $("fc-hstock-name").value = ""; saveForecast(); renderForecast();
 });
 $("fc-goal-form").addEventListener("submit", (e) => {
@@ -5568,7 +5624,7 @@ $("fc-hclear").addEventListener("click", (e) => {
 $("fc-snap").addEventListener("click", () => { recordSnapshot(true); renderForecast(); toast("Today's values recorded"); });
 
 /* ---------- contracts ---------- */
-function saveContracts() { try { localStorage.setItem("eve-industry-contracts", JSON.stringify(state.contracts)); } catch (e) {} }
+function saveContracts() { ls.set("eve-industry-contracts", state.contracts); }
 const CT_LIVE = new Set(["outstanding", "in_progress"]);
 const slimContract = (c) => ({ id: c.contract_id, type: c.type, status: c.status, issuer: c.issuer_id, issuerCorp: c.issuer_corporation_id, forCorp: c.for_corporation, assignee: c.assignee_id, acceptor: c.acceptor_id, price: c.price || 0, reward: c.reward || 0, collateral: c.collateral || 0, buyout: c.buyout || 0, vol: c.volume || 0, avail: c.availability || "", issued: Date.parse(c.date_issued) || 0, accepted: Date.parse(c.date_accepted) || 0, done: Date.parse(c.date_completed) || 0, days: c.days_to_complete || 0, expires: Date.parse(c.date_expired), title: c.title || "", from: c.start_location_id || null, to: c.end_location_id || null });
 const slimContracts = (list) => list.filter(c => CT_LIVE.has(c.status)).map(slimContract);
@@ -5674,7 +5730,7 @@ async function syncAssets(key, owner, kind, list, corp, access, scopes, division
 // Jita 4-4 market: lowest sell order (JSV) and highest buy order (JBV) at the station, read live from ESI, kept in this browser
 const JITA_KEY = "eve-industry-jita";
 const jitaCache = (() => { try { return JSON.parse(localStorage.getItem(JITA_KEY) || "{}"); } catch (e) { return {}; } })();
-const saveJita = () => { try { localStorage.setItem(JITA_KEY, JSON.stringify(jitaCache)); } catch (e) {} };
+const saveJita = () => { ls.set(JITA_KEY, jitaCache); };
 const PRICE_MODES = { jbv: "Jita buy (JBV)", split: "Jita split", jsv: "Jita sell (JSV)" };
 const structMarket = {}, structBooks = {};
 // Every pricing: the three Jita ones, then yours (a % of another pricing, or a citadel's sell / buy / split)
@@ -6133,7 +6189,7 @@ document.addEventListener("mouseover", (e) => { const el = e.target.closest && e
 document.addEventListener("scroll", () => { tipBox.hidden = true; }, true);
 
 /* ---------- misc: jump freighters and mining fleet ---------- */
-function saveMisc() { try { localStorage.setItem("eve-industry-misc", JSON.stringify(state.misc)); } catch (e) {} }
+function saveMisc() { ls.set("eve-industry-misc", state.misc); }
 // Read one dogma attribute, whichever shape the game data uses
 function dogma(t, id) {
   const d = t.dogma_attributes || t.dogmaAttributes; if (!d) return null;
@@ -6856,16 +6912,22 @@ function mapRange() {
 }
 function mapOrigin() { const m = mapIndex(), o = (state.misc.map || {}).origin; return m && o ? m.byId.get(o) || null : null; }
 function mapMarkers() {
-  const m = mapIndex(); if (!m) return { structs: new Map(), stations: new Map(), pi: new Map(), clones: new Map(), friendly: new Map(), sk: new Map(), fk: new Map() };
-  const structs = new Map(), stations = new Map(), pi = new Map(), clones = new Map(), friendly = new Map(), sk = new Map(), fk = new Map();   // sk / fk: the biggest structure type there (its map icon)
-  const big = (M, sys, t) => { const k = structKind(t); if (k && (!M.has(sys) || STRUCT_BIG.indexOf(k) < STRUCT_BIG.indexOf(M.get(sys)))) M.set(sys, k); };
-  for (const f of [...((state.misc.friendly || {}).list || []), ...((state.misc.indy || {}).list || [])]) { (friendly.get(f.sys) || friendly.set(f.sys, []).get(f.sys)).push(`${f.n} (${f.type})`); big(fk, f.sys, f.type); }
+  const m = mapIndex(); if (!m) return { structs: new Map(), stations: new Map(), pi: new Map(), clones: new Map(), friendly: new Map() };
+  const structs = new Map(), stations = new Map(), pi = new Map(), clones = new Map(), friendly = new Map();
+  for (const f of [...((state.misc.friendly || {}).list || []), ...((state.misc.indy || {}).list || [])]) { (friendly.get(f.sys) || friendly.set(f.sys, []).get(f.sys)).push(`${f.n} (${f.type})`); }
   for (const c of state.chars) for (const l of c.clones || []) { const sys = l.id > 1e12 ? ((state.misc.structs || {})[l.id] || {}).system : (state.misc.locSys || {})[l.id]; if (sys) (clones.get(sys) || clones.set(sys, []).get(sys)).push(`${c.name}: ${l.home ? "home clone" : "jump clone" + (l.name ? " " + l.name : "")}${l.implants ? ` (${l.implants} implants)` : ""} · ${state.locNames[l.id] || ((state.misc.structs || {})[l.id] || {}).name || "station"}`); }
-  for (const s of Object.values(state.misc.structs || {})) if (!s.hidden && s.system) { (structs.get(s.system) || structs.set(s.system, []).get(s.system)).push(s.name || "Structure"); big(sk, s.system, s.typeName || STRUCT_TYPE_IDS[s.type]); }
+  for (const s of Object.values(state.misc.structs || {})) if (!s.hidden && s.system) { (structs.get(s.system) || structs.set(s.system, []).get(s.system)).push(s.name || "Structure"); }
   const locSys = state.misc.locSys || {};
   for (const a of Object.values(state.assets || {})) for (const r of a.rows) if (r.loc < 1e12 && locSys[r.loc]) { const k = locSys[r.loc]; const set = stations.get(k) || stations.set(k, new Set()).get(k); set.add(state.locNames[r.loc] || "Station"); }
   for (const c of state.chars) for (const pl of c.planets || []) { const sys = pl.system && m.byName.get(String(pl.system).toLowerCase()); if (sys) (pi.get(sys.id) || pi.set(sys.id, []).get(sys.id)).push(`${c.name}: ${pl.name}`); }
-  return { structs, stations, pi, clones, friendly, sk, fk };
+  return { structs, stations, pi, clones, friendly };
+}
+// Where each pilot was last seen, per system (ESI "Character location", read at each sync): docked where, in which ship, read when
+function mapPilots() {
+  const out = new Map(), structs = state.misc.structs || {};
+  for (const c of state.chars) { const l = c.loc; if (!l || !l.sys) continue; const dock = l.station || l.structure;
+    (out.get(l.sys) || out.set(l.sys, []).get(l.sys)).push({ c, at: l.at, where: dock ? state.locNames[dock] || (structs[dock] || {}).name || (l.station ? "a station" : "a citadel") : "", ship: c.ship ? state.typeNames[c.ship.type] || c.ship.name || "" : "" }); }
+  return out;
 }
 // Capital ships in your hangars, per system, drawn with their in-game icon
 function mapCapitals() {
@@ -6877,22 +6939,19 @@ function mapCapitals() {
   }
   return out;
 }
-// The overview's ship class brackets (the game's 16 px icons, hosted on the EVE University wiki), tinted gold
-const BRACKET_OF = { 30: "titan", 659: "supercarrier", 485: "dreadnought", 4594: "dreadnought", 547: "carrier", 1538: "force_auxiliary", 883: "industrial_capital", 902: "industrial_capital", 513: "industrial_capital" };
-const BRACKETS = { titan: ["c/cd", "T"], supercarrier: ["f/fa", "S"], dreadnought: ["f/fa", "D"], carrier: ["5/50", "C"], force_auxiliary: ["2/2a", "F"], industrial_capital: ["a/a0", "I"] };
+// The overview's ship class brackets (the game's 16 px icons, from CCP's image export), tinted gold
+const BRACKET_OF = { 30: "titan", 659: "supercarrier", 485: "dreadnought", 4594: "dreadnought", 547: "carrier", 1538: "force_auxiliary", 883: "industrial_capital", 902: "jump_freighter", 513: "industrial_capital" };
+const BRACKETS = { titan: "T", supercarrier: "S", dreadnought: "D", carrier: "C", force_auxiliary: "F", industrial_capital: "I", jump_freighter: "J" };
+const BRACKET_SRC = {"titan": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJpJREFUeNpiZqAQMOGT/P///xkQJssAqMbq1tbWffgMYSGg2dnGxubKwYMHr4DEGBkZTQj6Ceps95aWli6YFw4cOBAHwoS8g6EZKKQCxGlEGwKSRNeMLIdkQBqhUIfbjGwjEj8NZywAA2oWkHICKkxDjwVsgciEptkEalMaWixMwmfIcI4FPPKEYwGIZ2GRIy4WsGnGZQhAgAEAdWn2AWu1MhQAAAAASUVORK5CYII=", "supercarrier": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAKlJREFUeNpiYKAl+P///xkQxqeGCZ9mIFXd2tq6j5AhuGx2BzLTgFjlwIEDcUQbgq4ZJk6UIbg0E2UIIc1EG7J8+XI/PC40hmpWgVqE3ZC0tLQGPJrTsGpGdha6IeiasXoB5H9shmDTjBRW+AMIKSVi04w9oEGBiOZEZM3GhGIJogPidHSXGGMLQBZsBsyaNasBLWDTGRkZjWHSyGoZCaRs9ICaha4AIMAAjkzPkskx9M0AAAAASUVORK5CYII=", "dreadnought": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAANtJREFUeNpiYBjU4P///2dAGJ8aJnyagVR1a2vrPkKG4LLZHchMA2KVAwcOxBFtCLpmmDhRhuDSTNAQoKAxIc3ohoD0oNh8/vz5CEKasbhECh4LR44csYiMjDwLlHgHxEJYXCkEw/b29l+hwj4sMAUfP378lZCQoP/27VspqNAeIP6OZIYpUI4Nyv4lLCwMZjAixTkKOHjw4CQHB4dFUHlQ2LSiq2FkZJzFAmWYpKWlNSBLzpw5Mw/oVwagc1+CNAPVgMLIiVD4SCFjpKSsAg1gskAaJZoJAoAAAwBUVqExJint3QAAAABJRU5ErkJggg==", "carrier": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAItJREFUeNpiYKAl+P///xkQxqeGCZ9mIFXd2tq6j5AhuGx2BzLTgFjlwIEDcUQbgq4ZJk6UIbg0E2UIIc0EDQEJtrS0dOHTDFXnDjUgDW8skB3vy5cv98Mjbwy1XQXmAqyGpKWlNeDRnIZTMy5DSNKMbgghzYyEDAErYmScBRWaRU7YEu9scgBAgAEA0huSe55HAeEAAAAASUVORK5CYII=", "force_auxiliary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJlJREFUeNpiYKAQMGIT/P///xmsihkZTdDFWHBorm5tbXXGJoduCAs2zUBF8kB6FroBNjY2V7AZAtcMxO5AZhoQq+Dy84EDB+JweRFsCEgBLs0gC6CaVaAWEW8IUZpxGUKyZmxhgdfvxAYkwQAckFhgQU+qUEMY7O3tX2IxoxWoJgJIO8ESGql5AUUzTgOgAFd0zWKgJgAIMADCsphArP7xFQAAAABJRU5ErkJggg==", "industrial_capital": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAKRJREFUeNpiYBjygBFd4P///2fwamBkNEHms2DRXN3a2uqMywCQGmRDWNA1AyXlgfQsXAbY2NhcQTcEbkBLS0sXkKmCzwtAde5Qy9JAfCZKA5EFly04AnAnQQMOHDhgBaTysBkAlBMHUi/xGmBvb58HtCkCyHTC4rK8gwcPTgKqwR490MBRgQUQrmjEGYhAm2dBbZ5FbEJCB2kkREDa4MhMAAEGACRoS6t2KrytAAAAAElFTkSuQmCC", "jump_freighter": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAMdJREFUeNpiYKAQMKIL/P///wxeDYyMJsh8Fiyaq1tbW51xGQBSg24IXAKI3VtaWrqAXBVs+MCBA3EgjNWVIEE0zVgBkgFpID4TDnV3cBlgb2//EmcYQG2wAipSJjYWWLDYkIdPw8GDBycB1WBGIyxggCEcAaSc8MRCGlTdLCA1iwUtjkGCTjBF2NIASA1yLLCgJZA0qGasaQGWBmBqSUoLuNIA1qQMCihsUQYErUhhNAurAfjyA7pmnAZAQRoO8VkM1AQAAQYAs314QEeCJx8AAAAASUVORK5CYII="};
 const BRACKET_ORDER = Object.keys(BRACKETS), bracketImgs = {};
 function bracketIcon(k) {
   let e = bracketImgs[k]; if (e) return e.cv || null;
-  e = bracketImgs[k] = {}; const url = `https://wiki.eveuniversity.org/images/${BRACKETS[k][0]}/Icon_bracket_${k}.png`, srcs = [url];
-  if (/^https?:$/.test(location.protocol)) srcs.push("/proxy?url=" + encodeURIComponent(url));
-  const next = () => { const src = srcs.shift(); if (!src) { e.failed = true; return; } const im = new Image();
-    im.onload = () => { if (!im.naturalWidth) return next(); const cv = document.createElement("canvas"); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const c = cv.getContext("2d"); c.drawImage(im, 0, 0); c.globalCompositeOperation = "source-in"; c.fillStyle = "#e9a540"; c.fillRect(0, 0, cv.width, cv.height); e.cv = cv; drawMap(); paintMarks(); };
-    im.onerror = next; im.src = src; };
-  next(); return null;
+  e = bracketImgs[k] = {}; const im = new Image();
+  im.onload = () => { const cv = document.createElement("canvas"); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const c = cv.getContext("2d"); c.drawImage(im, 0, 0); c.globalCompositeOperation = "source-in"; c.fillStyle = "#e9a540"; c.fillRect(0, 0, cv.width, cv.height); e.cv = cv; drawMap(); paintMarks(); };
+  im.src = BRACKET_SRC[k] || BRACKET_SRC.carrier; return null;
 }
 // Upwell structure icons (the game's brackets): which one a structure type uses
 const STRUCT_ICON_KINDS = ["keepstar", "fortizar", "astrahus", "sotiyo", "azbel", "raitaru", "tatara", "athanor"];
-const STRUCT_BIG = ["keepstar", "fortizar", "sotiyo", "tatara", "azbel", "astrahus", "raitaru", "athanor"];   // biggest first: the one a system's map icon shows
 const STRUCT_ICON_SRC = {"astrahus": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASElEQVR42mNgGAV4wf///+/9////Hj41TJRaQrEBjNicjVcDI6MSMp8Fh7p8HOIT0QVY8Ni0Gc1lvtjUseCJAV+6hMEoYGAAAFXxGBOdWF8DAAAAAElFTkSuQmCC", "keepstar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42mNgGGjAyMDAwPD///97WCUZGZUIybMg8fPR5Cei8bHKM6GZuJmRkXEzTudikWeiNAwoNoAFnySuwCPWgHyyXYAvIKkeBtQNxP////tSNSkT1AxN6gMLAA6FGUOoQDFMAAAAAElFTkSuQmCC", "fortizar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgGPKAEZvg////72FVzMiohC7GgsfwfDT+RGyKmPA6j5FxMyMj42Z8algIORuX12DeYSHgbFxyE7Ga/v//f18iXOGL7BImSqORYgNYsDmRrIRETCwQSlRDFAAA5vAlY3EQz1gAAAAASUVORK5CYII=", "raitaru": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR42mNgGNTg////9/7//38PnxomSi1hxGYrXg2MjErIfBYc6vJxiE9EF2DBY9NmNJf50iQMKDaABU8U+tIlFgY+IQ0DAADU8h/NM3/fxgAAAABJRU5ErkJggg==", "sotiyo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgoAX4////vf///9/DxUcGTJRaxkTIBkIuZIQJkGM7IyOjEgsSP59E/RMZGBgYWNBM3EykF3ypG4gDagALLr8RHROURiMTugAjI6MSsXy4F9AFibGZaoFIMQAA3F8waxjQiAMAAAAASUVORK5CYII=", "azbel": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVklEQVR42mNgGNTg////9/7//38PnxomUjRgk2dEV0CMyxgZGZVgbBYs8vkE9E9E5rDgsGEzDi/44g0DcgDFBrAQ61ScAUppLDDhUoCsCJ1P1ZQ4DAAAnm4vzfz7N8oAAAAASUVORK5CYII=", "tatara": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaUlEQVR42u1RQQ6AMAhrl31vPlYfiCdM07Bk6sGLPQ0YpRTgaxAAIiIeNZPsEm83+3cA6MZ4aJzKSNLyI9/trQe9YnYl1WQvKIbnlUA/Xgpyx9VrqCdtVepMPivXc4pewWtLDrsHFRp+nCjKWWd5irC/AAAAAElFTkSuQmCC", "athanor": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR42u1QOQ4AIAizhu/pY/WBdVFDDF5xtVuB0oJzH9CEJI9EQNeJ0Y8bfdJEJg5ZJ2qOJMM4619/YC6wnKza8okAoE8Ye0fxWHF9wscdCpA2J50FxajRAAAAAElFTkSuQmCC"};
 const structKind = (typeName) => { const n = String(typeName || "").toLowerCase(); return STRUCT_ICON_KINDS.find(k => n.includes(k)) || null; };
 const sIcon = (typeName, color) => { const k = structKind(typeName); return k ? `<span class="sicon si-${k}"${color ? ` style="color:${color}"` : ""} title="${k[0].toUpperCase() + k.slice(1)}" aria-hidden="true"></span>` : ""; };
@@ -6903,38 +6962,28 @@ function drawStructIcon(g, k, x, y, sz, color) {
   if (e.cv) { const sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.fillStyle = "rgba(11,18,32,.7)"; g.fillRect(x, y + 2, sz, sz - 4); g.drawImage(e.cv, x, y, sz, sz); g.imageSmoothingEnabled = sm; return true; }
   return false;
 }
-// Planetary Colonies (Neocom icon, from the EVE University wiki), tinted per use
-const piImg = { tint: {} };
-function piLoad() {
-  if (piImg.started) return; piImg.started = true; const url = "https://wiki.eveuniversity.org/images/5/52/Planets.png", srcs = [url]; if (/^https?:$/.test(location.protocol)) srcs.push("/proxy?url=" + encodeURIComponent(url));
-  const next = () => { const src = srcs.shift(); if (!src) return; const im = new Image(); im.onload = () => { if (!im.naturalWidth) return next(); piImg.im = im; drawMap(); paintMarks(); }; im.onerror = next; im.src = src; };
-  next();
-}
-function piTinted(color) {
-  if (!piImg.im) { piLoad(); return null; }
-  if (!piImg.tint[color]) { const im = piImg.im, cv = document.createElement("canvas"); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const c = cv.getContext("2d"); c.drawImage(im, 0, 0); c.globalCompositeOperation = "source-in"; c.fillStyle = color; c.fillRect(0, 0, cv.width, cv.height); piImg.tint[color] = cv; }
-  return piImg.tint[color];
-}
-function piFallback(g, x, y, sz, color) { g.strokeStyle = color; g.lineWidth = Math.max(1.2, sz / 10); g.beginPath(); g.arc(x + sz / 2, y + sz / 2, sz / 2 - 2, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.ellipse(x + sz / 2, y + sz / 2, sz / 2, sz / 5, -0.4, 0, Math.PI * 2); g.stroke(); }
+// Your planets: a ringed planet, drawn (the EVE University wiki's Neocom icon stopped loading)
+function piIcon(g, x, y, sz, color) { g.strokeStyle = color; g.lineWidth = Math.max(1.2, sz / 10); g.beginPath(); g.arc(x + sz / 2, y + sz / 2, sz / 2 - 2, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.ellipse(x + sz / 2, y + sz / 2, sz / 2, sz / 5, -0.4, 0, Math.PI * 2); g.stroke(); }
 
 function drawBracket(g, k, x, y, sz) {
   const cv = bracketIcon(k); if (cv) { const sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(cv, x, y, sz, sz); g.imageSmoothingEnabled = sm; return; }
   g.strokeStyle = "#e9a540"; g.lineWidth = 1.3; g.beginPath(); g.moveTo(x + sz / 2, y + 1.5); g.lineTo(x + sz - 1.5, y + sz - 2); g.lineTo(x + 1.5, y + sz - 2); g.closePath(); g.stroke();
-  g.fillStyle = "#e9a540"; g.font = "700 7px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(BRACKETS[k][1], x + sz / 2, y + sz * 0.62);
+  g.fillStyle = "#e9a540"; g.font = "700 7px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(BRACKETS[k] || "C", x + sz / 2, y + sz * 0.62);
 }
 // Map markers: one look per kind (colour and drawing) shared by the map, its legend, the selected system's panel and the hover box.
 // Rule (user's request): change a marker here only, so the four always match. draw(g, cx, cy, s, arg): centred on cx, cy, about s wide;
 // ico: its size in the 16 px icons of the lists (mkIco), painted by paintMarks on a small dark tile like the map's background.
 const mkDiamond = (g, cx, cy, d) => { g.beginPath(); g.moveTo(cx, cy - d); g.lineTo(cx + d * 0.75, cy); g.lineTo(cx, cy + d); g.lineTo(cx - d * 0.75, cy); g.closePath(); };
 const MK = {
-  struct: { c: "#fbbf24", ico: 16, draw(g, cx, cy, s, k) { if (k && drawStructIcon(g, k, cx - s / 2, cy - s / 2, s, this.c)) return; g.fillStyle = this.c; g.strokeStyle = "#0b1220"; g.lineWidth = 1; mkDiamond(g, cx, cy, s / 2); g.fill(); g.stroke(); } },
-  friendly: { c: "#fde68a", ico: 16, draw(g, cx, cy, s, k) { if (k && drawStructIcon(g, k, cx - s / 2, cy - s / 2, s, this.c)) return; g.strokeStyle = this.c; g.lineWidth = 1.4; mkDiamond(g, cx, cy, s / 2); g.stroke(); } },
+  struct: { c: "#fbbf24", ico: 15, draw(g, cx, cy, s) { g.fillStyle = this.c; g.strokeStyle = "#0b1220"; g.lineWidth = 1; mkDiamond(g, cx, cy, s / 2); g.fill(); g.stroke(); } },
+  friendly: { c: "#fde68a", ico: 15, draw(g, cx, cy, s) { g.strokeStyle = this.c; g.lineWidth = 1.4; mkDiamond(g, cx, cy, s / 2); g.stroke(); } },
   keepstar: { c: "#facc15", ico: 16, draw(g, cx, cy, s) { if (!drawStructIcon(g, "keepstar", cx - s / 2, cy - s / 2, s, this.c)) keepstarIcon(g, cx, cy, s / 2); } },
   cap: { c: "#e9a540", ico: 16, draw(g, cx, cy, s, k) { drawBracket(g, k || "carrier", cx - s / 2, cy - s / 2, s); } },
   station: { c: "#38bdf8", ico: 11, draw(g, cx, cy, s) { g.strokeStyle = this.c; g.lineWidth = 1.5; g.strokeRect(cx - s / 2, cy - s / 2, s, s); } },
   npc: { c: "#cbd5e1", ico: 7, draw(g, cx, cy, s) { g.fillStyle = this.c; g.strokeStyle = "#0b1220"; g.lineWidth = 1; g.fillRect(cx - s / 2, cy - s / 2, s, s); g.strokeRect(cx - s / 2, cy - s / 2, s, s); } },
-  pi: { c: "#4ade80", ico: 15, draw(g, cx, cy, s) { const cv = piTinted(this.c); if (cv) g.drawImage(cv, cx - s / 2, cy - s / 2, s, s); else piFallback(g, cx - s / 2, cy - s / 2, s, this.c); } },
+  pi: { c: "#4ade80", ico: 15, draw(g, cx, cy, s) { piIcon(g, cx - s / 2, cy - s / 2, s, this.c); } },
   clone: { c: "#c084fc", ico: 13, draw(g, cx, cy, s) { const u = s / 12; g.fillStyle = this.c; g.strokeStyle = "#0b1220"; g.lineWidth = 1; g.beginPath(); g.arc(cx, cy - 3.5 * u, 2.6 * u, 0, Math.PI * 2); g.fill(); g.stroke(); g.beginPath(); g.moveTo(cx - 4 * u, cy + 5 * u); g.quadraticCurveTo(cx, cy - 2.5 * u, cx + 4 * u, cy + 5 * u); g.closePath(); g.fill(); g.stroke(); } },
+  pilot: { c: "#22d3ee", ico: 14, draw(g, cx, cy, s) { const R = s / 2; g.strokeStyle = this.c; g.lineWidth = Math.max(1.6, s / 9); g.lineCap = "round"; for (let i = 0; i < 4; i++) { const a = Math.PI / 4 + i * Math.PI / 2; g.beginPath(); g.arc(cx, cy, R - g.lineWidth / 2, a - 0.38, a + 0.38); g.stroke(); } g.lineCap = "butt"; } },
   home: { c: "#f8fafc", ico: 13, draw(g, cx, cy, s) { const k = s * 0.46; g.fillStyle = this.c; g.strokeStyle = "#0b1220"; g.lineWidth = 1; g.beginPath(); g.moveTo(cx - k, cy); g.lineTo(cx, cy - k); g.lineTo(cx + k, cy); g.lineTo(cx + k * 0.7, cy); g.lineTo(cx + k * 0.7, cy + k * 0.9); g.lineTo(cx - k * 0.7, cy + k * 0.9); g.lineTo(cx - k * 0.7, cy); g.closePath(); g.fill(); g.stroke(); } },
   origin: { c: "#34d399", ico: 15, draw(g, cx, cy, s, a) { const b = s / 2; a = +a || s * 0.2; g.strokeStyle = this.c; g.lineWidth = 2.2; g.beginPath(); g.moveTo(cx - b, cy); g.lineTo(cx - a, cy); g.moveTo(cx + a, cy); g.lineTo(cx + b, cy); g.moveTo(cx, cy - b); g.lineTo(cx, cy - a); g.moveTo(cx, cy + a); g.lineTo(cx, cy + b); g.stroke(); g.setLineDash([2, 3]); g.beginPath(); g.arc(cx, cy, a + 2, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); } },
   kills: { c: "#ef4444", ico: 13, draw(g, cx, cy, s, bad) { const R = s / 2; if (bad) { g.fillStyle = "rgba(239,68,68,0.22)"; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill(); } g.strokeStyle = bad ? "rgba(239,68,68,0.95)" : "rgba(251,146,60,0.55)"; g.lineWidth = bad ? 2 : 1; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke(); } },
@@ -6945,7 +6994,7 @@ const mkIco = (kind, arg) => `<canvas class="mk-ico" width="32" height="32" data
 function paintMarks(root = document) {
   for (const c of root.querySelectorAll("canvas.mk-ico")) { const M = MK[c.dataset.mk], g = c.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.setTransform(c.width / 16, 0, 0, c.height / 16, 0, 0); if (M && M.draw) M.draw(g, 8, 8, M.ico, c.dataset.mkArg || ""); }
 }
-function mapLayers() { return { gates: true, structs: true, stations: true, pi: true, clones: true, friendly: true, keepstars: true, npc: true, caps: true, danger: true,...((state.misc.map || {}).layers || {}) }; }
+function mapLayers() { return { gates: true, structs: true, stations: true, pi: true, pilots: true, clones: true, friendly: true, keepstars: true, npc: true, caps: true, danger: true,...((state.misc.map || {}).layers || {}) }; }
 let mapRaf = 0;
 function drawMap() { cancelAnimationFrame(mapRaf); mapRaf = requestAnimationFrame(drawMapNow); }
 // Sovereignty (public ESI), kept for an hour; allied alliances are picked by the user
@@ -7022,10 +7071,10 @@ function drawMapNow() {
   // Your planets: the Neocom's Planetary Colonies icon below-left of the dot
   if (L.pi) for (const id of mk.pi.keys()) mark(id, (x, y) => MK.pi.draw(g, x - r - 8.5, y + r + 7.5, 13));
   if (L.stations) for (const id of mk.stations.keys()) mark(id, (x, y) => MK.station.draw(g, x, y, 2 * r + 8));
-  // Friendly (imported) structures: their type's icon (else a hollow diamond) on the dot, under your own citadels
-  if (L.friendly) for (const id of mk.friendly.keys()) if (!(L.structs && mk.structs.has(id))) mark(id, (x, y) => { MK.friendly.draw(g, x, y, mk.fk.has(id) ? 16 : 2 * (r + 5), mk.fk.get(id)); dot(id, x, y); });
-  // Your citadels: the biggest one's type icon (else a gold diamond) on the dot
-  if (L.structs) for (const id of mk.structs.keys()) mark(id, (x, y) => { MK.struct.draw(g, x, y, mk.sk.has(id) ? 16 : 2 * (r + 6), mk.sk.get(id)); dot(id, x, y); });
+  // Friendly (imported) structures: a hollow pale diamond under the dot, unless you have a citadel there
+  if (L.friendly) for (const id of mk.friendly.keys()) if (!(L.structs && mk.structs.has(id))) mark(id, (x, y) => { MK.friendly.draw(g, x, y, 2 * (r + 5)); dot(id, x, y); });
+  // Your citadels: a gold diamond under the dot
+  if (L.structs) for (const id of mk.structs.keys()) mark(id, (x, y) => { MK.struct.draw(g, x, y, 2 * (r + 6)); dot(id, x, y); });
   // NPC stations: a small square under the dot, once zoomed in enough to keep high-sec readable
   if (L.npc && zoom >= 2) { const k = zoom >= 6 ? 4.5 : 3.5; for (const s of mapData.systems) if (s.st) { const x = X(s), y = Y(s); if (x < -10 || y < -10 || x > w + 10 || y > h + 10) continue; MK.npc.draw(g, x, y + r + 3 + k / 2, k); } }
   // Capitals in your hangars: the ship's icon above-right of the dot, with how many
@@ -7039,6 +7088,8 @@ function drawMapNow() {
   if (incursions) for (const id of incursions.sys) mark(id, (x, y) => MK.incursion.draw(g, x, y, 2 * (r + 5)));
   // Jump clones: a small person to the right of the dot
   if (L.clones) for (const id of mk.clones.keys()) mark(id, (x, y) => MK.clone.draw(g, x + r + 15, y, 12));
+  // Your pilots' last location: the game's own-ship bracket around the dot (who is there: the hover box and the system panel)
+  if (L.pilots) for (const id of mapPilots().keys()) mark(id, (x, y) => MK.pilot.draw(g, x, y, 2 * (r + 6)));
   // Home systems: a little house to the left of the dot (labels sit above)
   for (const id of mm.homes || []) mark(id, (x, y) => MK.home.draw(g, x - r - 17, y, 12));
   // Hauling trips from the build planner: each trip its own lane, an arrow for the direction, numbers placed so they never overlap
@@ -7108,10 +7159,10 @@ function renderMapInfo() {
   if (origin && rg.range > 0) {
     // Your destinations in range, closest first, with fuel for the chosen pilot and ship
     const dests = [];
-    for (const [sid, names] of mk.structs) dests.push({ sid, kind: mkIco("struct", mk.sk.get(sid)), names });
+    for (const [sid, names] of mk.structs) dests.push({ sid, kind: mkIco("struct"), names });
     for (const [sid, names] of mk.stations) dests.push({ sid, kind: mkIco("station"), names: [...names] });
     for (const sid of homes) if (!mk.structs.has(sid) && !mk.stations.has(sid)) dests.push({ sid, kind: mkIco("home"), names: ["Home"] });
-    if (mapLayers().friendly) for (const [sid, names] of mk.friendly) if (!mk.structs.has(sid) && !mk.stations.has(sid) && !homes.includes(sid)) dests.push({ sid, kind: mkIco("friendly", mk.fk.get(sid)), names });
+    if (mapLayers().friendly) for (const [sid, names] of mk.friendly) if (!mk.structs.has(sid) && !mk.stations.has(sid) && !homes.includes(sid)) dests.push({ sid, kind: mkIco("friendly"), names });
     const sh = rg.sh, price = sh ? isoPrice(sh.d.fuelType).p : 0, perLy = sh ? jumpFuel(sh.c, sh.d) : 0;
     const rows = dests.map(d => ({ ...d, s: m.byId.get(d.sid) })).filter(d => d.s && d.s !== origin).map(d => ({ ...d, ly: lyBetween(origin, d.s) })).filter(d => d.ly <= rg.range).sort((a, b) => a.ly - b.ly);
     html += `<details class="jr-box"${mapUI.rangeOpen ? " open" : ""} style="margin-top:14px"><summary style="cursor:pointer"><h3 style="display:inline;margin:0">In jump range of ${esc(origin.n)}</h3> <span class="muted" style="font:400 .85rem var(--f-body)">${rows.length} destination${rows.length === 1 ? "" : "s"} · ${rg.range.toFixed(2)} ly${rg.label ? " · " + esc(rg.label) : ""}</span></summary>` + (rows.length ? `<div class="scroller"><table class="bp-table" data-sorted="2:1"><thead><tr><th scope="col">Destination</th><th scope="col">System</th><th scope="col" class="num">Distance</th>${sh ? `<th scope="col" class="num">Isotopes</th><th scope="col" class="num">Fuel cost</th><th scope="col" class="num">Round trip</th>` : ""}</tr></thead><tbody>${rows.map(d => {
@@ -7125,12 +7176,13 @@ document.addEventListener("toggle", (e) => { if (e.target.classList && e.target.
 // What's in a system, one line each with its map marker (MK): the selected system's panel, and the hover box (short: no rigs or hangar, NPC stations counted)
 function mapSysItems(s, short) {
   const mk = mapMarkers(), id = s.id, L = [];
-  for (const x of Object.values(state.misc.structs || {})) if (!x.hidden && x.system === id) { const t = x.typeName || STRUCT_TYPE_IDS[x.type] || ""; L.push(`${mkIco("struct", structKind(t))} ${esc(x.name || "Structure")}${t ? ` <span class="muted">(${esc(t)})</span>` : ""}`); }
+  for (const p of mapPilots().get(id) || []) L.push(`${mkIco("pilot")} ${esc(p.c.name)} <span class="muted">· ${p.where ? "docked" + (short ? "" : " at " + esc(p.where)) : "in space"}${p.ship ? ` · ${esc(p.ship)}` : ""}${short ? "" : ` · seen ${ago(p.at)}`}</span>`);
+  for (const x of Object.values(state.misc.structs || {})) if (!x.hidden && x.system === id) { const t = x.typeName || STRUCT_TYPE_IDS[x.type] || ""; L.push(`${mkIco("struct")} ${esc(x.name || "Structure")}${t ? ` <span class="muted">(${esc(t)})</span>` : ""}`); }
   for (const n of mk.stations.get(id) || []) L.push(`${mkIco("station")} ${esc(n)}`);
   for (const c of mapCapitals().get(id) || []) L.push(`${mkIco("cap", BRACKET_OF[(state.typeMeta[c.t] || [])[0]] || "carrier")} ${esc(c.name)}${c.q > 1 ? " ×" + c.q : ""} <span class="muted">· ${esc(c.owner)}${!short && c.where ? ` · ${esc(c.where)}` : ""}</span>`);
   for (const n of mk.pi.get(id) || []) L.push(`${mkIco("pi")} ${esc(n)}`);
   for (const n of mk.clones.get(id) || []) L.push(`${mkIco("clone")} ${esc(n)}`);
-  for (const f of [...((state.misc.friendly || {}).list || []), ...((state.misc.indy || {}).list || [])]) if (f.sys === id) L.push(`${mkIco("friendly", structKind(f.type))} ${esc(f.n)} <span class="muted">(${esc(f.type)}${f.tax != null ? `, tax ${f.tax}%` : ""})</span>${!short && (f.rigs || []).length ? `<div class="muted" style="font-size:.8rem;margin:0 0 2px 20px">${f.rigs.map(n => esc(n.replace(/^Standup /, ""))).join("<br>")}</div>` : ""}`);
+  for (const f of [...((state.misc.friendly || {}).list || []), ...((state.misc.indy || {}).list || [])]) if (f.sys === id) L.push(`${mkIco("friendly")} ${esc(f.n)} <span class="muted">(${esc(f.type)}${f.tax != null ? `, tax ${f.tax}%` : ""})</span>${!short && (f.rigs || []).length ? `<div class="muted" style="font-size:.8rem;margin:0 0 2px 20px">${f.rigs.map(n => esc(n.replace(/^Standup /, ""))).join("<br>")}</div>` : ""}`);
   if (s.st) { if (short) L.push(`${mkIco("npc")} ${s.st.length} NPC station${s.st.length > 1 ? "s" : ""}`); else for (const sid of s.st) L.push(`${mkIco("npc")} ${npcNames.has(sid) ? esc(npcNames.get(sid)) : "NPC station…"}`); }
   return L;
 }
@@ -7172,7 +7224,7 @@ function renderMap() {
     const dl = $("map-names"); if (!dl.options.length) dl.innerHTML = mapData.systems.map(s => `<option value="${esc(s.n)}">`).join("");
     const o = mapOrigin(); if (document.activeElement !== $("map-origin")) $("map-origin").value = o ? o.n : "";
     $("map-status").textContent = `${mapData.systems.length.toLocaleString()} systems · loaded ${ago(mapData.at)}${m.has2d ? "" : " · no 2D layout"} · showing the ${m.layout === "2d" ? "2D schematic" : "3D (seen from above)"} map`;
-    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span>${mkIco("struct", "astrahus")} Your citadel (its type's icon)</span><span>${mkIco("friendly", "astrahus")} Friendly (imported)</span><span>${mkIco("keepstar")} Keepstar</span><span>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span>${mkIco("npc")} NPC station (zoom in)</span><span>${mkIco("station")} Station with your stock</span><span>${mkIco("pi")} Your planets</span><span><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span>${mkIco("home")} Home (left of the system)</span><span>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
+    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span>${mkIco("struct")} Your citadels</span><span>${mkIco("friendly")} Friendly (imported)</span><span>${mkIco("keepstar")} Keepstar</span><span>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span>${mkIco("npc")} NPC station (zoom in)</span><span>${mkIco("station")} Station with your stock</span><span>${mkIco("pi")} Your planets</span><span><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span>${mkIco("home")} Home (left of the system)</span><span>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
   } else { $("map-legend").innerHTML = ""; $("map-status").textContent = ""; }
   renderPlanner(); drawMap(); renderMapInfo();
 }
@@ -9220,9 +9272,9 @@ setInterval(renderTz, 5000);
 // Upcoming events sits below this navigation on wide screens: its height follows the navigation's
 const fcWide = matchMedia("(min-width: 1640px)"); fcWide.addEventListener("change", () => renderFcNav()); matchMedia("(min-width: 1880px)").addEventListener("change", () => renderFcNav());
 if (window.ResizeObserver) new ResizeObserver(() => { const h = $("fc-nav").offsetHeight; if (h) $("page-forecast").style.setProperty("--fcnav-h", h + "px"); }).observe($("fc-nav"));
-// Left navigation for the To-Do page: only the lists that have something in them
+// Left navigation for the To-Do page: one line per panel (only the lists that have something in them)
 function renderTodoNav() {
-  navRender("todo-nav", [["todo-om-title", "Omega to renew"], ["todo-fuel-title", "Structures to refuel"], ["todo-sq-title", "Skill queues to fill"], ["todo-sl-title", "Empty job slots"], ["todo-ct-title", "Ongoing contracts"], ["todo-ct-cm", "Client orders to complete", true], ["todo-ct-game", "Open in game", true], ["todo-sc-title", "Trips for a freight service"], ["todo-rx-title", "Buy for reactions"], ["todo-rx-fuel", "Fuel blocks", true], ["todo-rx-goo", "Moon goo", true], ["todo-rx-other", "Other inputs", true], ["todo-rx-formula", "Reaction formulas", true], ["todo-pi-title", "Buy for PI"], ["todo-pi-p1", "P1", true], ["todo-pi-p2", "P2", true], ["todo-ord-title", "Buy for builds"]]);
+  navRender("todo-nav", [["todo-om-title", "Omega to renew"], ["todo-fuel-title", "Structures to refuel"], ["todo-sq-title", "Skill queues to fill"], ["todo-sl-title", "Empty job slots"], ["todo-ct-title", "Ongoing contracts"], ["todo-sc-title", "Trips for a freight service"], ["todo-rx-title", "Buy for reactions"], ["todo-pi-title", "Buy for PI"], ["todo-ord-title", "Buy for builds"]]);
 }
 // Left navigation for Reactions management
 function renderRxNav() {
@@ -10060,6 +10112,7 @@ const intelAlerts = () => { const D = intelData, from = Math.max(Date.now() - 3 
 function intelBadge() {
   const b = document.querySelector('.tabs button[data-tab="intel"]'); if (!b) return; const n = intelAlerts().length;
   if (n) { b.dataset.alert = n; b.title = `${n} notification${n === 1 ? "" : "s"} needing attention`; } else { delete b.dataset.alert; b.removeAttribute("title"); }
+  const g = b.closest(".tabgrp"), gb = g && g.querySelector(".tabgrp-btn"); if (gb) { if (n) { gb.dataset.alert = n; gb.title = b.title; } else { delete gb.dataset.alert; gb.removeAttribute("title"); } }   // Intel sits in a menu: its menu shows the count too
 }
 // One line saying what happened, with names for the ids it carries
 function intelLine(o) {
@@ -10361,7 +10414,7 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------- roles ---------- */
-function saveRoles() { try { localStorage.setItem("eve-industry-roles", JSON.stringify(state.roles)); } catch (e) {} }
+function saveRoles() { ls.set("eve-industry-roles", state.roles); }
 // Requirements of one role item as {skill: level}, or null while a ship's data is still loading
 function itemReq(it) {
   if (it.kind === "skill") return { [it.name]: it.level };

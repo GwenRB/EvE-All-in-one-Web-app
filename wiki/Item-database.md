@@ -1,6 +1,6 @@
 <!-- tracks: Item database, items in the game, attributes -->
 
-**Item database** tab (the last one). Every item in the game, from CCP's own game data (the same data every page uses, read once per game build and kept in your browser). No permission needed.
+**Item database**, in the **Other** menu. Every item in the game, from CCP's own game data (the same data every page uses, read once per game build and kept in your browser). No permission needed.
 
 ## Find an item
 1. Type part of its name in **Find an item** (several words must all be in the name).

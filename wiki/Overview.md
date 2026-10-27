@@ -12,6 +12,7 @@ Today's value is the ISK in your wallets plus your stock value and your open **m
   - *Planned:* today plus the timeline.
 - **Active contracts** count what they'll pay you (+) or cost you (−). Contracts between your own pilots are ignored.
 - **Omega costs** are taken off.
+- **Stock value:** enter a value by hand, or add a line **from hangars**: pick where (every hangar ticked on [Assets](Assets), one location, or one hangar) and what (one category or group, or everything there), then **Add from hangars**. It stays live with your hangars. For example, if a station holds a corporation hangar of composites to sell and another for your own use, pick the selling hangar and *Composite*: only that one counts.
 - **Actual profit** (from [Profit and loss](Profit-and-loss)) is drawn for comparison over the past, with a tile for your profit per week over the last 30 days. It isn't added to the total: that ISK is already in your wallets.
 
 **Tips**
