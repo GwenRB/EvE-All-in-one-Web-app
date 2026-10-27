@@ -9,6 +9,11 @@ How entries are kept:
 
 ---
 
+## 2026-10-27 — Unused code removed
+
+### Removed
+- Unused code and styles taken out of the page (old structure icon styles, a bar chart style, helpers nothing called). Nothing you use changes.
+
 ## 2026-10-27 — Background sync after logins, pilots on the map, safer launchers
 
 ### Added

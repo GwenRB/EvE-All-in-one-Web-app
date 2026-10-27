@@ -255,11 +255,6 @@ body:not(.auto-login) .auto-only { display: none }
 .fc-chart text.goal-date { font: 600 10px var(--f-mono); fill: var(--ink); paint-order: stroke; stroke: var(--panel); stroke-width: 3px }
 
 .bars { display: grid; gap: 6px }
-.bar-row { display: grid; grid-template-columns: minmax(120px, 240px) 1fr auto; gap: 10px; align-items: center; font-size: .88rem }
-.bar-row .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.bar-track { height: 14px; background: var(--pip-off); border-radius: 3px; overflow: hidden }
-.bar-track > i { display: block; height: 100% }
-.bar-row .v { font-family: var(--f-mono); min-width: 120px; text-align: right }
 .finder { display: grid; gap: 4px }
 .finder input { font-size: 1rem; padding: 10px 12px }
 tr.loc-row th { padding-left: 34px; font-weight: 400 }
@@ -405,15 +400,6 @@ thead th:first-child { left: 0; z-index: 3 }
 tr.group th { background: var(--panel-2); font-family: var(--f-display); text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; color: var(--accent); padding-top: 10px }
 tr.group th button { margin-left: 8px }
 tr.group td, tr.subgroup td { background: var(--panel-2) }
-.sicon { display: inline-block; width: 16px; height: 16px; vertical-align: -3px; background: currentColor; -webkit-mask: var(--si) center / 16px 16px no-repeat; mask: var(--si) center / 16px 16px no-repeat }
-.si-astrahus { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASElEQVR42mNgGAV4wf///+/9////Hj41TJRaQrEBjNicjVcDI6MSMp8Fh7p8HOIT0QVY8Ni0Gc1lvtjUseCJAV+6hMEoYGAAAFXxGBOdWF8DAAAAAElFTkSuQmCC) }
-.si-keepstar { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42mNgGGjAyMDAwPD///97WCUZGZUIybMg8fPR5Cei8bHKM6GZuJmRkXEzTudikWeiNAwoNoAFnySuwCPWgHyyXYAvIKkeBtQNxP////tSNSkT1AxN6gMLAA6FGUOoQDFMAAAAAElFTkSuQmCC) }
-.si-fortizar { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgGPKAEZvg////72FVzMiohC7GgsfwfDT+RGyKmPA6j5FxMyMj42Z8algIORuX12DeYSHgbFxyE7Ga/v//f18iXOGL7BImSqORYgNYsDmRrIRETCwQSlRDFAAA5vAlY3EQz1gAAAAASUVORK5CYII=) }
-.si-raitaru { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR42mNgGNTg////9/7//38PnxomSi1hxGYrXg2MjErIfBYc6vJxiE9EF2DBY9NmNJf50iQMKDaABU8U+tIlFgY+IQ0DAADU8h/NM3/fxgAAAABJRU5ErkJggg==) }
-.si-sotiyo { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgoAX4////vf///9/DxUcGTJRaxkTIBkIuZIQJkGM7IyOjEgsSP59E/RMZGBgYWNBM3EykF3ypG4gDagALLr8RHROURiMTugAjI6MSsXy4F9AFibGZaoFIMQAA3F8waxjQiAMAAAAASUVORK5CYII=) }
-.si-azbel { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVklEQVR42mNgGNTg////9/7//38PnxomUjRgk2dEV0CMyxgZGZVgbBYs8vkE9E9E5rDgsGEzDi/44g0DcgDFBrAQ61ScAUppLDDhUoCsCJ1P1ZQ4DAAAnm4vzfz7N8oAAAAASUVORK5CYII=) }
-.si-tatara { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaUlEQVR42u1RQQ6AMAhrl31vPlYfiCdM07Bk6sGLPQ0YpRTgaxAAIiIeNZPsEm83+3cA6MZ4aJzKSNLyI9/trQe9YnYl1WQvKIbnlUA/Xgpyx9VrqCdtVepMPivXc4pewWtLDrsHFRp+nCjKWWd5irC/AAAAAElFTkSuQmCC) }
-.si-athanor { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR42u1QOQ4AIAizhu/pY/WBdVFDDF5xtVuB0oJzH9CEJI9EQNeJ0Y8bfdJEJg5ZJ2qOJMM4619/YC6wnKza8okAoE8Ye0fxWHF9wscdCpA2J50FxajRAAAAAElFTkSuQmCC) }
 .fc-chart .legend button.lg { background: none; border: 0; padding: 2px 4px; border-radius: 4px; color: inherit; font: inherit; cursor: pointer; display: inline-flex; gap: 6px; align-items: center }
 .fc-chart .legend button.lg:hover { background: var(--panel-2) }
 .fc-chart .legend button.lg.off { opacity: .45; text-decoration: line-through }
@@ -775,7 +761,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <button type="submit" class="primary">Calculate</button></form>
       <div class="toolbar"><label class="label">Research in</label><select id="bc-st" style="max-width:280px"></select><input type="text" id="bc-sys" list="build-sys" placeholder="System" style="width:140px" aria-label="System"><select id="bc-type" aria-label="Structure type"></select><label class="label" for="bc-tax">Facility tax %</label><input type="text" id="bc-tax" inputmode="decimal" style="width:50px" value="0">
         <label class="label">Materials at</label><span id="bc-price-box"></span></div>
-      <div class="toolbar"><label class="label" for="bc-mfg">Built in</label><select id="bc-mfg" style="max-width:360px"></select><span id="bc-mfg-note" class="muted" style="font-size:.85rem"></span></div>
+      <div class="toolbar"><label class="label" for="bc-mfg">Built in</label><select id="bc-mfg" style="max-width:360px"></select></div>
       <div id="bc-own" class="muted" style="font-size:.85rem"></div>
       <div id="bc-out"></div>
     </section>
@@ -1535,7 +1521,6 @@ $("import-file").addEventListener("change", (e) => { const f = e.target.files[0]
 
 /* ---------- blueprints ---------- */
 const ACT = { manufacturing: "Manufacturing", reaction: "Reaction", invention: "Invention" };
-const ACT_ORDER = Object.keys(ACT);
 const bp = { names: null, byName: new Map(), saved: {}, current: null, loading: false, status: "", error: "" };
 const ESI_NAMES = ["https://esi.evetech.net/latest/universe/names/?datasource=tranquility", "https://esi.evetech.net/universe/names/"];
 
@@ -2513,15 +2498,8 @@ async function viaLauncher(url, binary) {
 }
 // A whole Google Sheet (every tab) as an .xlsx file, unpacked here: tabs → rows of cells
 async function unzip(buf) {
-  const v = new DataView(buf), u8 = new Uint8Array(buf), out = {}; let e = buf.byteLength - 22;
-  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--; if (e < 0) throw new Error("not a zip file");
-  let p = v.getUint32(e + 16, true); const n = v.getUint16(e + 10, true);
-  for (let i = 0; i < n; i++) {
-    const method = v.getUint16(p + 10, true), csize = v.getUint32(p + 20, true), nlen = v.getUint16(p + 28, true), xlen = v.getUint16(p + 30, true), clen = v.getUint16(p + 32, true), off = v.getUint32(p + 42, true);
-    const name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nlen)); p += 46 + nlen + xlen + clen;
-    const lo = off + 30 + v.getUint16(off + 26, true) + v.getUint16(off + 28, true), data = u8.subarray(lo, lo + csize);
-    out[name] = async () => method === 0 ? new TextDecoder().decode(data) : new TextDecoder().decode(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
-  }
+  const out = {};
+  for (const x of zipEntries(buf)) out[x.name] = async () => new TextDecoder().decode(x.method === 0 ? x.data : await new Response(new Blob([x.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
   return out;
 }
 async function xlsxTabs(buf) {
@@ -2545,7 +2523,6 @@ function supplierPrice(sp, t) {
   if (P.mode === "pct") { const v = priceIn(validPricing(P.base || "jbv"), +t); return v ? v * (+P.pct || 100) / 100 : null; }
   return e.price || null;
 }
-const supPricingText = (sp) => { const P = sp.pricing || { mode: "list" }; return (P.mode === "pct" ? `${+P.pct || 100}% of ${pricingName(validPricing(P.base || "jbv"))}` : "their listed prices") + (P.at === "jita" ? ", in Jita" : ", in your delivery system"); };
 // A number in a cell ("1,234", "668904.0", "1.236E8" from a sheet export); null when the cell isn't a number
 const supNum = (x) => { const s = String(x ?? "").trim(); if (/^-?\d+(\.\d+)?e[+-]?\d+$/i.test(s)) return +s; return /^[\d\s,.' ]+$/.test(s) && /\d/.test(s) ? +s.replace(/[^\d.,]/g, "").replace(/,/g, "") || 0 : null; };
 // The header row of a stock list: which column holds the item name, the type ID, the quantity and the unit price. Null when there's none
@@ -2842,7 +2819,7 @@ async function sdeFetch(url, binary, onProg) {
 }
 function zipEntries(buf) {
   const v = new DataView(buf), u8 = new Uint8Array(buf), out = []; let e = buf.byteLength - 22;
-  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--; if (e < 0) throw new Error("the static data isn't a zip file");
+  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--; if (e < 0) throw new Error("not a zip file");
   let p = v.getUint32(e + 16, true); const n = v.getUint16(e + 10, true);
   for (let i = 0; i < n; i++) {
     const method = v.getUint16(p + 10, true), csize = v.getUint32(p + 20, true), nlen = v.getUint16(p + 28, true), xlen = v.getUint16(p + 30, true), clen = v.getUint16(p + 32, true), off = v.getUint32(p + 42, true);
@@ -2958,7 +2935,6 @@ const rxEiv = (f) => f.mats.reduce((a, [t, q]) => a + q * ((state.adjPrices || {
 function rxUnitCost(E, t) { const C = E.C, k = rxKind(t), p = priceIn(validPricing(k === "fuel" ? C.fuelP : C.inP), t); if (p == null) return null; return p * (1 + (C.inOrders ? E.brk : 0)) + (C.shipIn ? (rxD().vols[t] || 0) * rxNum(C.rateIn) + p * rxNum(C.collIn) / 100 : 0); }
 // Selling: a contract has no sales tax or broker fee, an immediate sale pays the sales tax, a sell order the sales tax and the broker fee
 const rxSellFee = (E) => E.C.sellHow === "contract" ? 0 : E.C.sellHow === "instant" ? E.tax : E.tax + E.brk;
-const RX_SELL = { contract: "Contract", instant: "Immediate", orders: "Sell order" };
 function rxUnitSell(E, t) { const C = E.C, p = priceIn(validPricing(C.outP, "jsv"), t); if (p == null) return null; return p * (1 - rxSellFee(E)) - (C.shipOut ? (rxD().vols[t] || 0) * rxNum(C.rateOut) + p * rxNum(C.collOut) / 100 : 0); }
 // Jobs of the product in one instance: as many as one slot of each reaction feeding it can supply (one intermediate slot feeds about 2 composite jobs)
 function rxPerInst(E, P) { return rxInstShape(E, P).k; }
@@ -3068,7 +3044,7 @@ function renderRx() {
   rxEnsure().then(ch => { if (ch) renderRx(); });
   if (!(state.misc.rigData || {}).list && !rigLoading && !rigFailed) loadRigData().then(() => renderRx(), () => { rigFailed = true; renderRx(); });
   fillSysList();
-  const E = rxEnv(), C = E.C, D = rxD(), by = rxByProd(), fk = Object.keys(C.picks || {});
+  const E = rxEnv(), C = E.C, D = rxD();
   if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#page-reactions") && document.activeElement.matches("input[type=text],input[type=number],input:not([type])")) return;   // don't redraw under your typing
   const opt = (v, cur, l) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(l)}</option>`;
   const runs0 = E.runs(D.f[0]);
@@ -3109,7 +3085,7 @@ function renderRx() {
   renderRxPick(E); renderRxShop(E); renderRxReact(E); renderRxNav();
 }
 function renderRxPick(E) {
-  const C = E.C, D = rxD(), by = rxByProd(), box = $("rx-pick"); if (!box) return;
+  const C = E.C, D = rxD(), box = $("rx-pick"); if (!box) return;
   const plan = rxPlan(E), rows = D.f.filter(f => rxCat(f.p)).map(f => rxInstance(E, f.p));
   const gooOf = (r) => [...r.acc.raw.keys()].filter(t => rxKind(t) === "goo"), goos = [...new Set(rows.flatMap(gooOf))].sort((a, b) => rxName(a).localeCompare(rxName(b))), have = new Set(C.goo || []);
   const covered = (r) => { const g = gooOf(r); return g.length > 0 && g.every(t => have.has(t)); };
@@ -3950,14 +3926,6 @@ function renderImplants() {
       return `<span class="imp" data-tip="${esc(`${im.name}${im.slot ? `\nSlot ${im.slot}` : ""}${b ? `\n${b}` : ""}`)}"><img src="https://images.evetech.net/types/${im.id}/icon?size=32" alt="${esc(im.name)}" width="28" height="28" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('b'),{textContent:'●'}))"></span>`; };
     return `<tr><th scope="row">${esc(c.name)}${ims.length ? "" : ` <span class="muted" style="font-size:.8rem">None plugged in</span>`}</th>${slots.map(n => { const im = ims.find(x => x.slot === n); return `<td class="num">${im ? cell(im) : `<span class="muted">·</span>`}</td>`; }).join("")}${extra ? `<td>${ims.filter(im => !im.slot || im.slot > 10).map(cell).join(" ")}</td>` : ""}<td class="muted" style="font-size:.8rem">${ago(c.implantsAt)}</td></tr>`; }).join("")}</tbody>`;
 }
-function implantCell(c) {
-  if (!c.implantsAt) return c.esiId ? `<span class="muted" data-tip="Allow &quot;Implants&quot; on the ESI login and log in again to read them">Not read</span>` : `<span class="muted">—</span>`;
-  const ims = c.implants || [];
-  if (!ims.length) return `<span class="pill" style="background:var(--panel-2);color:var(--muted)" data-tip="${esc(`No implants plugged in (as of ${ago(c.implantsAt)})`)}">None</span>`;
-  const attr = {}; for (const im of ims) for (const [k, v] of Object.entries(im.bonus || {})) attr[k] = (attr[k] || 0) + v;
-  const sum = Object.entries(attr).map(([k, v]) => `+${v} ${k.slice(0, 3)}`).join(" ");
-  return `<span class="pill good" data-tip="${esc(ims.map(im => im.name).join("\n") + `\nas of ${ago(c.implantsAt)}`)}">${ims.length} implant${ims.length > 1 ? "s" : ""}</span>${sum ? ` <span class="muted num" style="font-size:.8rem">${esc(sum)}</span>` : ""}`;
-}
 function renderChars() {
   const t = $("chars-table"); if (!t) return;
   const tokens = esiTokens();
@@ -3974,7 +3942,6 @@ function renderChars() {
     const link = c.esiId ? (linked ? `<span class="pill good">Linked</span>` : `<span class="pill bad">Login expired</span>`) : `<span class="muted">Not linked</span>`;
     const synced = (c.syncedAt ? `${fmtDate(c.syncedAt)}<br><span class="muted">${ago(c.syncedAt)}</span>` : `<span class="muted">Never</span>`) + (ss ? `<br><span class="pill mid">${ss === "run" ? "Syncing…" : "Waiting to sync"}</span>` : "");
     const changed = c.updatedAt ? `${fmtDate(c.updatedAt)}<br><span class="muted">${esc(SOURCE[c.lastSource] || "")}</span>` : `<span class="muted">—</span>`;
-    const trained = allSkills().filter(sk => lv(c, sk.name) > 0).length;
     const act = c.esiId ? (linked ? (ss ? `<button class="link" disabled>${ss === "run" ? "Syncing…" : "Waiting to sync"}</button>` : `<button class="link" data-esi-sync="${c.id}">${missingScopes(c).length ? "Sync now (new login needed)" : "Sync now"}</button>`) : `<button class="link" data-esi-relink="1">Log in again</button>`) : `<button class="link" data-esi-relink="1">Link to ESI</button>`;
     const acts = c._mode === "delete"
       ? `<span>Remove ${esc(c.name)}?</span> <button class="danger" data-act="confirm-del" data-id="${c.id}">Remove</button> <button data-act="cancel" data-id="${c.id}">Keep</button>`
@@ -4639,7 +4606,7 @@ function renderJobs() {
   };
   const JDEF = { key: "end", dir: 1 };
   const jGet = { end: (r) => r.end, who: (r) => r.who, job: (r) => r.job, item: (r) => r.item, runs: (r) => r.runs };
-  const head = `<thead><tr>${sortHead("jobs", "end", "Finishes", JDEF)}${sortHead("jobs", "end", "Time left", JDEF).replace('data-sort="jobs:end"', 'data-sort="jobs:end" data-dup="1"')}${sortHead("jobs", "who", "Character", JDEF)}${sortHead("jobs", "job", "Job", JDEF)}${sortHead("jobs", "item", "Item", JDEF)}${sortHead("jobs", "runs", "Runs", JDEF)}</tr></thead>`;
+  const head = `<thead><tr>${sortHead("jobs", "end", "Finishes", JDEF)}${sortHead("jobs", "end", "Time left", JDEF)}${sortHead("jobs", "who", "Character", JDEF)}${sortHead("jobs", "job", "Job", JDEF)}${sortHead("jobs", "item", "Item", JDEF)}${sortHead("jobs", "runs", "Runs", JDEF)}</tr></thead>`;
   $("jobs-list").innerHTML = "MSR".split("").map(k => {
     const list = jobs.filter(j => JOB_KIND[j.activity] === k);
     const rows = k === "R" ? groupReactions(list).map(g => ({ html: groupRow(g), end: g.end, who: g.who, job: JOB_NAME[g.jobs[0].activity] || "", item: g.jobs.map(j => j.product).sort().join(", "), runs: g.jobs.reduce((t, j) => t + j.runs, 0) }))
@@ -4949,7 +4916,7 @@ function renderDoctrines() {
   if (!docs.length) { box.innerHTML = head + `<p class="muted" style="margin:0">No doctrine yet: tick "Doctrine" on a fitting on the Fittings page.</p>`; return; }
   if (docMsg) { box.innerHTML = head + `<div class="notice" style="color:var(--bad);border-color:var(--bad)">${esc(docMsg)}</div>`; return; }
   if (!book || docs.some(f => !(f.contents && f.contents.length))) { if (!docBusy) setTimeout(() => docRefresh(false), 0); box.innerHTML = head + `<p class="muted" style="margin:0">Reading ${esc(citName(sid))}'s market…</p>`; return; }
-  const onSale = (t) => (book.sells.get(t) || []).reduce((a, x) => a + x[1], 0), cheapest = (t) => ((book.sells.get(t) || [])[0] || [])[0];
+  const onSale = (t) => (book.sells.get(t) || []).reduce((a, x) => a + x[1], 0);
   const rows = docs.map(f => { const n = docKeep(f), items = f.contents.map(x => ({ ...x, have: onSale(x.t) })), empty = items.filter(x => !x.have), low = items.filter(x => x.have && x.q && x.have < x.q * n), withQ = items.filter(x => x.q);
     return { f, n, items, empty, low, fits: empty.length ? 0 : withQ.length ? Math.min(...withQ.map(x => Math.floor(x.have / x.q))) : null }; });
   // Every empty item once, with the doctrines that need it and how many to seed for the fits you keep
@@ -5806,7 +5773,6 @@ function oreValue(t, mode) {
   return v / (R.portion || 1);
 }
 // Reprocessing data for ores in your hangars (category 25: asteroids, moon ore, ice), read once from EVE Ref
-let reprocBusy = false;
 async function loadReproc(ids) {
   state.misc.reproc = state.misc.reproc || {};
   const need = [...new Set(ids)].filter(t => !state.misc.reproc[t] || state.misc.reproc[t].v !== 2); if (!need.length) return;
@@ -6052,11 +6018,11 @@ function renderStockChart(counted) {
   const angs = top.map(([, v]) => (v / total) * Math.PI * 2);
   let a0 = -Math.PI / 2;
   const slices = top.map(([k, v], i) => { const a1 = a0; a0 += angs[i];
-    return `<path d="${arc(a1, a0)}" fill="${BAR_COLORS[i % BAR_COLORS.length]}" data-slice="${i}"><title>${esc(k)}: ${isk(v)} (${(v / total * 100).toFixed(1)}%)</title></path>`; }).join("");
+    return `<path d="${arc(a1, a0)}" fill="${BAR_COLORS[i % BAR_COLORS.length]}"><title>${esc(k)}: ${isk(v)} (${(v / total * 100).toFixed(1)}%)</title></path>`; }).join("");
   let seps = "", b = -Math.PI / 2;
   if (top.length > 1) angs.forEach((a, i) => { const prev = angs[(i + angs.length - 1) % angs.length]; if (a >= SEP && prev >= SEP) seps += `<path d="M${p(r0, b)} L${p(R, b)}" class="sep"/>`; b += a; });
   el.innerHTML = `<div class="pie-wrap"><svg viewBox="0 0 200 200" class="pie" role="img" aria-label="Stock value breakdown">${slices}${seps}<text x="100" y="96" text-anchor="middle" class="pie-total">${isk(total)}</text><text x="100" y="114" text-anchor="middle" class="pie-sub">total</text></svg>
-    <ul class="pie-legend">${top.map(([k, v], i) => `<li data-slice="${i}"><i style="background:${BAR_COLORS[i % BAR_COLORS.length]}"></i><span class="lbl" title="${esc(k)}">${esc(k)}</span><span class="v">${isk(v)}</span><span class="muted num">${(v / total * 100).toFixed(1)}%</span></li>`).join("")}</ul></div>`;
+    <ul class="pie-legend">${top.map(([k, v], i) => `<li><i style="background:${BAR_COLORS[i % BAR_COLORS.length]}"></i><span class="lbl" title="${esc(k)}">${esc(k)}</span><span class="v">${isk(v)}</span><span class="muted num">${(v / total * 100).toFixed(1)}%</span></li>`).join("")}</ul></div>`;
 }
 $("st-refresh").addEventListener("click", async () => { const b = $("st-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await refreshPrices(true); await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; renderStock(); });
 ["st-search", "st-loc", "st-group", "st-cat", "st-grp"].forEach(id => $(id).addEventListener("input", () => { stockLimit = 200; renderStock(); }));
@@ -6138,7 +6104,7 @@ function repairSkillNames() {
   for (const sk of Object.values(state.misc.skills || {})) scan(sk && sk.req);
   for (const t of Object.values(state.misc.types || {})) scan(t.req);
   for (const f of state.fits || []) scan(f.req);
-  for (const n of names) if (state.misc.skills && state.misc.skills[n]) { const t = state.misc.skills[n]; delete state.misc.skills[n]; }   // reload these by id so their name is read
+  for (const n of names) if (state.misc.skills) delete state.misc.skills[n];   // reload these by id so their name is read
   if (names.size) setTimeout(() => loadSkillData([...names]), 0);
 }
 const durLabel = (minutes) => { if (minutes >= 1440) { const H = Math.round(minutes / 60); return `${Math.floor(H / 24)}d ${H % 24}h`; } const M = Math.max(1, Math.round(minutes)); return M >= 60 ? `${Math.floor(M / 60)}h ${M % 60}m` : `${M}m`; };
@@ -6291,7 +6257,7 @@ const MISC_V = 7;   // version of the cached item data; older entries are read a
 const CRYSTAL_FAMILIES = ["Simple", "Coherent", "Variegated", "Complex", "Abyssal", "Mercoxit", "Ubiquitous Moon", "Common Moon", "Uncommon Moon", "Rare Moon", "Exceptional Moon"];
 const CRYSTALS = CRYSTAL_FAMILIES.flatMap(f => ["A I", "A II", "B I", "B II"].map(v => ({ family: f, v, name: / Moon$/.test(f) ? `${f} Mining Crystal Type ${v}` : `${f} Asteroid Mining Crystal Type ${v}` })));
 const UPGRADES = ["Mining Laser Upgrade II", "Mining Laser Upgrade I"];
-const CARGO_FIT = ["Expanded Cargohold II", "Capital Cargohold Optimization II", "Capital Cargohold Optimization I"];
+const CARGO_FIT = ["Expanded Cargohold II", "Capital Cargohold Optimization I"];
 const ICE = ["Ice Harvester II", "Ice Harvester I"], ICE_UPGRADES = ["Ice Harvester Upgrade II", "Ice Harvester Upgrade I"];
 const MINERS = [...STRIPS.map(m => ({ mod: m })), ...CRYSTALS.map(c => ({ crystal: c.name })), ...UPGRADES.map(m => ({ mod: m })), ...ICE.map(m => ({ mod: m })), ...ICE_UPGRADES.map(m => ({ mod: m })), ...CARGO_FIT.map(m => ({ mod: m }))];   // everything to look up
 const EXHUMER_BARGE = { Hulk: "Covetor", Mackinaw: "Retriever", Skiff: "Procurer" };
@@ -6320,19 +6286,9 @@ function haulCapacity(c, d) {
   cargo *= exMult ** lows;
   let rigs = "";
   if (d.rigSlots > 0) {
-    const r2 = T["Capital Cargohold Optimization II"], r1 = T["Capital Cargohold Optimization I"];
-    const okRig = (r) => r && !r.missing && (!d.rigSize || !r.rigSize || r.rigSize === d.rigSize) ? r : null;
-    const A = null, B = okRig(r1);   // tech 1 rigs only
-    let best = { m: 1, n2: 0, n1: 0 };
-    for (let n2 = 0; n2 <= d.rigSlots; n2++) for (let n1 = 0; n1 + n2 <= d.rigSlots; n1++) {
-      if ((n2 && !A) || (n1 && !B)) continue;
-      const cost = n2 * ((A && A.rigCost) || 0) + n1 * ((B && B.rigCost) || 0);
-      if (d.calibration && cost > d.calibration) continue;
-      const m = (1 + ((A && A.rigBonus) || 0) / 100) ** n2 * (1 + ((B && B.rigBonus) || 0) / 100) ** n1;
-      if (m > best.m) best = { m, n2, n1 };
-    }
-    cargo *= best.m;
-    rigs = [best.n2 ? `${best.n2} × Capital Cargohold Optimization II` : "", best.n1 ? `${best.n1} × Capital Cargohold Optimization I` : ""].filter(Boolean).join(" + ");
+    const r1 = T["Capital Cargohold Optimization I"];   // tech 1 rigs only
+    const n1 = r1 && !r1.missing && r1.rigBonus > 0 && (!d.rigSize || !r1.rigSize || r1.rigSize === d.rigSize) ? Math.min(d.rigSlots, d.calibration && r1.rigCost ? Math.floor(d.calibration / r1.rigCost) : d.rigSlots) : 0;
+    if (n1) { cargo *= (1 + r1.rigBonus / 100) ** n1; rigs = `${n1} × Capital Cargohold Optimization I`; }
   }
   const fleet = d.fleetHangar || 0;
   return { cargo: cargo + fleet, hold: cargo, fleet, ore, fit: `${lows} × Expanded Cargohold II${rigs ? " + " + rigs : ""}` };
@@ -6950,11 +6906,8 @@ function bracketIcon(k) {
   im.onload = () => { const cv = document.createElement("canvas"); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const c = cv.getContext("2d"); c.drawImage(im, 0, 0); c.globalCompositeOperation = "source-in"; c.fillStyle = "#e9a540"; c.fillRect(0, 0, cv.width, cv.height); e.cv = cv; drawMap(); paintMarks(); };
   im.src = BRACKET_SRC[k] || BRACKET_SRC.carrier; return null;
 }
-// Upwell structure icons (the game's brackets): which one a structure type uses
-const STRUCT_ICON_KINDS = ["keepstar", "fortizar", "astrahus", "sotiyo", "azbel", "raitaru", "tatara", "athanor"];
+// Upwell structure icons (the game's brackets)
 const STRUCT_ICON_SRC = {"astrahus": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASElEQVR42mNgGAV4wf///+/9////Hj41TJRaQrEBjNicjVcDI6MSMp8Fh7p8HOIT0QVY8Ni0Gc1lvtjUseCJAV+6hMEoYGAAAFXxGBOdWF8DAAAAAElFTkSuQmCC", "keepstar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42mNgGGjAyMDAwPD///97WCUZGZUIybMg8fPR5Cei8bHKM6GZuJmRkXEzTudikWeiNAwoNoAFnySuwCPWgHyyXYAvIKkeBtQNxP////tSNSkT1AxN6gMLAA6FGUOoQDFMAAAAAElFTkSuQmCC", "fortizar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgGPKAEZvg////72FVzMiohC7GgsfwfDT+RGyKmPA6j5FxMyMj42Z8algIORuX12DeYSHgbFxyE7Ga/v//f18iXOGL7BImSqORYgNYsDmRrIRETCwQSlRDFAAA5vAlY3EQz1gAAAAASUVORK5CYII=", "raitaru": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR42mNgGNTg////9/7//38PnxomSi1hxGYrXg2MjErIfBYc6vJxiE9EF2DBY9NmNJf50iQMKDaABU8U+tIlFgY+IQ0DAADU8h/NM3/fxgAAAABJRU5ErkJggg==", "sotiyo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgoAX4////vf///9/DxUcGTJRaxkTIBkIuZIQJkGM7IyOjEgsSP59E/RMZGBgYWNBM3EykF3ypG4gDagALLr8RHROURiMTugAjI6MSsXy4F9AFibGZaoFIMQAA3F8waxjQiAMAAAAASUVORK5CYII=", "azbel": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVklEQVR42mNgGNTg////9/7//38PnxomUjRgk2dEV0CMyxgZGZVgbBYs8vkE9E9E5rDgsGEzDi/44g0DcgDFBrAQ61ScAUppLDDhUoCsCJ1P1ZQ4DAAAnm4vzfz7N8oAAAAASUVORK5CYII=", "tatara": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaUlEQVR42u1RQQ6AMAhrl31vPlYfiCdM07Bk6sGLPQ0YpRTgaxAAIiIeNZPsEm83+3cA6MZ4aJzKSNLyI9/trQe9YnYl1WQvKIbnlUA/Xgpyx9VrqCdtVepMPivXc4pewWtLDrsHFRp+nCjKWWd5irC/AAAAAElFTkSuQmCC", "athanor": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR42u1QOQ4AIAizhu/pY/WBdVFDDF5xtVuB0oJzH9CEJI9EQNeJ0Y8bfdJEJg5ZJ2qOJMM4619/YC6wnKza8okAoE8Ye0fxWHF9wscdCpA2J50FxajRAAAAAElFTkSuQmCC"};
-const structKind = (typeName) => { const n = String(typeName || "").toLowerCase(); return STRUCT_ICON_KINDS.find(k => n.includes(k)) || null; };
-const sIcon = (typeName, color) => { const k = structKind(typeName); return k ? `<span class="sicon si-${k}"${color ? ` style="color:${color}"` : ""} title="${k[0].toUpperCase() + k.slice(1)}" aria-hidden="true"></span>` : ""; };
 const structCanvas = {};
 function drawStructIcon(g, k, x, y, sz, color) {
   const key = k + color; let e = structCanvas[key];
@@ -7141,7 +7094,7 @@ function drawMapNow() {
 function mapSelect(id, center) {
   const m = mapIndex(); if (!m) return; const s = m.byId.get(id); if (!s) return;
   mapUI.sel = id;
-  if (center) { const cv = $("map-canvas"); view.k = Math.max(view.k, view.k0 * 10); view.cx = s.px; view.cy = s.py; }
+  if (center) { view.k = Math.max(view.k, view.k0 * 10); view.cx = s.px; view.cy = s.py; }
   drawMap(); renderMapInfo();
 }
 function renderMapInfo() {
@@ -7654,9 +7607,6 @@ async function industrySystem(name) {
 }
 let indicesP = null, indicesAt = 0;
 function industryIndices() { if (!indicesP || Date.now() - indicesAt > 3600e3) { indicesAt = Date.now(); indicesP = esiGet("/industry/systems/").catch(e => { indicesP = null; throw e; }); } return indicesP; }
-async function jitaSell(ids) { await jitaFetch(ids); return Object.fromEntries(ids.map(id => [id, (jitaCache[id] || {}).p || 0])); }
-// Prices in one of the Jita modes (JSV, JBV, split), for a set of items
-async function jitaPrices(ids, mode) { await jitaFetch(ids); return Object.fromEntries(ids.map(id => [id, jitaValue(id, mode) || 0])); }
 // How an item is made: blueprint, activity, output per run, materials, time and skills
 const recipeCache = {};
 async function recipeOf(typeId) {
@@ -7983,7 +7933,6 @@ async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
   const res = { bid, top, qty, name: recipes.get(top.type).name, topVol: recipes.get(top.type).vol || 0, topAct: recipes.get(top.type).act, jobs, shop, matCost, unpriced, fees, sell: (await pricesIn([top.type], validPricing(cfg.sellAt, "jsv")).catch(() => ({})))[top.type] ?? null, sellSrc: priceSrc[top.type], sysM: mss[0] && mss[0].sys, sysR, sysSci, locs, shipments, cfg: JSON.parse(JSON.stringify(cfg)), at: Date.now(),
     toggles: [...recipes.values()].filter(r => r.bp && r.type !== top.type && depthOf.has(r.type)).map(r => ({ type: r.type, name: r.name, built: built(r.type) })) };
   res.inv = inv;
-  const ownTopRuns = ownTop && ownTop.bpc ? ownTop.runs : 0;
   res.invCost = inv && cfg.inv !== false && inv.runsNeeded > 0 && isFinite(inv.chosen.invCost) ? inv.chosen.invCost : 0;
   if (inv) { const dn = await skillNames([...inv.dcs.map(x => x.t), ...inv.missing]).catch(() => ({})); inv.dcs.forEach(x => x.name = dn[x.t] || "Type " + x.t); inv.missingNames = inv.missing.map(t => ({ t, name: dn[t] || (inv.srcs.find(s => s.id === t) || {}).name || "Type " + t })); }
   onStatus("Planning the hauling…");
@@ -9349,7 +9298,7 @@ function renderBuildInner(page) {
     const oreTable = O && O.use.length ? `<h3 style="margin:12px 0 6px;font-size:1rem">Ore to reprocess <span class="muted" style="font:400 .85rem var(--f-body)">suggested mix from your hangars, reprocessed in the system where its minerals are used, at your best refinery there</span></h3>
       <div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Ore</th><th scope="col">Reprocessed in</th><th scope="col" class="num">Yield</th><th scope="col" class="num">Batches</th><th scope="col" class="num">Units to reprocess</th><th scope="col">Taken from</th></tr></thead><tbody>${O.use.map(u => `<tr><th scope="row">${icon(u.t)} ${esc(u.name)}</th><td style="white-space:normal;font-size:.85rem">${esc(u.sysName)}<div class="label">${esc(u.ref.name)} (${esc(u.ref.how)})</div></td><td class="num" title="${esc(u.pilot ? `${u.pilot}${u.sk ? `, ${u.sk}` : ""}` : "")}">${(u.y * 100).toFixed(1)}%${u.pilot ? `<div class="label">${esc(u.pilot)}</div>` : ""}</td><td class="num">${u.batches.toLocaleString()}</td><td class="num"><b>${u.units.toLocaleString()}</b>${u.hauled ? `<div class="label">${u.hauled.toLocaleString()} hauled there, compressed</div>` : ""}</td><td style="white-space:normal;font-size:.85rem">${u.where.map(w => `${w.q.toLocaleString()} in ${esc(w.name)}${w.sys && sysN2(w.sys) ? ` (${esc(sysN2(w.sys))})` : ""}`).join("<br>")}</td></tr>`).join("")}</tbody></table></div>
       <div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Gives</th><th scope="col" class="num">Still needed</th><th scope="col" class="num">From the ore</th><th scope="col" class="num">Left over</th></tr></thead><tbody>${O.out.map(o => `<tr><th scope="row">${icon(o.t)} ${esc(o.name)}</th><td class="num">${o.want ? o.want.toLocaleString() : "—"}</td><td class="num">${o.made.toLocaleString()}</td><td class="num">${o.made - o.used > 0 ? (o.made - o.used).toLocaleString() : "—"}</td></tr>`).join("")}</tbody></table></div>` : "";
-    const oreAway = O && (O.away.length || O.noSys || (O.noRef || []).length) ? `<div class="notice" style="display:grid;gap:4px;margin-top:6px"><b>Ore you own, not used</b>${(O.noRef || []).map(x => `<span data-no-refinery="${x.sys}"><span class="pill bad">No refinery detected</span> in <button type="button" class="link" data-map-goto="${x.sys}">${esc(x.name)}</button>: ${esc(x.ores.join(", "))} not reprocessed there. Add your Athanor or Tatara in that system (corporation structures or imported industry structures) and plan again.</span>`).join("")}${O.noSys ? `<span>Set the structures' systems: your ore is reprocessed where its minerals are used.</span>` : ""}${O.away.map(x => `<span>${esc(x.name)}: ${x.q.toLocaleString()} in ${esc(x.where)}${x.sys && sysName(x.sys) ? ` (<button type="button" class="link" data-map-goto="${x.sys}">${esc(sysName(x.sys))}</button>)` : ""}</span>`).join("")}${O.away.length ? `<span class="muted" style="font-size:.8rem">Move it to ${esc(SU.dSys ? SU.dSys.name : "the delivery system")} or a structure's system and plan again to use it.</span>` : ""}</div>` : "";
+    const oreAway = O && (O.away.length || O.noSys || (O.noRef || []).length) ? `<div class="notice" style="display:grid;gap:4px;margin-top:6px"><b>Ore you own, not used</b>${(O.noRef || []).map(x => `<span><span class="pill bad">No refinery detected</span> in <button type="button" class="link" data-map-goto="${x.sys}">${esc(x.name)}</button>: ${esc(x.ores.join(", "))} not reprocessed there. Add your Athanor or Tatara in that system (corporation structures or imported industry structures) and plan again.</span>`).join("")}${O.noSys ? `<span>Set the structures' systems: your ore is reprocessed where its minerals are used.</span>` : ""}${O.away.map(x => `<span>${esc(x.name)}: ${x.q.toLocaleString()} in ${esc(x.where)}${x.sys && sysName(x.sys) ? ` (<button type="button" class="link" data-map-goto="${x.sys}">${esc(sysName(x.sys))}</button>)` : ""}</span>`).join("")}${O.away.length ? `<span class="muted" style="font-size:.8rem">Move it to ${esc(SU.dSys ? SU.dSys.name : "the delivery system")} or a structure's system and plan again to use it.</span>` : ""}</div>` : "";
     const RV = r.reserved, rvNote = RV ? `<details class="notice" style="margin:0 0 6px"><summary>Kept for ${RV.orders} ongoing order${RV.orders === 1 ? "" : "s"}: ${RV.items.length} item${RV.items.length === 1 ? "" : "s"} not offered to this build</summary><div style="font-size:.85rem;margin-top:4px">${RV.items.map(x => `${esc(x.name)} ${x.q.toLocaleString()}`).join(" · ")}</div><div class="muted" style="font-size:.8rem;margin-top:4px">From the Planned and In progress orders on Orders management. Mark an order Done once its jobs have used its materials, so they aren't kept twice.</div></details>` : "";
     return `<h3 id="pl-stock" style="margin:16px 0 6px">Materials you already own</h3>${rvNote}${used.length ? `<div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">Already at the structure</th><th scope="col" class="num">In ${esc(SU.dSys ? SU.dSys.name : "the delivery system")}</th><th scope="col" class="num">Still to buy</th><th scope="col" class="num">Market value used</th></tr></thead><tbody>${used.map(x => `<tr><th scope="row">${icon(x.type)} ${esc(x.name)}</th><td class="num">${x.need.toLocaleString()}</td><td class="num">${avCell(x.availLocal, x.fromLocal)}</td><td class="num">${avCell(x.availD, x.fromD)}</td><td class="num">${x.qty.toLocaleString()}</td><td class="num">${isk((x.fromLocal + x.fromD) * x.price)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0">None of the materials to buy are in your hangars at the structures or in the delivery system.</p>`}${compTable}${oreTable}${oreAway}
       ${used.length || comps.length || (O && O.use.length) ? `<p class="muted" style="margin:4px 0 0;font-size:.8rem">Stock you use isn't free: it's counted at market value in the margin, since you could have sold it instead.</p>` : ""}
@@ -10445,7 +10394,7 @@ function renderRoles() {
     const able = rows.filter(x => x.ok), closest = rows.filter(x => !x.ok && isFinite(x.gap)).sort((a, b) => a.gap - b.gap).slice(0, 3);
     const items = r.items.map((it, i) => { const pending = it.kind === "ship" && !itemReq(it); const missing = it.kind === "ship" && (state.misc.types || {})[it.name] && state.misc.types[it.name].missing;
       return `<span class="chip${pending ? "" : " on"}" style="${missing ? "color:var(--bad)" : ""}"${it.kind === "skills" ? ` title="${esc(Object.entries(it.req).map(([n, l]) => `${n} ${ROMAN[l]}`).join("\n"))}"` : ""}>${esc(itemLabel(it))}${missing ? " (unknown ship)" : pending ? " (loading)" : ""} <button class="link" data-role-del-item="${r.id}:${i}" aria-label="Remove requirement" style="padding:0 2px">✕</button></span>`; }).join("");
-    return `<article class="fit" data-role="${r.id}">
+    return `<article class="fit">
       <div class="bp-head"><div><div class="pilot-name">${esc(r.name)}</div><div class="label">${r.mode === "any" ? "Any one of" : "All of"} ${r.items.length} requirement${r.items.length === 1 ? "" : "s"}</div></div><button class="link" data-role-del="${r.id}">Remove role</button></div>
       <div class="chips">${items || `<span class="muted">No requirements yet</span>`}</div>
       <form class="row-form role-add" data-role-add="${r.id}">
