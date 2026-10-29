@@ -66,7 +66,7 @@ async def structs(t):
     await t.tab("plan"); await t.until("!!bp.names && document.querySelectorAll('#plan-names option').length>0", 8)
     pg = t.pg
     await pg.select_option("#plan-structs select[data-bsk^='ms:'][data-bsf=pick]", "1"); await asyncio.sleep(0.15)
-    await pg.select_option("#plan-structs select[data-bsk=r][data-bsf=pick]", "2"); await asyncio.sleep(0.15)
+    await pg.select_option("#plan-structs select[data-bsk^='rs:'][data-bsf=pick]", "2"); await asyncio.sleep(0.15)
     await pg.fill("#plan-structs [data-bset='haul.from']", "Bravo"); await pg.dispatch_event("#plan-structs [data-bset='haul.from']", "change"); await asyncio.sleep(0.15)
     await pg.click("#ms-add"); await asyncio.sleep(0.15)
     sk = await t.js("'ms:'+buildCfg().ms[1].id")
@@ -150,7 +150,7 @@ async def tabs_and_menus(t):
 @scenario
 async def build_plan(t):
     await ships(t); await map_(t); await structs(t)
-    cfg = t.show("structures", await t.js("({ms:buildCfg().ms.map(s=>[s.type,s.sys,s.rigs.length]), r:[buildCfg().r.type,buildCfg().r.sys]})"))
+    cfg = t.show("structures", await t.js("({ms:buildCfg().ms.map(s=>[s.type,s.sys,s.rigs.length]), r:[buildCfg().rs[0].type,buildCfg().rs[0].sys]})"))
     t.eq(cfg, {"ms": [["Sotiyo", "Delta", 0], ["Raitaru", "Golf", 1]], "r": ["Tatara", "Echo"]}, "structures picked from known structures")
     await plan(t, "Venture Blueprint", 10)
     r = t.show("plan", await t.js("(()=>{const r=buildState.plan.res; return {mat:Math.round(r.matCost), fees:Math.round(r.fees), total:Math.round(r.total), jobs:r.jobs.map(j=>[j.name,j.runs,j.loc]), shop:r.shop.map(x=>[x.name,x.qty]), haul:Math.round(r.haul.total||0), moves:(r.haul.moves||[]).length}})()"))
@@ -217,7 +217,7 @@ async def ore_buy(t):
     t.ok(await t.js("[...document.querySelectorAll('#plan-out .bp-table th')].some(th=>th.textContent.includes('Reprocessed at'))"), "the ore table says where each ore is reprocessed")
     await t.js("document.getElementById('pl-ore').scrollIntoView()"); y = await t.js("document.getElementById('pl-ore').getBoundingClientRect().top+scrollY")
     await t.pg.screenshot(path=SP + "plan_ore.png", full_page=True, clip={"x": 0, "y": y - 10, "width": 1280, "height": 620})
-    await t.pg.locator("#plan-structs .sblock:has([data-bore-add])").screenshot(path=SP + "ore_places.png")
+    await t.pg.locator("#plan-structs .sblock:has([data-bore-del='g1'])").screenshot(path=SP + "ore_places.png")
     # a heavy tax there sends it back to the other place
     await t.js("()=>{const c=buildCfg(); c.ore.places[1].tax='95'; saveMisc()}")
     await plan(t, "Venture Blueprint", 10); ob3 = t.show("taxed", await t.js(OB))
@@ -233,11 +233,69 @@ async def ore_buy(t):
     t.eq([o[0] for o in (await t.js(OB))["ores"]], ["Veldspar"], "with any ore and no import cost, plain Veldspar wins")
 
 @scenario
+async def remove_structures(t):
+    await ships(t); await map_(t); await structs(t)
+    await t.js("const c=buildCfg(); c.ore.on=true; saveMisc(); renderBuildSettings(true)")
+    order = await t.js("(()=>{const b=[...document.querySelectorAll('#plan-structs > *')], at=(s)=>b.findIndex(x=>x.querySelector(s)); return [at(\"[data-bsk^='ms:']\"), at(\"[data-bsk^='rs:']\"), at(\"[data-bsk^='sci:']\"), at('[data-bore-del]'), at(\"[data-bset='ore.on']\")]})()")
+    t.ok(-1 not in order and order == sorted(order), "manufacturing, reactors, invention, refinery, then ore", order)
+    t.ok(await t.js("[...document.querySelectorAll('#plan-structs button')].some(b=>b.textContent==='Add a reactor') && [...document.querySelectorAll('#plan-structs button')].some(b=>b.textContent==='Add an invention structure')"), "reactors and invention structures are added like manufacturing")
+    await t.pg.locator("#plan-structs").screenshot(path=SP + "plan_structs.png")
+    # several reactors and invention structures: each job goes to one of them
+    await t.pg.click("#plan-structs [data-bsadd=rs]"); await asyncio.sleep(0.2); await t.pg.click("#plan-structs [data-bsadd=sci]"); await asyncio.sleep(0.2)
+    await plan(t, "Venture Blueprint", 10)
+    rx = t.show("reactors", await t.js("(()=>{const r=buildState.plan.res, j=r.jobs.find(j=>j.act==='R'), c=buildCfg(); return {n:c.rs.length, loc:j&&j.loc, alts:j&&j.alts.length, ids:c.rs.map(s=>'R:'+s.id), pick:!!document.querySelector('#plan-out select[data-bwhere=\"'+j.type+'\"]')}})()"))
+    t.ok(rx["n"] == 2 and rx["loc"] in rx["ids"] and rx["alts"] == 2 and rx["pick"], "with two reactors the reaction goes to one of them, and can be moved", rx)
+    # any structure can be removed, the last one too
+    await t.js("buildCfg().where={}")
+    for sel in ["[data-msdel]"] * 2 + ["[data-bsdel^='rs:']"] * 2 + ["[data-bsdel^='sci:']"] * 2 + ["[data-bore-del]"]:
+        await t.pg.click("#plan-structs " + sel); await asyncio.sleep(0.2)
+    t.eq(await t.js("(()=>{const c=buildCfg(); return [c.ms.length, c.rs.length, c.scis.length, c.ore.places.length]})()"), [0, 0, 0, 0], "every structure can be removed")
+    # no manufacturing structure: no plan, and it says why
+    async def run(name, qty):
+        await t.tab("plan"); await t.pg.fill("#plan-bp", name); await t.pg.fill("#plan-qty", str(qty)); await t.pg.click("#plan-form button[type=submit]")
+        await asyncio.sleep(0.3); await t.until("!buildState.plan.busy", 25); return await t.js("[!!buildState.plan.res, buildState.plan.msg]")
+    res, msg = await run("Venture Blueprint", 10)
+    t.ok(not res and "manufacturing structure first" in msg, "planning asks for a manufacturing structure", msg)
+    # one back: the reaction is bought and marked, the missing refinery said, no Ore to buy
+    await t.pg.click("#ms-add"); await asyncio.sleep(0.2)
+    await plan(t, "Venture Blueprint", 10)
+    r = t.show("missing", await t.js("(()=>{const r=buildState.plan.res; return {nos:r.shop.filter(x=>x.nos).map(x=>x.name), jobs:r.jobs.map(j=>j.name), missing:r.missing, ore:!!r.oreBuy || !!document.getElementById('pl-ore'), note:(document.querySelector('#plan-out .notice')||{}).textContent||'', pill:document.querySelectorAll('#pl-shop ~ .scroller .pill.mid').length}})()"))
+    t.ok(r["nos"] == ["Fake Alloy"] and "Fake Alloy" not in r["jobs"] and r["pill"] >= 1, "with no reactor the reaction is bought and marked", r)
+    t.ok(len(r["missing"]) == 2 and not r["ore"] and "Some structures are missing" in r["note"] and "no reactor" in r["note"], "the plan says the reactor and the refinery are missing", r)
+    t.ok(await t.js("buildState.plan.res.oreBuy={ores:[],none:'Minerals are cheaper'}; renderBuild('plan'); !document.getElementById('pl-ore')"), "no Ore to buy section when the minerals are bought")
+    # every bar of the timeline shows its time, inside or next to it
+    t.ok(await t.js("(()=>{const g=[...document.querySelectorAll('#plan-out svg[aria-label=\"Build timeline\"] g')]; return g.length>0 && g.every(x=>x.querySelector('text'))})()"), "every timeline bar shows its time")
+    # sections fold from their title
+    await t.pg.click("#pl-time"); await asyncio.sleep(0.2)
+    t.ok(await t.js("document.getElementById('pl-time').nextElementSibling.classList.contains('sec-hid') && state.misc.panels['sec:pl-time']===1 && !document.getElementById('pl-who').classList.contains('sec-hid')"), "the Timeline folds from its title, alone")
+    await t.pg.click("#pl-time"); await asyncio.sleep(0.2)
+    t.ok(await t.js("!document.getElementById('pl-time').nextElementSibling.classList.contains('sec-hid')"), "and unfolds")
+    # ME/TE set on a blueprint (not owned): used for the final job
+    await t.pg.click("#plan-own [data-bptw-on]"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy", 25)
+    await t.pg.fill("#plan-own [data-bptw=me]", "7"); await t.pg.dispatch_event("#plan-own [data-bptw=me]", "change"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy", 25)
+    top = await t.js("(()=>{const r=buildState.plan.res, j=r.jobs.find(j=>j.type===r.top.type); return [j.me, j.meSrc]})()")
+    t.ok(top[0] == 7 and "set by you" in top[1], "ME set on the blueprint is used", top)
+    # an item that needs invention: no plan without an invention structure, unless on a test copy
+    res, msg = await run("Fake Exhumer Blueprint", 3)
+    t.ok(not res and "invention structure first" in msg, "an invented item asks for an invention structure", msg)
+    t.ok(await t.js("!!document.querySelector('#plan-out [data-btest]')"), "with a button to plan on a test copy")
+    await t.pg.click("#plan-out [data-btest]"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy", 25)
+    tc = t.show("test copy", await t.js("(()=>{const r=buildState.plan.res; if(!r) return null; const j=r.jobs.find(j=>j.type===r.top.type); return [j.me, j.te, j.meSrc, r.invCost, (document.querySelector('#plan-own .label')||{}).textContent]})()"))
+    t.ok(tc and tc[:2] == [2, 4] and "test copy" in tc[2] and tc[3] == 0 and tc[4] == "Test copy", "a test copy plans with ME 2 / TE 4 and no invention", tc)
+    await t.pg.click("#plan-own [data-bptw-off]"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy", 25)
+    await t.pg.click("#plan-structs [data-bsadd=sci]"); await asyncio.sleep(0.2)
+    await plan(t, "Fake Exhumer Blueprint", 3)
+    t.ok(await t.js("buildState.plan.res.invCost>0 && buildState.plan.res.inv.st.id===buildCfg().scis[0].id"), "with an invention structure back the invention is planned there")
+    # older saves: the single reaction structure becomes the first reactor, a removed invention structure none
+    mig = await t.js("(()=>{state.misc.build={ms:[{id:'s1',type:'Raitaru',sys:'',tax:0,rigs:[]}], r:{type:'Tatara',sys:'Echo',tax:1,rigs:[]}, sci:null}; const c=buildCfg(); return [c.rs.map(s=>[s.id,s.type,s.sys]), c.scis.length, 'r' in c, 'sci' in c]})()")
+    t.eq(mig, [[["r1", "Tatara", "Echo"]], 0, False, False], "older saves become the lists")
+
+@scenario
 async def invention(t):
     INV = "(()=>{const r=buildState.plan.res, I=r.inv; if(!I) return {none:true, msg:buildState.plan.msg}; const top=r.jobs.find(j=>j.type===r.top.type); return {cost:Math.round(r.invCost), src:I.src, srcs:I.srcs.map(s=>[s.name,s.best&&s.best.n]), need:[I.runsTotal,I.ownedRuns,I.runsNeeded], conf:I.conf, chosen:[I.chosen.n,I.chosen.attempts,I.chosen.bpcs], me:top&&[top.me,top.te,top.meSrc]}})()"
     await plan(t, "Fake Exhumer Blueprint", 3); i1 = t.show("inv1", await t.js(INV))
     t.ok(not i1.get("none") and i1["cost"] > 0 and i1["need"][2] > 0, "a T2 build invents the copies it needs", i1)
-    await t.js("state.misc.ownedBps['char:1'].list.push([7001,2,4,1,1]); const c=buildCfg(); c.sci.type='Raitaru'; c.sci.rigs=[{n:'Standup M-Set Invention Accelerator II'},{n:'Standup M-Set Blueprint Copy Cost Optimization I'}]; c.invConf='0.9'; c.hourVal='1000000'; saveMisc()")
+    await t.js("state.misc.ownedBps['char:1'].list.push([7001,2,4,1,1]); const c=buildCfg(); c.scis[0].type='Raitaru'; c.scis[0].rigs=[{n:'Standup M-Set Invention Accelerator II'},{n:'Standup M-Set Blueprint Copy Cost Optimization I'}]; c.invConf='0.9'; c.hourVal='1000000'; saveMisc()")
     await plan(t, "Fake Exhumer Blueprint", 3); i2 = t.show("inv2", await t.js(INV))
     t.ok(i2["need"][1] > 0 and i2["need"][2] < i1["need"][2], "owned copies cut the runs to invent", [i1["need"], i2["need"]])
     t.ok(isinstance(i2["chosen"][1], int), "attempts are whole when you want to be 90% sure", i2["chosen"])

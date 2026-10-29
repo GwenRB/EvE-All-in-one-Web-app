@@ -9,6 +9,19 @@ How entries are kept:
 
 ---
 
+## 2026-10-29 — Build planning: reactors, invention structures and refineries as lists, test copies, folding sections
+
+### Changed
+- Build planning: the **Refinery** is its own panel, set up like the other structures (known refinery, type, reprocessing rig, system, tax, pilot), and sits after the invention structures, followed by **Ore instead of minerals**.
+- Build planning: the reaction structure is now the **Reactor**, and you can add several reactors and several invention structures, like manufacturing structures: each reaction, and the invention, goes where it comes out cheapest (a reaction can be moved to another reactor in the plan). "Set with imported structures" uses every refinery with reaction rigs and every engineering complex with laboratory rigs.
+- Build planning: any structure can be removed, the last one too: manufacturing structures, reactors, invention structures and refineries.
+- Build planning: with no manufacturing structure, the plan asks you to set one up first. A reaction (as the item planned) needs a reactor, and an item that needs invented copies an invention structure, or **Plan on a test copy instead** (ME 2 / TE 4, no invention counted).
+- Build planning: when a structure the plan would use is missing, the plan says so (**Some structures are missing**): without a reactor the reactions are bought and marked **No reactor**; without a refinery, ore isn't bought instead of minerals.
+- Build planning: **Set ME/TE** next to the blueprint plans the final job with the ME and TE you choose, whether you own the blueprint or not (a test copy for an invented item). **Use yours** / **Clear** goes back.
+- Build planning: every section of the plan (Materials needed, Timeline, Who builds what, Per pilot…) folds from its title, and stays folded.
+- Build planning: a timeline bar too short to hold its time shows it next to the bar.
+- Build planning: **Ore to buy** only shows when the plan buys ore; when the minerals come out cheaper, it's left out.
+
 ## 2026-10-29 · 27b69a3 — Blueprint library, CONCORD LP conversion, boosters on Misc
 
 ### Added
