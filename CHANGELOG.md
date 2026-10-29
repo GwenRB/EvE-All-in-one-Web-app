@@ -9,6 +9,38 @@ How entries are kept:
 
 ---
 
+## 2026-10-30 · 6154026 — Sovereignty page, Blueprint library on Misc, jump planner skills
+
+### Added
+- **Sovereignty** page (the last tab): every alliance holding sovereignty, ranked by the systems it holds, with its members and corporations. Above it, your own **coalitions**: name one, then put alliances in it with the Coalition list next to each; it adds up their systems, members and corporations. Beside them, **Top sov changes (7 days)** (systems gained and lost) and **Alliance movements (7 days)** (corporations that changed alliance). Those two compare with a snapshot the tool keeps once a day while the page is opened, so they fill in over the first week.
+- Jump planner: **Jump Fuel Conservation** and **Jump Freighters** levels to plan the fuel with (by default, the pilot's own).
+- Map: **Allies** also takes your coalitions from the Sovereignty page. By default the coalition your pilots' alliance is in (from ESI) is allied; remove it or add others like an alliance.
+
+### Changed
+- Blueprint library: moved to the **Misc** page, and blueprint copies are now its last group (**Copies**, folding like the others, with a Runs column) instead of a separate table.
+- Sovereignty: Top sov changes and Alliance movements sit in a column to the right of the page body that stays in view while you scroll (under the body on narrow screens), in smaller text so they fit; long names end in … (hover for the full name), and movements show alliances by their ticker.
+- Sovereignty: a coalition lists its alliances by members, most first.
+- Jump planner: **Jump Drive Calibration** has a **Pilot's** choice too, now the default: range uses each pilot's own level (it used V for everyone unless you picked a level).
+- Map, colour by sovereignty: the alliances of one coalition share its colour.
+
+### Fixed
+- Tables: the message of an empty table ("No … yet") spans the whole table again instead of only its first column.
+- Jump planner and jump range: **Black Ops** can jump into incursion systems (covert cynos); other ships still avoid them.
+
+## 2026-10-29 · 6a62574 — Blueprint locations, citadel hubs, Trading board scrolling
+
+### Added
+- Blueprint library: a **Location** filter. Pick a station or structure to see only the originals and copies kept there (and the tiles for them). Blueprints inside containers, ships or corporation offices count where that container is. Refresh from ESI once so each blueprint's place is read.
+- Settings → Trade hubs: add a **player citadel** as a hub, by its name (one the tool already knows from your assets, jobs or structures) or its ID. It needs a pilot with the Structures permission, and it shows the orders the citadel shares with its region (a public market).
+
+### Changed
+- Blueprint library: copies show the blueprint copy icon, so they don't look like originals.
+- Settings → Pilots and backup: **Add pilot** is now **Add custom pilot**, and **Import backup** comes before **Export backup**.
+- Trading board: scrolling the sellers, buyers or market groups to their end no longer scrolls the page, and opening an item no longer scrolls the page down past the top of the board.
+
+### Removed
+- Roadmap: the EVE Tycoon comparison (to be explained again later).
+
 ## 2026-10-29 · 4b15bdc — Gather items on the Map, filter groups, industry jobs in Net worth
 
 ### Added

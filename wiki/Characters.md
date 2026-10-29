@@ -1,4 +1,4 @@
-<!-- tracks: Characters, pilot cards, implants, Roles, Add pilot -->
+<!-- tracks: Characters, pilot cards, implants, Roles, Add pilot, Add custom pilot -->
 
 **Pilots → Characters.**
 
@@ -15,4 +15,4 @@ A card per pilot: job slots, remote ranges, manufacturing time, **Reactions leve
 Define a role (for example *Hauler* or *Fleet booster*) from ships, fittings and skills, and see who can fill it. A role can need **all** its requirements, or **any one** of them.
 
 ## Pilots without ESI
-You can add a pilot by hand in **Settings → Pilots and backup → Add pilot**, then set their levels in the skill matrix or use **Paste skills**. Lines like `Industry 5`, `Industry V`, or tab-separated columns all work. The **Characters** panel in Settings shows where each pilot's skills come from and how fresh they are.
+You can add a pilot by hand in **Settings → Pilots and backup → Add custom pilot**, then set their levels in the skill matrix or use **Paste skills**. Lines like `Industry 5`, `Industry V`, or tab-separated columns all work. The **Characters** panel in Settings shows where each pilot's skills come from and how fresh they are.

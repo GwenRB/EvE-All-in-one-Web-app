@@ -1,8 +1,8 @@
 <!-- tracks: Settings, backup, Export, Import, Pages, Pricings, Ore reprocessing, Market taxes, Jump drive economizers, EvE News channels, Time zones, Notes -->
 
 ## Pilots and backup
-- **Add pilot:** a pilot by hand, without ESI (see [Characters](Characters#pilots-without-esi)). Linked pilots come from **Link EVE characters** at the top of the page.
-- **Export backup** / **Import backup:** see below.
+- **Add custom pilot:** a pilot by hand, without ESI (see [Characters](Characters#pilots-without-esi)). Linked pilots come from **Link EVE characters** at the top of the page.
+- **Import backup** / **Export backup:** see below.
 
 ## Backups
 Everything is stored in your browser. A backup is a file with everything the tool keeps: pilots, jobs, planets, wallets and their history, hangars, contracts, forecast, fittings, the ship scan, the map, citadels, settings and your Client ID.

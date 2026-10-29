@@ -12,7 +12,7 @@ Some corporation data also needs an **in-game role** on at least one linked pilo
 | `esi-clones.read_clones.v1` | Jump clones (on the map, and for changing ships in the supply chain) | |
 | `esi-industry.read_character_jobs.v1` | Industry jobs | |
 | `esi-industry.read_corporation_jobs.v1` | Corporation jobs | Factory Manager |
-| `esi-characters.read_blueprints.v1` | Blueprints owned (and the Blueprint library on Tests) | |
+| `esi-characters.read_blueprints.v1` | Blueprints owned (and the Blueprint library on Misc) | |
 | `esi-corporations.read_blueprints.v1` | Corporation blueprints | Director |
 | `esi-planets.manage_planets.v1` | Planets (your colonies) | |
 | `esi-planets.read_customs_offices.v1` | Your corporation's customs offices and their tax | Director |

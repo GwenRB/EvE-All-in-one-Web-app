@@ -85,7 +85,7 @@ body:has(#page-trading:not([hidden])) .wrap > :is(header.top, #status, #esi-pane
 .mb-filters { display: grid; gap: 6px; margin-top: 6px; font-size: .88rem } .mb-filters input[type=text] { width: 90px }
 .mb-main, #mb-body:not([hidden]) { display: grid; gap: 16px; min-width: 0 }
 .mb-books { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) } .mb-books[hidden] { display: none }
-.mb-book .scroller { overflow: auto } .mb-book thead th { position: sticky; top: 0; z-index: 1; background: var(--panel) }
+.mb-book .scroller { overflow: auto } .mb .scroller, .mb-tree, #mb-hist-panel, #mb-hubs-panel { overscroll-behavior: contain }   /* reaching a list's end doesn't scroll the page */ .mb-book thead th { position: sticky; top: 0; z-index: 1; background: var(--panel) }
 .mb-book tbody tr { cursor: pointer } .mb-book tbody tr.sel > * { background: color-mix(in srgb, var(--accent) 22%, transparent) }
 .mb-views { gap: 8px } .mb-views button { width: 100% }
 .mb-pop { width: min(760px, 94vw); max-height: 92vh; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); padding: 14px } .mb-pop::backdrop { background: rgba(0,0,0,.55) }
@@ -363,6 +363,24 @@ button.chip { cursor: pointer; font: inherit }
 .bset summary { cursor: pointer; font-weight: 600 }
 .bset .toolbar { margin-top: 6px }
 .plan-layout { display: block }
+.sov-layout, .sov-layout > div, .sov-stick { display: grid; gap: 20px; min-width: 0; align-content: start }
+/* Sovereignty: Top sov changes and Alliance movements in a rail right of the page body that stays in view while scrolling (under the body on narrow screens);
+   the body shifts left to make room until the window is wide enough to keep it centred, and the header logos then leave the margins */
+@media (min-width: 1100px) {
+  body:has(#page-sov:not([hidden])) .wrap { margin-left: max(0px, calc(100vw - 1660px)); margin-right: auto; max-width: min(1280px, calc(100vw - 380px)) }
+  .sov-layout { position: relative }
+  .sov-side { position: absolute; top: 0; bottom: 0; left: calc(100% + 32px); width: 320px }
+  .sov-stick { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; gap: 12px }
+  .sov-side .panel { padding: 10px; gap: 6px }
+  .sov-side h2 { font-size: .85rem }
+  .sov-side .bp-table th, .sov-side .bp-table td { font-size: .72rem; padding: 3px 5px }
+  .sov-side .bp-table { table-layout: fixed; width: 100% }   /* always fits the rail: long names end in … (full name on hover) */
+  .sov-side .bp-table th, .sov-side .bp-table td:not(.empty) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  #sovx-table th:first-child { width: 49% } #sovm-table th:first-child { width: 40% } #sovm-table th:nth-child(2) { width: 20% }
+  .sov-side .bp-table td.empty { padding: 12px 6px }
+}
+@media (min-width: 1560px) and (max-width: 1999px) { body:has(#page-sov:not([hidden])) header.top .logo { position: static; width: 104px; height: 104px } }
+@media (min-width: 2000px) { body:has(#page-sov:not([hidden])) .wrap { margin-left: auto } }
 @media (min-width: 1280px) {
   body:has(.page:not([hidden]) .plan-rail) .wrap { margin-left: max(212px, calc(50vw - 640px)) ; margin-right: auto }
   .plan-layout { position: relative }
@@ -459,6 +477,7 @@ tbody tr:not(.group):not(.subgroup):hover th, tbody tr:not(.group):not(.subgroup
 .pips .roman { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); width: 2.2em; margin-left: 6px }
 td.best .roman { color: var(--ink); font-weight: 500 }
 .empty { padding: 28px; text-align: center; display: grid; gap: 8px; justify-items: center }
+td.empty { display: table-cell }   /* a grid cell would ignore its colspan */
 .toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 4px; font-size: .85rem; z-index: 10 }
 .toast.ccp-status { left: 16px; transform: none; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); opacity: .92 }
 #mkt-status { bottom: calc(104px + env(safe-area-inset-bottom, 0px)) }
@@ -526,6 +545,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
     <button type="button" data-tab="settings">Settings</button>
     <button type="button" data-tab="notes">Notes</button>
     <button type="button" data-tab="tests">Tests</button>
+    <button type="button" data-tab="sov">Sovereignty</button>
   </nav>
   <datalist id="skill-names"></datalist>
 
@@ -865,6 +885,10 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div id="boost-summary" class="slot-tiles"></div>
       <div id="boost-note"></div>
       <div class="scroller"><table id="boost-table" class="bp-table" data-sorted="6:1"></table></div></section>
+    <section class="panel" aria-labelledby="bpl-title"><div class="bp-head"><div><h2 id="bpl-title">Blueprint library</h2><p class="muted" style="margin:4px 0 0">The blueprints your pilots and corporations own, with their research levels: originals in research or copying and when they finish, the other originals, then every copy.</p></div></div>
+      <div class="toolbar"><input type="search" id="bpl-find" placeholder="Find a blueprint" style="width:240px" aria-label="Find a blueprint"><select id="bpl-loc" aria-label="Location" style="max-width:320px"><option value="">Every location</option></select><span class="muted" id="bpl-status" style="font-size:.85rem"></span></div>
+      <div id="bpl-summary" class="slot-tiles"></div>
+      <div class="scroller"><table id="bpl-table" class="bp-table" data-sorted=""></table></div></section>
    </div></div>
   </div>
 
@@ -938,12 +962,25 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
   </div>
 
   <div id="page-tests" class="page" hidden>
-    <section class="panel" aria-labelledby="bpl-title"><div class="bp-head"><div><h2 id="bpl-title">Blueprint library</h2><p class="muted" style="margin:4px 0 0">The originals your pilots and corporations own, with their research levels: those in research or copying and when they finish, then the others.</p></div></div>
-      <div class="toolbar"><input type="search" id="bpl-find" placeholder="Find a blueprint" style="width:240px" aria-label="Find a blueprint"><span class="muted" id="bpl-status" style="font-size:.85rem"></span></div>
-      <div id="bpl-summary" class="slot-tiles"></div>
-      <div class="scroller"><table id="bpl-table" class="bp-table" data-sorted=""></table></div></section>
-    <section class="panel" aria-labelledby="bpc-title"><div class="bp-head"><div><h2 id="bpc-title">Blueprint copies</h2><p class="muted" style="margin:4px 0 0">Every copy your pilots and corporations own.</p></div></div>
-      <div class="scroller"><table id="bpc-table" class="bp-table"></table></div></section>
+    <p class="muted">No tool being tried out right now.</p>
+  </div>
+
+  <div id="page-sov" class="page" hidden>
+   <div class="sov-layout"><div>
+    <section class="panel" aria-labelledby="sovc-title"><div class="bp-head"><div><h2 id="sovc-title">Coalitions</h2><p class="muted" style="margin:4px 0 0">Your own groups of alliances, with their systems, members and corporations added up. Put an alliance in one with the Coalition list next to it below.</p></div></div>
+      <form id="sovc-form" class="toolbar"><input type="text" id="sovc-name" placeholder="Coalition name, e.g. Imperium" aria-label="Coalition name" style="width:240px"><button type="submit">Add coalition</button></form>
+      <div class="scroller"><table id="sovc-table" class="bp-table" data-sorted="2:-1"></table></div></section>
+    <section class="panel" aria-labelledby="sova-title"><div class="bp-head"><div><h2 id="sova-title">Alliances</h2><p class="muted" style="margin:4px 0 0">Every alliance holding sovereignty, ranked by the systems it holds, with its members and corporations.</p></div>
+      <div class="toolbar"><span class="muted" id="sov-status" style="font-size:.85rem"></span><button type="button" id="sov-refresh">Refresh from ESI</button></div></div>
+      <div class="toolbar"><input type="search" id="sov-find" placeholder="Find an alliance" aria-label="Find an alliance" style="width:240px"></div>
+      <div id="sov-summary" class="slot-tiles"></div>
+      <div class="scroller"><table id="sov-table" class="bp-table" data-sorted="2:-1"></table></div></section>
+   </div><div class="sov-side"><div class="sov-stick">
+    <section class="panel" aria-labelledby="sovx-title"><div class="bp-head"><div><h2 id="sovx-title">Top sov changes (7 days)</h2><p class="muted" style="margin:4px 0 0" id="sovx-since"></p></div></div>
+      <div class="scroller"><table id="sovx-table" class="bp-table" data-sorted=""></table></div></section>
+    <section class="panel" aria-labelledby="sovm-title"><div class="bp-head"><div><h2 id="sovm-title">Alliance movements (7 days)</h2><p class="muted" style="margin:4px 0 0" id="sovm-since"></p></div></div>
+      <div class="scroller"><table id="sovm-table" class="bp-table" data-sorted="1:-1"></table></div></section>
+   </div></div></div>
   </div>
 
   <div id="page-lp" class="page" hidden>
@@ -1107,7 +1144,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
   <div id="page-settings" class="page" hidden>
    <div class="plan-layout"><div class="plan-rail"><nav id="set-nav" class="plan-nav" data-auto aria-label="Settings sections"></nav></div><div class="plan-main">
     <section class="panel" aria-labelledby="set-pilots-title"><div class="bp-head"><div><h2 id="set-pilots-title">Pilots and backup</h2><p class="muted" style="margin:4px 0 0">Add a pilot by hand (or use "Link EVE character" at the top), and save or restore everything this tool keeps.</p></div></div>
-      <div class="toolbar" style="margin-top:8px"><button class="primary" id="btn-add" type="button">Add pilot</button><button id="btn-export" type="button">Export backup</button><button id="btn-import" type="button">Import backup</button><input type="file" id="import-file" accept=".json,application/json" hidden></div>
+      <div class="toolbar" style="margin-top:8px"><button class="primary" id="btn-add" type="button">Add custom pilot</button><button id="btn-import" type="button">Import backup</button><button id="btn-export" type="button">Export backup</button><input type="file" id="import-file" accept=".json,application/json" hidden></div>
   <form id="add-form" class="inline-form" style="margin-top:10px" hidden>
     <label class="label" for="add-name">New pilot name</label>
     <div class="row">
@@ -1131,9 +1168,9 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <button type="submit" class="primary">Add pricing</button>
       </form>
       <p class="muted" id="pr-note" style="margin:6px 0 0;font-size:.8rem"></p>
-      <h3 style="margin:14px 0 4px">Trade hubs</h3><p class="muted" style="margin:0 0 6px">The stations every market menu offers (Trading board, Import calculator, Market watch, Arbitrage, public contracts, broker fees…). The five main hubs are built in; add any other NPC station.</p>
+      <h3 style="margin:14px 0 4px">Trade hubs</h3><p class="muted" style="margin:0 0 6px">The stations every market menu offers (Trading board, Import calculator, Market watch, Arbitrage, public contracts, broker fees…). The five main hubs are built in; add any other NPC station or player citadel. A citadel added here shows the orders it shares with its region (a public market); for a private market, use a citadel pricing above.</p>
       <div class="scroller"><table id="hub-table" class="bp-table"></table></div>
-      <form id="hub-form" class="toolbar" style="margin-top:8px"><input type="text" id="hub-name" placeholder="Station name as in the game, or its ID" aria-label="Station" style="width:380px" required><button type="submit">Add hub</button><span class="muted" id="hub-msg" style="font-size:.85rem"></span></form>
+      <form id="hub-form" class="toolbar" style="margin-top:8px"><input type="text" id="hub-name" placeholder="Station or citadel name, or its ID" aria-label="Station or citadel" style="width:380px" required><button type="submit">Add hub</button><span class="muted" id="hub-msg" style="font-size:.85rem"></span></form>
     </section>
     <section class="panel" aria-labelledby="reproc-title">
       <div class="bp-head"><div><h2 id="reproc-title">Ore reprocessing</h2><p class="muted" style="margin:4px 0 0">The share of an ore's minerals you get when you reprocess it. Assets values ore and ice at the best possible yield, about 90.6% (Tatara with tech II rigs in null-sec, all skills at V, a 4% implant). Build planning reprocesses your own ore at your best refinery in the system where its minerals are used, by your best pilot for that ore.</p></div></div>
@@ -1210,7 +1247,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="toolbar" id="map-tools2" style="margin-top:6px">
         <label class="label" for="map-color">Colour by</label><select id="map-color"><option value="sec">Security</option><option value="sov">Sovereignty</option></select>
         <button type="button" id="map-layout">Switch to 2D map</button>
-        <label class="label" for="map-ally">Allies</label><input type="text" id="map-ally" list="map-alliances" placeholder="Add an alliance" aria-label="Add an allied alliance" style="width:200px"><datalist id="map-alliances"></datalist><span id="map-allies" class="chips"></span>
+        <label class="label" for="map-ally">Allies</label><input type="text" id="map-ally" list="map-alliances" placeholder="Add an alliance or coalition" aria-label="Add an allied alliance or coalition" style="width:200px"><datalist id="map-alliances"></datalist><span id="map-allies" class="chips"></span>
         <span class="label">Homes</span><span id="map-homes" class="chips"></span>
         <span class="muted" id="map-st-status" style="font-size:.8rem"></span>
       </div>
@@ -1224,7 +1261,9 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
           <label class="label" for="jp-from">From</label><input type="text" id="jp-from" list="map-names" placeholder="System" style="width:140px" aria-label="Start system">
           <label class="label" for="jp-to">To</label><input type="text" id="jp-to" list="map-names" placeholder="System" style="width:140px" aria-label="Destination system">
           <label class="label" for="jp-ship">Ship</label><select id="jp-ship" aria-label="Ship and pilot for the route" style="max-width:340px"></select>
-          <label class="label" for="jp-jdc">Jump Drive Calibration</label><select id="jp-jdc" aria-label="Jump Drive Calibration level"><option value="0">0</option><option value="1">I</option><option value="2">II</option><option value="3">III</option><option value="4">IV</option><option value="5">V</option></select>
+          <label class="label" for="jp-jdc">Jump Drive Calibration</label><select id="jp-jdc" aria-label="Jump Drive Calibration level"><option value="">Pilot's</option><option value="0">0</option><option value="1">I</option><option value="2">II</option><option value="3">III</option><option value="4">IV</option><option value="5">V</option></select>
+          <label class="label" for="jp-jfc">Jump Fuel Conservation</label><select id="jp-jfc" aria-label="Jump Fuel Conservation level"><option value="">Pilot's</option><option value="0">0</option><option value="1">I</option><option value="2">II</option><option value="3">III</option><option value="4">IV</option><option value="5">V</option></select>
+          <label class="label" for="jp-jfs">Jump Freighters</label><select id="jp-jfs" aria-label="Jump Freighters skill level"><option value="">Pilot's</option><option value="0">0</option><option value="1">I</option><option value="2">II</option><option value="3">III</option><option value="4">IV</option><option value="5">V</option></select>
           <label class="label" for="jp-dock">Citadels</label><select id="jp-dock"><option value="ignore">Don't care</option><option value="prefer">Prefer stops where it can dock</option><option value="only">Only stop where it can dock</option></select><span class="muted" id="jp-dockinfo" style="font-size:.8rem"></span>
           <span class="label">Stop in</span>
           <span class="map-layers"><label><input type="checkbox" data-jp="any"> Any low/null</label><label><input type="checkbox" data-jp="mine"> My citadels &amp; stations</label><label><input type="checkbox" data-jp="ally"> Allied space</label><label><input type="checkbox" data-jp="npc"> NPC null-sec</label><label><input type="checkbox" data-jp="friendly"> Friendly structures</label></span>
@@ -1542,7 +1581,7 @@ function render() {
   $("btn-add").hidden = !state.canWrite;
   $("custom-form").hidden = !state.canWrite;
   $("btn-sync-all").hidden = !state.chars.some(c => c.esiId && esiTokens()[c.esiId]);
-  renderPilots(); if (!$("page-overview").hidden) renderMatrix(); renderBp(); renderKeys(); renderQueues(); renderFleets(); renderChars(); renderShips(); renderJobs(); renderPlanets(); renderWallets(); renderFits(); renderOmega(); if (!$("page-forecast").hidden) renderForecast(); renderStock(); renderMisc(); fillBpLists(); renderRoles(); renderMap(); renderImplants(); if (!$("page-plan").hidden) renderBuild("plan"); if (!$("page-misc").hidden) renderBuild("quote"); if (!$("page-tests").hidden) renderBpLib();
+  renderPilots(); if (!$("page-overview").hidden) renderMatrix(); renderBp(); renderKeys(); renderQueues(); renderFleets(); renderChars(); renderShips(); renderJobs(); renderPlanets(); renderWallets(); renderFits(); renderOmega(); if (!$("page-forecast").hidden) renderForecast(); renderStock(); renderMisc(); fillBpLists(); renderRoles(); renderMap(); renderImplants(); if (!$("page-plan").hidden) renderBuild("plan"); if (!$("page-misc").hidden) renderBuild("quote"); if (!$("page-misc").hidden) renderBpLib();
 }
 
 /* ---------- paste parser ---------- */
@@ -2165,12 +2204,12 @@ $("keys-reset-no").addEventListener("click", () => { $("keys-reset-confirm").hid
 $("keys-reset-yes").addEventListener("click", () => { state.keys = DEFAULT_KEYS.map(k => ({ ...k })); saveKeys(); $("keys-reset-confirm").hidden = true; renderKeys(); toast("Key skills reset"); });
 
 /* ---------- pages ---------- */
-const PAGES = { todo: "to-do", shortages: "shortages", reactions: "reactions-management", pimgmt: "pi-management", orders: "orders-management", trading: "trading-board", suppliers: "suppliers", stockmgmt: "stock-management", contracts: "contract-management", prices: "prices", notes: "notes", settings: "settings", plan: "build-planning", map: "map", misc: "misc", overview: "blueprints", jobs: "jobs", planets: "planets", forecast: "overview", omega: "omega", stock: "assets", fittings: "fittings", characters: "characters", pnl: "profit-and-loss", lp: "lp-store", corp: "corporation", intel: "intel", cbrowse: "contracts-browser", itemdb: "item-database", tests: "tests" };
+const PAGES = { todo: "to-do", shortages: "shortages", reactions: "reactions-management", pimgmt: "pi-management", orders: "orders-management", trading: "trading-board", suppliers: "suppliers", stockmgmt: "stock-management", contracts: "contract-management", prices: "prices", notes: "notes", settings: "settings", plan: "build-planning", map: "map", misc: "misc", overview: "blueprints", jobs: "jobs", planets: "planets", forecast: "overview", omega: "omega", stock: "assets", fittings: "fittings", characters: "characters", pnl: "profit-and-loss", lp: "lp-store", sov: "sovereignty", corp: "corporation", intel: "intel", cbrowse: "contracts-browser", itemdb: "item-database", tests: "tests" };
 function showPage(tab) {
   const t = PAGES[tab] ? tab : "overview";
   for (const k of Object.keys(PAGES)) $("page-" + k).hidden = k !== t;
   if (t === "overview") renderMatrix();
-  if (t === "misc") { renderMisc(); renderBpCalc(); renderBuild("quote"); renderBoost(); }
+  if (t === "misc") { renderMisc(); renderBpCalc(); renderBuild("quote"); renderBoost(); renderBpLib(); }
   if (t === "map") { renderMap(); renderSupply(); }
   if (t === "plan") renderBuild(t);
   if (t === "settings") renderSettingsPage();
@@ -2190,8 +2229,8 @@ function showPage(tab) {
   if (t === "intel") renderIntel();
   if (t === "cbrowse") renderCbrowse();
   if (t === "itemdb") renderItemDb();
-  if (t === "tests") renderBpLib();
   if (t === "trading") renderMb();
+  if (t === "sov") { renderSovPage(); sovEnsure(); }
   document.querySelectorAll(".tabs button[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   tabGroupsSync(); uiQueue(); renderHowto(t);
   try { history.replaceState(null, "", "#" + PAGES[t]); } catch (e) {}
@@ -2211,13 +2250,13 @@ const HOWTO = {
   cbrowse: "Contracts come from ESI at each sync (Contracts permission on each pilot, Corporation contracts for your corporation's): ESI gives the active ones and those of the last 30 days; ended ones are kept here for 90 days. A contract several of your pilots see shows once. What each one gives and asks for is read once per contract. Your side: You sell (you put items up for a price), You buy (you pay for someone's items, or ask for items and pay a reward), You give / You receive (no ISK), You ship (your courier contract), You haul (a courier you accepted), Between your pilots. Items worth = what it gives less what it asks for, in the pricing chosen above (blueprint copies count as zero; an item without a price there leaves the worth unknown, never 0). Against worth = how much better than that worth the price is for you: selling, price less worth; buying, worth less price. A contract still waiting after its expiry date is Expired. " + CF_NOTE,
   trading: "Market groups and items come from CCP's own game data (the same data as the Item database). Orders come from ESI's public market orders of every region (or only the region, trade hub or citadel picked under Where), read when you open an item and kept 5 minutes (ESI refreshes them every 5 minutes; Refresh reads them again); they share the tool's market budget with every other page, so an item read across every region takes about 70 requests. Your citadels' orders are read with a pilot's login (Citadel markets permission). PLEX trades in one market for the whole game, which ESI keeps as its own region (shown as Global PLEX market): it's always read, its orders sit at stations everywhere (a region or a hub keeps those placed there), and PLEX's history is that market's. Sell (5%) and Buy (5%) average the cheapest 5% of the units for sale and the highest-priced 5% of the units wanted, over the orders the filters keep; Margin is their difference. Markets comparison isn't filtered: each trade hub (Settings → Pricings and HUBs) and citadel that has orders for the item, with its lowest sell, highest buy and their spread. A citadel whose market can't be read (most have no market module) is left out. Sellers and buyers share what the board leaves them; a short list gives the other its room. History and Markets comparison can open in a window of their own (allow pop-ups for the page), which follows the item you open. History is ESI's daily market history of the region picked (about 13 months; spans from 7 days to everything), read when you show it, with ISK on the left and volume on the right: the line is the day's average price, the band the day's lowest to highest trade, the bars the units traded (point at a day for its numbers); the scale follows the averages, so a single odd trade far off the average is cut at the edge. Security and jumps need the map (open the Map page once); jumps count stargates from the system picked under Jumps from. Station names come from ESI; a structure's name is read once with a pilot's login (Structure names permission) and only when that pilot may dock there, otherwise it shows as a structure in its system. Clicking a price copies it.",
   itemdb: "Items come from CCP's own game data (the static data export of the current game build, read once and kept in this browser; the same data every page uses). Attribute names and units come from ESI's dogma attributes, read once each when you open an item. Prices: the pricing chosen on the item, Jita sell and buy (ESI's live orders), ESI's average price and its adjusted price (what job costs are worked out from). CCP base price is the game's own reference value, not a market price. You own counts everything in the hangars read from ESI, ship cargo and containers included. Used in lists every blueprint and planet factory that takes the item as a material. " + CF_NOTE,
-  tests: "Blueprint library: the blueprints read from ESI at each sync (each pilot's Blueprints permission, and your corporation's with the Director role), with the industry jobs read at the same time. A research or copying job is matched to an original of the same blueprint owned by the pilot (or the corporation) that runs it; when none is found the job still shows, without levels. ME research adds the job's runs to the ME (at most 10), TE research two per run (at most 20). A job past its end date is ready to deliver. Copies are listed one line per blueprint, ME, TE, runs and owner.",
+  sov: "Sovereignty comes from ESI's sovereignty map (public, read again after an hour): systems = the systems an alliance holds. Each alliance's name, ticker and corporations, and each corporation's member count, come from public ESI and are kept a day in this browser; members = the members of its corporations added up. The first read takes a few minutes (one request per corporation); Refresh reads the map and the alliances again, corporations once a day. Coalitions are yours: they add up the systems, members and corporations of the alliances you put in them (saved in backups). Top sov changes and Alliance movements compare today with what this tool saw 7 days ago: it keeps one snapshot a day while the page is opened (in this browser only, 8 days, not in backups), so until it has 7 days of them they count from the oldest one. Gained and lost = systems held now and not then, or then and not now. A movement is a corporation of an alliance holding sovereignty (then or now) whose alliance changed; where a corporation came from is read from its alliance history.",
   lp: "Loyalty points come from ESI at each sync (Loyalty points permission). The store's offers are ESI's public list for that corporation, read when you open it (Refresh reads it again). Sells for = the item's price in the \"Sell items at\" pricing × the quantity, less your sales tax (Settings: your best Accounting level, or your own rate); broker fees aren't counted. Costs = the offer's ISK plus each other item it asks for at its price in the \"Buy other items at\" pricing. ISK per LP = (sells for − costs) ÷ LP. An item with no price in its pricing (blueprint copies usually have none) leaves its offer's profit and ISK per LP unknown: never 0, never another market's price. Analysis Kredits (AK) are shown but not valued. You can buy = your pilots' LP with that corporation, added up, ÷ the offer's LP.",
   fittings: `Can fly it counts every skill the hull, modules, rigs, drones and fighters need. Skill levels are the last ESI sync's, plus the levels the pilot's skill queue has finished since (needs the Skill queues permission). For a pilot who can't fly it yet: when every missing level is in their queue, the date the last of them finishes (the queue's own order and dates); otherwise the time to train only what's missing, prerequisites included, from their attributes and implants (~ when attributes weren't read yet), whatever else is queued. ${SYNC_NOTE}`,
   jobs: `Corporation jobs need one linked pilot with the Factory Manager role; they then count against the slots of whichever of your pilots installed them. Job slots in use come from ESI and include jobs that are finished but not yet delivered. ${SLOTS_NOTE}`,
   overview: `${JOBTIME_NOTE} Invention chance uses base chance × (1 + science levels ÷ 30 + encryption level ÷ 40); structures, rigs, implants and decryptors aren't counted here (Build planning counts them). The skill check reads CCP's game data, so it needs an internet connection the first time you check each blueprint; after that it works offline. Skill queues are read at each ESI sync (Skill queues permission) and age with the clock: a level whose finish date has passed counts as done, and a queue whose last level has finished shows as empty until the next sync. A paused queue has no dates. ${SYNC_NOTE} ${CF_NOTE}`,
   characters: `${JOBTIME_NOTE} ${SLOTS_NOTE} Remote range is one jump per level of Supply Chain Management, Scientific Networking and Remote Reactions. The reprocessing figure is the multiplier from Reprocessing and Reprocessing Efficiency only, before ore-specific skills, structure rigs and implants. Pasting a skill list accepts lines like Industry 5, Industry V or tab-separated columns. ${SYNC_NOTE}`,
-  misc: "Wallets need one pilot with the Accountant role to read corporation divisions. The ship scan reads every published ship with a manufacturing blueprint (a few thousand requests the first time, sent slowly so the service doesn't block them) and is kept in this browser; use Rescan after a game patch.  Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price. " + CF_NOTE,
+  misc: "Wallets need one pilot with the Accountant role to read corporation divisions. The ship scan reads every published ship with a manufacturing blueprint (a few thousand requests the first time, sent slowly so the service doesn't block them) and is kept in this browser; use Rescan after a game patch.  Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price.  Blueprint library: the blueprints read from ESI at each sync (each pilot's Blueprints permission, and your corporation's with the Director role), with the industry jobs read at the same time. A research or copying job is matched to an original of the same blueprint owned by the pilot (or the corporation) that runs it; when none is found the job still shows, without levels. ME research adds the job's runs to the ME (at most 10), TE research two per run (at most 20). A job past its end date is ready to deliver. Copies are listed last, one line per blueprint, ME, TE, runs and owner." + CF_NOTE,
   pnl: "Money comes from ESI: each pilot's wallet journal and market transactions, and the 7 wallet divisions of your corporation (one linked pilot with the Accountant role). ESI only gives the last 30 days, so every entry read is kept in this browser and in backups: the history grows from your first read, and a month without a refresh leaves a gap. Purchases and sales are counted from the market transactions (item, quantity, price); the journal's market lines and buy order escrow are left out so nothing counts twice. Money between your own pilots and corporation divisions (transfers, contracts, market trades between them) is left out. Deposits (courier collateral, contract deposits, bids) count when paid and again when refunded. An entry's activity is the first that applies: what you picked for that entry; its item's activity (purchases, sales, sales tax); the activity of who you dealt with (contracts, transfers, donations); its kind of entry's activity; then automatic. A contract with nothing chosen goes by what it held (ESI's contract items, read once per contract with the Contracts permission): each item by your choice for it or by what it is, bought or sold; when its items go to several activities, its price is shared between them by the items' value in the pricing chosen on the page, and its fees and deposits are shared the same way. A contract with an item that has no price in that pricing isn't shared (no price is invented): it stays whole and Not assigned. ESI only shows a contract's items for about 30 days, so older contracts read before this existed stay whole. Automatic: industry job fees by the job's activity (ESI's job list, 90 days), planet taxes to Planets, courier contracts and travel fees to Hauling, a contract's fees and deposits with its price, and items by what they are: PI commodities to Planets; moon materials, intermediates and reaction products you sell to Reactions; minerals, ore, salvage, components and reaction products you buy to Manufacturing; items made from a blueprint that you sell to Manufacturing; datacores, decryptors and blueprint copies you sell to Science; ice products you buy (jump fuel) to Hauling. Anything else is Not assigned: counted, waiting for you to pick. Broker fees only follow an item when ESI ties them to a transaction; otherwise give Broker fees an activity in Kinds of entry. Left out entries aren't counted anywhere. Periods and months use EVE time (UTC). " + CF_NOTE,
   settings: `Backups include everything the tool keeps (pilots, jobs, planets, wallets and their history, hangars, contracts, forecast, fittings, the ship scan, the map, citadels, settings and your Client ID) except login tokens, so importing one on another computer skips every long scan; you only log in again. Linking with ESI uses EVE's official login: the login token stays in this browser and is never included in backups. Your roster is saved in this browser; use Export backup to move it to another computer or browser, then Import backup there. ${SYNC_NOTE}`
 };
@@ -2240,7 +2279,9 @@ window.addEventListener("resize", fitLogos); window.addEventListener("load", fit
 // The trade hubs every market menu offers (Settings → Pricings and HUBs): these five, plus the NPC stations you add (state.misc.hubs)
 const HUBS_DEFAULT = [{ id: 60003760, name: "Jita 4-4 (Caldari Navy Assembly Plant)", region: 10000002, sys: 30000142, sysName: "Jita" }, { id: 60008494, name: "Amarr VIII (Emperor Family Academy)", region: 10000043, sys: 30002187, sysName: "Amarr" }, { id: 60011866, name: "Dodixie IX - Moon 20 (Federation Navy)", region: 10000032, sys: 30002659, sysName: "Dodixie" }, { id: 60004588, name: "Rens VI - Moon 8 (Brutor Tribe Treasury)", region: 10000030, sys: 30002510, sysName: "Rens" }, { id: 60005686, name: "Hek VIII - Moon 12 (Boundless Creation)", region: 10000042, sys: 30002053, sysName: "Hek" }];
 const tradeHubs = () => [...HUBS_DEFAULT, ...(state.misc.hubs || []).filter(h => !HUBS_DEFAULT.some(d => d.id === h.id))];
-function marketOptions(cur) { return `<optgroup label="Trade hubs">${tradeHubs().map(h => `<option value="st:${h.id}"${cur === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join("")}</optgroup>${citadelMarkets().length ? `<optgroup label="Citadels">${citadelMarkets().map(c => `<option value="cit:${c.id}"${cur === "cit:" + c.id ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</optgroup>` : ""}`; }
+// Your citadels for a market menu, less those added as trade hubs (listed there already); one already picked (cur) stays
+const citsNotHubs = (cur) => citadelMarkets().filter(c => cur === "cit:" + c.id || !tradeHubs().some(h => String(h.id) === c.id));
+function marketOptions(cur) { return `<optgroup label="Trade hubs">${tradeHubs().map(h => `<option value="st:${h.id}"${cur === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join("")}</optgroup>${citsNotHubs(cur).length ? `<optgroup label="Citadels">${citsNotHubs(cur).map(c => `<option value="cit:${c.id}"${cur === "cit:" + c.id ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</optgroup>` : ""}`; }
 const marketName = (v) => { const [k, id] = String(v).split(":"); return k === "st" ? (tradeHubs().find(h => String(h.id) === id) || {}).name || "Station " + id : citName(id); };
 // Order book of a market for some items: sell orders (cheapest first) and the best buy order
 const bookCache = {};
@@ -3063,7 +3104,7 @@ function mbFilters() {
 }
 // Where to look: every region, a trade hub, one of your citadels or a region
 function mbWhereSel() {
-  const C = mbCfg(), o = (v, l) => `<option value="${esc(v)}"${v === (C.reg || "") ? " selected" : ""}>${esc(l)}</option>`, cits = citadelMarkets();
+  const C = mbCfg(), o = (v, l) => `<option value="${esc(v)}"${v === (C.reg || "") ? " selected" : ""}>${esc(l)}</option>`, cits = citsNotHubs(C.reg);
   return `<select id="mb-where" aria-label="Where to look" style="max-width:260px">${o("", "Every region")}<optgroup label="Trade hubs">${tradeHubs().map(h => o("st:" + h.id, h.name)).join("")}</optgroup>${cits.length ? `<optgroup label="Your citadels">${cits.map(c => o("cit:" + c.id, c.name)).join("")}</optgroup>` : ""}<optgroup label="Regions">${(mbRegions.list || []).map(([id, nm]) => o("r:" + id, nm)).join("")}</optgroup></select>`;
 }
 // The item: its market group path, tiles over the filtered orders, both order books, its history and the trade hubs side by side
@@ -3094,7 +3135,7 @@ function mbRenderHubs(orders) {
 }
 function mbHubsHtml(orders) {
   const by = new Map(); for (const o of orders) (by.get(o.loc) || by.set(o.loc, []).get(o.loc)).push(o);
-  const rows = [...tradeHubs().map(h => ({ id: h.id, name: h.name })), ...citadelMarkets().map(c => ({ id: +c.id, name: c.name, cit: true }))].filter(m => by.has(m.id)).map((m, i) => {
+  const rows = [...tradeHubs().map(h => ({ id: h.id, name: h.name })), ...citsNotHubs().map(c => ({ id: +c.id, name: c.name, cit: true }))].filter(m => by.has(m.id)).map((m, i) => {
     const L = by.get(m.id), s = L.filter(o => !o.b), b = L.filter(o => o.b), ls = s.length ? Math.min(...s.map(o => o.p)) : null, hb = b.length ? Math.max(...b.map(o => o.p)) : null;
     return { ...m, i, ls, hb, sq: s.reduce((a, o) => a + o.q, 0), bq: b.reduce((a, o) => a + o.q, 0), sp: ls != null && hb != null ? ls - hb : null }; });
   if (!rows.length) return `<p class="muted" style="margin:0">No orders for it at the trade hubs or your citadels${mbCfg().reg ? ` (looking at ${esc(mbWhereName())})` : ""}.</p>`;
@@ -3126,6 +3167,8 @@ function mbFitBooks() {
   if (a) a.style.maxHeight = Math.round(ha) + "px"; if (b) b.style.maxHeight = Math.round(hb) + "px";
 }
 window.addEventListener("resize", () => { if (!$("page-trading").hidden) mbFitBooks(); });
+// Show a row of the market tree by scrolling the tree only (scrollIntoView scrolls the page too, hiding the top of the board)
+function mbTreeTo(n, top) { const T = $("mb-tree"), r = n.getBoundingClientRect(), b = T.getBoundingClientRect(); if (top || r.top < b.top) T.scrollTop += r.top - b.top; else if (r.bottom > b.bottom) T.scrollTop += r.bottom - b.bottom; }
 
 async function mbHistory(r, t) {
   const k = r + "|" + t, c = mbHistC.get(k); if (c && Date.now() - c.at < 3600e3) return c.rows;
@@ -3171,7 +3214,7 @@ async function mbOpen(t, force) {
   mbItem = { id: t, busy: true, data: same ? mbItem.data : null, err: "" };
   if (C.last !== t || mbPath(t).some(g => !C.open.includes(g))) { C.last = t; C.open = [...new Set([...C.open, ...mbPath(t)])]; saveMisc(); }   // its market groups open in the tree
   if ($("page-trading").hidden) return;
-  mbTree(); mbRenderItem(); const cur = document.querySelector("#mb-tree [aria-current]"); if (cur) cur.scrollIntoView({ block: "nearest" });
+  mbTree(); mbRenderItem(); const cur = document.querySelector("#mb-tree [aria-current]"); if (cur) mbTreeTo(cur);
   try { const d = await mbLoad(t, force); if (seq !== mbOpen.n) return; await mbResolve(d.orders); if (seq !== mbOpen.n) return; mbItem.data = d; } catch (e) { if (seq !== mbOpen.n) return; mbItem.err = netMsg(e); }
   mbItem.busy = false; mbFilters(); mbRenderItem(); mbApplyView();
 }
@@ -3229,7 +3272,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.mbOpen) { const t = +b.dataset.mbOpen; if ($("page-trading").hidden) { C.last = t; mbItem = null; showPage("trading"); window.scrollTo(0, 0); } else mbOpen(t); return; }
   if (b.dataset.mbG || b.dataset.mbReveal) { const g = +(b.dataset.mbG || b.dataset.mbReveal), on = C.open.includes(g); $("mb-find").value = "";
     if (b.dataset.mbG) C.open = on ? C.open.filter(x => x !== g) : [...C.open, g]; else { let p = g; const up = []; while (p != null && mbIdx.M.mgs[p]) { up.push(p); p = mbIdx.M.mgs[p].up; } C.open = [...new Set([...C.open, ...up])]; }
-    saveMisc(); mbTree(); if (b.dataset.mbReveal) { const n = document.querySelector(`#mb-tree [data-mb-g="${g}"]`); if (n) n.scrollIntoView({ block: "start" }); } return; }
+    saveMisc(); mbTree(); if (b.dataset.mbReveal) { const n = document.querySelector(`#mb-tree [data-mb-g="${g}"]`); if (n) mbTreeTo(n, true); } return; }
   if (b.dataset.mbMore) { mbLim[b.dataset.mbMore] += 200; mbRenderBooks(); return; }
   if (b.dataset.mbRefresh) { mbOpen(+b.dataset.mbRefresh, true); return; }
   if (b.dataset.mbIdb) { showPage("itemdb"); idbShow(+b.dataset.mbIdb); return; }
@@ -3366,7 +3409,7 @@ const rxD = () => state.misc.rxnData;
 // What the table offers, by kind (intermediates are only made for the chains)
 const RX_CATS = [["comp", "Composites"], ["cfo", "Carbon fiber & oxidizer composites"], ["neuro", "Neurolink enhancers & stabilizers"], ["neo", "Isotropic neofullerenes"], ["mol", "Other molecular-forged materials"]];
 function rxCat(P) { const D = rxD(), n = rxName(P), g = (D.grp || {})[P]; if (g === 428) return null; if (/Neurolink/i.test(n)) return "neuro"; if (/Isotropic Neofullerene/i.test(n)) return "neo"; if (g === 429) return /Carbon Fiber|Oxidizer/i.test(n) ? "cfo" : "comp"; return "mol"; }
-const iconBp = (t, size = 24) => `<img src="https://images.evetech.net/types/${t}/bp?size=32" alt="" width="${size}" height="${size}" loading="lazy" style="vertical-align:middle;border-radius:3px" onerror="this.onerror=null;this.src='https://images.evetech.net/types/${t}/icon?size=32'">`;
+const iconBp = (t, size = 24, copy) => `<img src="https://images.evetech.net/types/${t}/${copy ? "bpc" : "bp"}?size=32" alt="" width="${size}" height="${size}" loading="lazy" style="vertical-align:middle;border-radius:3px" onerror="this.onerror=null;this.src='https://images.evetech.net/types/${t}/icon?size=32'">`;
 const rxByProd = () => { const D = rxD(); if (!D._by) Object.defineProperty(D, "_by", { value: new Map(D.f.map(x => [x.p, x])), enumerable: false }); return D._by; };
 const rxName = (t) => (rxD().names || {})[t] || state.typeNames[t] || "Item " + t;
 const rxKind = (t) => { const g = (rxD().grp || {})[t]; return g === FUEL_GRP ? "fuel" : g === GOO_GRP ? "goo" : "other"; };
@@ -3870,17 +3913,23 @@ document.addEventListener("change", (e) => {
 // Settings: the trade hubs (built in, and the stations you add)
 function renderHubs() {
   const tb = $("hub-table"); if (!tb) return; tb.dataset.sorted = "";
-  tb.innerHTML = `<thead><tr><th scope="col">Station</th><th scope="col">System</th><th scope="col">Region</th><th scope="col"></th></tr></thead><tbody>${tradeHubs().map(h => `<tr><th scope="row">${esc(h.name)}</th><td>${esc(h.sysName || "")}</td><td>${esc(h.regionName || regionName(h.region))}</td><td>${HUBS_DEFAULT.some(d => d.id === h.id) ? `<span class="muted">built in</span>` : `<button type="button" class="link" data-hub-del="${h.id}">Remove</button>`}</td></tr>`).join("")}</tbody>`;
+  tb.innerHTML = `<thead><tr><th scope="col">Station or citadel</th><th scope="col">System</th><th scope="col">Region</th><th scope="col"></th></tr></thead><tbody>${tradeHubs().map(h => `<tr><th scope="row">${esc(h.name)}${h.cit ? ` <span class="tag">Citadel</span>` : ""}</th><td>${esc(h.sysName || "")}</td><td>${esc(h.regionName || regionName(h.region))}</td><td>${HUBS_DEFAULT.some(d => d.id === h.id) ? `<span class="muted">built in</span>` : `<button type="button" class="link" data-hub-del="${h.id}">Remove</button>`}</td></tr>`).join("")}</tbody>`;
 }
 $("hub-form").addEventListener("submit", async (e) => {
   e.preventDefault(); const v = $("hub-name").value.trim(), msg = $("hub-msg"); if (!v) return; msg.textContent = "Looking it up…";
   try {
     let id = /^\d+$/.test(v) ? +v : null;
+    if (!id) id = +(citadelMarkets().find(c => c.name.toLowerCase() === v.toLowerCase()) || {}).id || null;   // a citadel you know (assets, jobs, structures): ESI can't find one by name
     if (!id) { const r = await fetchRetry("https://esi.evetech.net/latest/universe/ids/?datasource=tranquility&language=en", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([v]) }, 3); id = r.ok ? (((await r.json()).stations || [])[0] || {}).id : null; }
-    if (!id || id < 60000000 || id >= 64000000) throw new Error("no NPC station by that name: type its full name as in the game (e.g. Jita IV - Moon 4 - Caldari Navy Assembly Plant), or its ID");
+    const cit = id > 1e12;
+    if (!id || !cit && (id < 60000000 || id >= 64000000)) throw new Error("no station or citadel by that name: type a station's full name as in the game (e.g. Jita IV - Moon 4 - Caldari Navy Assembly Plant), a citadel's name as on Assets or Industry structures, or its ID");
     if (tradeHubs().some(h => h.id === id)) throw new Error("it's already in the list");
-    const st = await esiGet(`/universe/stations/${id}/`), sy = await esiGet(`/universe/systems/${st.system_id}/`), co = await esiGet(`/universe/constellations/${sy.constellation_id}/`), nm = await esiNames([co.region_id]).catch(() => ({}));
-    (state.misc.hubs = state.misc.hubs || []).push({ id, name: st.name, sys: st.system_id, sysName: sy.name || "", region: co.region_id, regionName: nm[co.region_id] || "" });
+    let st;
+    if (cit) { const who = state.chars.find(c => c.esiId && esiTokens()[c.esiId] && (c.scopes || "").includes(STRUCTURES_SCOPE)); if (!who) throw new Error("a citadel is read with a pilot who allows Structures (esi-universe.read_structures.v1)");
+      const s = await esiAuthGet(`/universe/structures/${id}/`, (await freshAccess(who)).access); st = { name: s.name, system_id: s.solar_system_id }; }
+    else st = await esiGet(`/universe/stations/${id}/`);
+    const sy = await esiGet(`/universe/systems/${st.system_id}/`), co = await esiGet(`/universe/constellations/${sy.constellation_id}/`), nm = await esiNames([co.region_id]).catch(() => ({}));
+    (state.misc.hubs = state.misc.hubs || []).push({ id, name: st.name, sys: st.system_id, sysName: sy.name || "", region: co.region_id, regionName: nm[co.region_id] || "", ...(cit ? { cit: 1 } : {}) });
     saveMisc(); $("hub-name").value = ""; msg.textContent = `Added ${st.name}.`; renderSettingsPage();
   } catch (err) { msg.textContent = netMsg(err); }
 });
@@ -4211,6 +4260,7 @@ async function applyToken(tok) {
   state.misc.ownedBps = state.misc.ownedBps || {};
   if (scopes.includes(BPS_SCOPE)) { try { state.misc.ownedBps["char:" + charId] = { at: Date.now(), name, list: slimBps(await esiAuthGetAll(`/characters/${charId}/blueprints/`, tok.access_token)) }; } catch (e) {} }
   if (corpId && scopes.includes(CORP_BPS_SCOPE)) { try { state.misc.ownedBps["corp:" + corpId] = { at: Date.now(), name: state.corpNames[corpId] || "Corporation", list: slimBps(await esiAuthGetAll(`/corporations/${corpId}/blueprints/`, tok.access_token)) }; } catch (e) {} }
+  try { await locationNames([state.misc.ownedBps["char:" + charId], state.misc.ownedBps["corp:" + corpId]].flatMap(s => s ? s.list.map(b => b[6]).filter(Boolean) : []), tok.access_token, scopes); } catch (e) {}
   if (scopes.includes(STANDINGS_SCOPE)) { try { const st = await esiAuthGet(`/characters/${charId}/standings/`, tok.access_token); c.standings = { at: Date.now(), list: st.map(x => [x.from_type, x.from_id, x.standing]) }; } catch (e) {} }
   if (scopes.includes(FATIGUE_SCOPE)) { try { await readFatigue(c, tok.access_token); } catch (e) {} }
   // Jump clones and the home station, placed on the map
@@ -4415,7 +4465,7 @@ function renderChars() {
   const t = $("chars-table"); if (!t) return;
   const tokens = esiTokens();
   $("chars-sync-all").hidden = !state.chars.some(c => c.esiId && tokens[c.esiId]);
-  if (!state.chars.length) { t.innerHTML = `<tbody><tr><td class="empty">No characters yet. Use "Link EVE character" to import one from ESI, or "Add pilot" to enter one by hand.</td></tr></tbody>`; return; }
+  if (!state.chars.length) { t.innerHTML = `<tbody><tr><td class="empty">No characters yet. Use "Link EVE character" to import one from ESI, or "Add custom pilot" (Settings) to enter one by hand.</td></tr></tbody>`; return; }
   t.innerHTML = `<thead><tr><th scope="col">Character</th><th scope="col">Skills come from</th><th scope="col">ESI link</th><th scope="col">Last synced</th><th scope="col">Last change</th><th scope="col"><span class="label">Actions</span></th></tr></thead><tbody>${state.chars.map(c => {
     const linked = c.esiId && tokens[c.esiId], ss = syncState(c);
     const anySkill = Object.values(c.skills || {}).some(v => v > 0);
@@ -6245,12 +6295,14 @@ async function refreshPrices(force) {
 }
 async function syncAssets(key, owner, kind, list, corp, access, scopes, divisions, via) {
   const more = new Map(), rows = aggregateAssets(list, corp, more), other = [...more.values()];
+  const byId = new Map(list.map(a => [a.item_id, a])), places = {};   // every container, ship and office → the station or structure it's in (for blueprints, bpWhere)
+  for (const a of list) if (byId.has(a.location_id) && !(a.location_id in places)) { let loc = a.location_id, n = 0; while (byId.has(loc) && n++ < 8) loc = byId.get(loc).location_id; places[a.location_id] = loc; }
   await locationNames([...rows, ...other].map(r => r.loc), access, scopes);
   const types = [...new Set([...rows.map(r => r.t), ...other.flatMap(r => [r.t, r.in])])].filter(t => t && !state.typeNames[t]);
   if (types.length) Object.assign(state.typeNames, await esiNames(types));
   await refreshPrices(false);
   setTimeout(loadTypeMeta, 0);
-  state.assets[key] = { owner, kind, at: Date.now(), rows, other, divisions: divisions || (state.assets[key] && state.assets[key].divisions) || null, via: via || owner };
+  state.assets[key] = { owner, kind, at: Date.now(), rows, other, places, divisions: divisions || (state.assets[key] && state.assets[key].divisions) || null, via: via || owner };
   saveAssets();
 }
 // Jita 4-4 market: lowest sell order (JSV) and highest buy order (JBV) at the station, read live from ESI, kept in this browser
@@ -7401,7 +7453,7 @@ function mapShips() {
   const T = state.misc.types || {}, out = [], owned = ownedShips();
   for (const n of JUMP_SHIPS) {
     const d = T[n]; if (!d || d.missing || !d.jumpRange) continue;
-    const cls = shipClass(n), rangeOf = () => d.jumpRange * (1 + 0.2 * jdcLevel());
+    const cls = shipClass(n), rangeOf = (c) => d.jumpRange * (1 + 0.2 * jdcLevel(c));
     const pilots = state.chars.map(c => { const o = c.esiId && owned.get(c.esiId); return { c, has: !!(o && o.has(d.id)), fly: !missingFor(c, d.req).length }; });
     // The pilot used: one who has it and can fly it, else the best one who can fly it; nobody: every skill at V
     const pick = (xs) => xs.sort((a, b) => rangeOf(b.c) - rangeOf(a.c))[0];
@@ -7411,7 +7463,14 @@ function mapShips() {
   }
   return out.sort((a, b) => (b.has - a.has) || SHIP_CLASSES.indexOf(a.cls) - SHIP_CLASSES.indexOf(b.cls) || a.cls.ships.indexOf(a.n) - b.cls.ships.indexOf(b.n));
 }
-const jdcLevel = () => { const v = (state.misc.map || {}).jdc; return v == null || v === "" ? 5 : Math.max(0, Math.min(5, +v)); };
+// Jump Drive Calibration set on the planner (map.jdc), "" = the pilot's own level
+const jdcLevel = (c) => { const v = (state.misc.map || {}).jdc; return v == null || v === "" ? lv(c, "Jump Drive Calibration") : Math.max(0, Math.min(5, +v)); };
+// The jump planner's fuel: Jump Fuel Conservation (map.jfc) and Jump Freighters (map.jfs) set on the planner, "" = the pilot's own level
+const JP_FUEL_SK = { jfc: "Jump Fuel Conservation", jfs: "Jump Freighters" };
+function jpPilot(c) {
+  const m = state.misc.map || {}, ov = Object.fromEntries(Object.entries(JP_FUEL_SK).filter(([k]) => m[k] != null && m[k] !== "").map(([k, n]) => [n, Math.max(0, Math.min(5, +m[k]))]));
+  return Object.keys(ov).length ? { ...c, skills: new Proxy(c.skills || {}, { get: (o, k) => k in ov ? ov[k] : o[k] }) } : c;
+}
 const defaultShip = (sh) => sh.find(x => x.has && x.fly) || sh.find(x => x.fly) || sh[0];
 function shipOptions(sh) {
   const opt = (x) => `<option value="${x.key}">${x.fly ? "✓ " : ""}${esc(x.n)}</option>`, own = sh.filter(x => x.has);
@@ -7528,11 +7587,14 @@ async function loadSov(force) {
   sovLoading = false; renderMap();
 }
 const ALLY_COLOR = "#1d4ed8";
-const allyIds = () => new Set(((state.misc.map || {}).allies || []).map(Number));
+// Allied coalitions (Sovereignty page): map.allyCoals, or until you change it the coalitions your pilots' alliances (from ESI) are in
+const allyCoals = () => { const mm = state.misc.map || {}, cfg = sovCfg(), have = new Set(cfg.coals.map(c => c.id));
+  return (Array.isArray(mm.allyCoals) ? mm.allyCoals : [...new Set(state.chars.map(c => cfg.of[c.allyId]).filter(Boolean))]).filter(id => have.has(id)); };
+const allyIds = () => { const of = sovCfg().of, cs = new Set(allyCoals()); return new Set([...((state.misc.map || {}).allies || []).map(Number), ...Object.keys(of).filter(a => cs.has(of[a])).map(Number)]); };
 const hueOf = (id) => { let h = 0; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
 function sovColor(s, allies) {
   const o = sov && sov.bySys.get(s.id);
-  if (o && o.a) return allies.has(o.a) ? ALLY_COLOR : `hsl(${hueOf(o.a)},45%,52%)`;
+  if (o && o.a) return allies.has(o.a) ? ALLY_COLOR : `hsl(${hueOf(sovCfg().of[o.a] || o.a)},45%,52%)`;   // a coalition's alliances share its colour
   if (o && o.f) return "#6b7280";
   return secRound(s.s) <= 0 ? "#2b3342" : "#4b5563";
 }
@@ -7554,7 +7616,7 @@ function drawMapNow() {
   const zoom = view.k / view.k0, L = mapLayers(), mm = state.misc.map || {}, bySov = mm.color === "sov" && sov, allies = allyIds();
   // Jump range: low-sec and null-sec systems within reach of the origin (high-sec can't be jumped into, so it isn't highlighted)
   const origin = mapOrigin(), rg = mapRange(), inRange = new Set();
-  if (origin && rg.range > 0) for (const s of mapData.systems) if (s !== origin && secRound(s.s) < 0.5 && !inIncursion(s) && lyBetween(origin, s) <= rg.range) inRange.add(s.id);
+  if (origin && rg.range > 0) for (const s of mapData.systems) if (s !== origin && secRound(s.s) < 0.5 && (rg.sh && rg.sh.cls.k === "blops" || !inIncursion(s)) && lyBetween(origin, s) <= rg.range) inRange.add(s.id);
   if (L.gates) {
     g.lineWidth = zoom > 6 ? 1 : 0.6;
     g.strokeStyle = "rgba(120,140,175,0.32)"; g.beginPath();
@@ -7666,7 +7728,7 @@ function renderMapInfo() {
     if (sel.st) loadNpcNames(sel.st);
     const o = sov && sov.bySys.get(sel.id), owner = o ? (o.a ? sov.names[o.a] || "Alliance " + o.a : sov.names[o.f] || "") : "";
     html += `<div class="map-sel"><div>${homes.includes(sel.id) ? mkIco("home") + " " : ""}<b style="font-size:1.05rem">${esc(sel.n)}</b> <span class="num" style="color:${secColor(sel.s)}">${secLabel(sel.s)}</span> <span class="muted">· ${esc((mapData.cons[sel.c] || {}).n || "")} · ${esc((m.regions[sel.r] || {}).n || "")}</span>${owner ? ` <span class="muted">· sovereignty: </span><span style="${o.a && allyIds().has(o.a) ? `color:${ALLY_COLOR};font-weight:600` : ""}">${esc(owner)}</span>` : ""}${origin && origin !== sel ? ` <span class="muted">· ${lyBetween(origin, sel).toFixed(2)} ly from ${esc(origin.n)}</span>` : ""}</div>
-      ${inIncursion(sel) ? `<div style="font-size:.85rem">${mkIco("incursion")} <span class="pill bad">Incursion here: cynos can't be lit, so you can't jump in</span></div>` : ""}${kills ? (() => { const k = kills.by.get(sel.id); return `<div style="font-size:.85rem">${k && (k.s || k.p) ? mkIco("kills", isDanger(sel.id) ? "bad" : "") + " " : ""}${isDanger(sel.id) ? `<span class="pill bad">Dangerous</span> ` : ""}${k && (k.s || k.p || k.n) ? `Last hour: ${k.s} ship${k.s === 1 ? "" : "s"}, ${k.p} pod${k.p === 1 ? "" : "s"}, ${k.n} NPC${k.n === 1 ? "" : "s"} killed` : `<span class="muted">No kills in the last hour</span>`} <span class="muted">· read ${ago(kills.at)}</span></div>`; })() : ""}<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-map-origin="${sel.id}">${origin === sel ? "Jump origin ✓" : "Jump from here"}</button>${origin && origin !== sel ? `<button type="button" class="primary" data-map-dest="${sel.id}">Jump here from ${esc(origin.n)}</button>` : ""}<button type="button" data-map-home="${sel.id}">${homes.includes(sel.id) ? "⌂ Home ✓ (remove)" : "⌂ Set as home"}</button></div>${here.length ? `<div style="font-size:.85rem">${here.join("<br>")}</div>` : ""}</div>`;
+      ${inIncursion(sel) ? `<div style="font-size:.85rem">${mkIco("incursion")} <span class="pill bad">Incursion here: cynos can't be lit, so you can't jump in (Black Ops can, on covert cynos)</span></div>` : ""}${kills ? (() => { const k = kills.by.get(sel.id); return `<div style="font-size:.85rem">${k && (k.s || k.p) ? mkIco("kills", isDanger(sel.id) ? "bad" : "") + " " : ""}${isDanger(sel.id) ? `<span class="pill bad">Dangerous</span> ` : ""}${k && (k.s || k.p || k.n) ? `Last hour: ${k.s} ship${k.s === 1 ? "" : "s"}, ${k.p} pod${k.p === 1 ? "" : "s"}, ${k.n} NPC${k.n === 1 ? "" : "s"} killed` : `<span class="muted">No kills in the last hour</span>`} <span class="muted">· read ${ago(kills.at)}</span></div>`; })() : ""}<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-map-origin="${sel.id}">${origin === sel ? "Jump origin ✓" : "Jump from here"}</button>${origin && origin !== sel ? `<button type="button" class="primary" data-map-dest="${sel.id}">Jump here from ${esc(origin.n)}</button>` : ""}<button type="button" data-map-home="${sel.id}">${homes.includes(sel.id) ? "⌂ Home ✓ (remove)" : "⌂ Set as home"}</button></div>${here.length ? `<div style="font-size:.85rem">${here.join("<br>")}</div>` : ""}</div>`;
   }
   if (origin && rg.range > 0) {
     // Your destinations in range, closest first, with fuel for the chosen pilot and ship
@@ -7725,12 +7787,12 @@ function renderMap() {
   $("map-color").value = mm.color === "sov" ? "sov" : "sec";
   const lb = $("map-layout"); lb.disabled = !m || !!mapLoad; lb.textContent = !m ? "Switch to 2D map" : !m.has2d ? "Get the 2D map" : m.layout === "2d" ? "Switch to 3D map" : "Switch to 2D map"; lb.title = m && !m.has2d ? "Your saved map came without the game's 2D layout: this reads it again from EVE Ref (a few minutes)" : "";
   // Allies: alliances holding sovereignty, picked by name
-  const allyKey = sov ? sov.at + "|" + (mm.allies || []).join(",") : "";
+  const allyKey = sov ? sov.at + "|" + [...allyIds()].join(",") + "|" + sovCfg().coals.map(c => c.id + c.n).join(",") : "";
   if (sov && $("map-alliances").dataset.key !== allyKey) {
     const count = new Map(), have = allyIds(); for (const [, a] of sov.list) if (a && !have.has(a)) count.set(a, (count.get(a) || 0) + 1);
-    $("map-alliances").innerHTML = [...count.entries()].sort((x, y) => y[1] - x[1]).map(([a, n]) => `<option value="${esc(sov.names[a] || "Alliance " + a)}">${n} system${n > 1 ? "s" : ""}</option>`).join(""); $("map-alliances").dataset.key = allyKey;
+    $("map-alliances").innerHTML = sovCfg().coals.filter(c => !allyCoals().includes(c.id)).map(c => `<option value="${esc(c.n)}">coalition</option>`).join("") + [...count.entries()].sort((x, y) => y[1] - x[1]).map(([a, n]) => `<option value="${esc(sov.names[a] || "Alliance " + a)}">${n} system${n > 1 ? "s" : ""}</option>`).join(""); $("map-alliances").dataset.key = allyKey;
   }
-  $("map-allies").innerHTML = (mm.allies || []).map(a => `<span class="chip on" style="background:${ALLY_COLOR};color:#fff">${esc((sov && sov.names[a]) || mm.allyNames && mm.allyNames[a] || "Alliance " + a)} <button type="button" class="link" style="color:#fff" data-ally-del="${a}" aria-label="Remove ally">✕</button></span>`).join("") || `<span class="muted" style="font-size:.8rem">${sov ? "None" : sovLoading ? "Loading sovereignty…" : ""}</span>`;
+  $("map-allies").innerHTML = allyCoals().map(id => `<span class="chip on" style="background:${ALLY_COLOR};color:#fff">${esc(sovCfg().coals.find(c => c.id === id).n)} (coalition) <button type="button" class="link" style="color:#fff" data-ally-coal-del="${esc(id)}" aria-label="Remove allied coalition">✕</button></span>`).join("") + (mm.allies || []).map(a => `<span class="chip on" style="background:${ALLY_COLOR};color:#fff">${esc((sov && sov.names[a]) || mm.allyNames && mm.allyNames[a] || "Alliance " + a)} <button type="button" class="link" style="color:#fff" data-ally-del="${a}" aria-label="Remove ally">✕</button></span>`).join("") || (allyCoals().length ? "" : `<span class="muted" style="font-size:.8rem">${sov ? "None" : sovLoading ? "Loading sovereignty…" : ""}</span>`);
   $("map-homes").innerHTML = m ? ((mm.homes || []).map(id => { const s = m.byId.get(id); return s ? `<span class="chip on"><button type="button" class="link" data-map-homego="${id}" title="Jump from ${esc(s.n)}">⌂ ${esc(s.n)}</button> <button type="button" class="link" data-map-home="${id}" aria-label="Remove home">✕</button></span>` : ""; }).join("") || `<span class="muted" style="font-size:.8rem">Click a system, then "Set as home"</span>`) : "";
   if (m) {
     const dl = $("map-names"); if (!dl.options.length) dl.innerHTML = mapData.systems.map(s => `<option value="${esc(s.n)}">`).join("");
@@ -7771,7 +7833,8 @@ function legDanger(L) {
   const P = L.path, gs = L.gatesOnly ? P : [...(L.ga > 0 ? P.slice(0, L.ga + 1) : []), ...(L.gb > 0 ? P.slice(P.length - L.gb - 1) : [])], js = L.gatesOnly ? [] : P.slice((L.ga || 0) + 1, P.length - (L.gb || 0));
   return [...new Set([...js, ...gs].filter(s => s && isDanger(s.id)))].map(s => ({ s, jump: js.includes(s) }));
 }
-const jumpable = (s) => secRound(s.s) < 0.5 && !NO_JUMP_REGIONS.has(s.r) && s.id < 30100000 && !inIncursion(s);
+// cov: Black Ops jump to covert cynos, which incursions don't stop (user's rule)
+const jumpable = (s, cov) => secRound(s.s) < 0.5 && !NO_JUMP_REGIONS.has(s.r) && s.id < 30100000 && (cov || !inIncursion(s));
 // Fewest jumps (then fewest light years) through systems that pass ok()
 function findJumpRoute(from, to, R, ok, pen) {
   const nodes = mapData.systems.filter(s => s === to || (s !== from && ok(s)));
@@ -7850,26 +7913,27 @@ function planJumps() {
   if (!from || !to) return warn("Pick a start and a destination system.");
   if (!(rg.range > 0)) return warn("Choose a pilot's ship (or a custom range) under Range first.");
   if (from === to) return warn("Start and destination are the same system.");
-  if (inIncursion(to)) return warn(`${esc(to.n)} is in an incursion right now: cynos can't be lit there. Pick a system outside the incursion.`);
-  if (!jumpable(to)) return warn(`${esc(to.n)} is ${secRound(to.s) >= 0.5 ? "high-sec" : "in a region jump drives can't reach"}: pick a low-sec or null-sec system next to it and take the gates from there.`);
+  const cov = !!(sh && sh.cls.k === "blops");
+  if (inIncursion(to) && !cov) return warn(`${esc(to.n)} is in an incursion right now: cynos can't be lit there. Pick a system outside the incursion.`);
+  if (!jumpable(to, cov)) return warn(`${esc(to.n)} is ${secRound(to.s) >= 0.5 ? "high-sec" : "in a region jump drives can't reach"}: pick a low-sec or null-sec system next to it and take the gates from there.`);
   const stops = { any: true, mine: true, ally: true, npc: true, friendly: true, ...(P.stops || {}) }, mk = mapMarkers(), allies = allyIds(), homes = new Set((state.misc.map || {}).homes || []);
   const mine = new Set([...mk.structs.keys(), ...mk.stations.keys(), ...homes, ...mk.clones.keys()]);
-  const ok = (s) => { if (!jumpable(s)) return false; if (stops.any) return true; const o = sov && sov.bySys.get(s.id);
+  const ok = (s) => { if (!jumpable(s, cov)) return false; if (stops.any) return true; const o = sov && sov.bySys.get(s.id);
     return (stops.mine && mine.has(s.id)) || (stops.friendly && mk.friendly.has(s.id)) || (stops.ally && o && o.a && allies.has(o.a)) || (stops.npc && o && !o.a && o.f && secRound(s.s) <= 0); };
   // Docking: where this hull can dock among the structures you know
   const dockMode = P.dock || "ignore", sites = dockSites(), dockK = sh ? sh.cls.dock : "sub", shipN = sh ? sh.n : "";
   const docks = (s) => (sites.get(s.id) || []).filter(x => canDock(dockK, shipN, x.cls));
   const aShip = sh ? `${/^[aeiou]/i.test(sh.n) ? "an" : "a"} ${esc(sh.n)}` : "the ship", noSites = ![...sites.values()].some(l => l.some(x => canDock(dockK, shipN, x.cls)));
   if (dockMode === "only" && noSites) return warn(`No structure you know of can take ${aShip} (${esc(DOCK_TEXT[dockK])}). Import friendly structures or sync your corporation's citadels on the Map tab, or set Citadels to "Don't care".`);
-  const okDock = dockMode === "only" ? (s) => jumpable(s) && docks(s).length > 0 : ok;
+  const okDock = dockMode === "only" ? (s) => jumpable(s, cov) && docks(s).length > 0 : ok;
   const route = findJumpRoute(from, to, rg.range, okDock, dockMode === "prefer" ? (s) => docks(s).length ? 0 : 1 : null);
-  if (!route) return warn(`No jump route from ${esc(from.n)} to ${esc(to.n)} with ${rg.range.toFixed(2)} ly of range ${dockMode === "only" ? `stopping only where ${aShip} can dock (${esc(DOCK_TEXT[dockK])})` : "through the kinds of systems you ticked"}${incursions && incursions.sys.size ? " (incursion systems are avoided)" : ""}. ${dockMode === "only" ? `Try "Prefer" instead, or import more friendly structures.` : "Tick more kinds of stops, or check that sovereignty has loaded for allied or NPC space."}`);
+  if (!route) return warn(`No jump route from ${esc(from.n)} to ${esc(to.n)} with ${rg.range.toFixed(2)} ly of range ${dockMode === "only" ? `stopping only where ${aShip} can dock (${esc(DOCK_TEXT[dockK])})` : "through the kinds of systems you ticked"}${incursions && incursions.sys.size && !cov ? " (incursion systems are avoided)" : ""}. ${dockMode === "only" ? `Try "Prefer" instead, or import more friendly structures.` : "Tick more kinds of stops, or check that sovereignty has loaded for allied or NPC space."}`);
   // Legs: one way, or there and back, several times
   const path = route.path, back = [...path].reverse(), n = P.trips === "round" ? Math.max(1, Math.min(20, +P.rounds || 1)) : 0;
   const legs = n ? Array.from({ length: n * 2 }, (_, i) => i % 2 ? back : path) : [path];
   const hopsOf = (p) => p.slice(1).map((s, i) => lyBetween(p[i], s));
   const ecoN = sh && ecoFits(sh.n) ? +(P.eco || 0) : 0, ecoV = ECONOMIZERS.find(e => e.id === +P.ecoId) || ecoVariant(), ecoM = ecoN ? ecoMult(ecoV.pct, ecoN) : 1;
-  const price = sh ? isoPrice(sh.d.fuelType).p : 0, perLy = sh ? jumpFuel(sh.c, sh.d) * ecoM : 0, red = sh ? (sh.d.fatigue || 0) / 100 : 0;
+  const price = sh ? isoPrice(sh.d.fuelType).p : 0, perLy = sh ? jumpFuel(jpPilot(sh.c), sh.d) * ecoM : 0, red = sh ? (sh.d.fatigue || 0) / 100 : 0;
   const auto = P.fatAuto !== false && sh && fatigueNow(sh.c) != null, start = auto ? fatigueNow(sh.c) : Math.max(0, +P.fatigue || 0);
   const sim = simulateJumps(legs.flatMap(hopsOf), red, start);
   const oneLy = route.ly, totalLy = oneLy * legs.length, iso = perLy * totalLy;
@@ -7907,7 +7971,7 @@ function renderPlanner() {
   $("jp-fat").disabled = auto; if (document.activeElement !== $("jp-fat")) $("jp-fat").value = auto ? Math.round(fn) : (P.fatigue || "");
   $("jp-trips").value = P.trips === "round" ? "round" : "one"; $("jp-rounds").hidden = P.trips !== "round"; if (document.activeElement !== $("jp-rounds")) $("jp-rounds").value = P.rounds || 1;
   $("jp-fatread").hidden = !(sh && sh.c.esiId && esiTokens()[sh.c.esiId]);
-  $("jp-dock").value = P.dock || "ignore"; $("jp-jdc").value = String(jdcLevel());
+  $("jp-dock").value = P.dock || "ignore"; $("jp-jdc").value = String((state.misc.map || {}).jdc ?? ""); for (const k of Object.keys(JP_FUEL_SK)) $("jp-" + k).value = String((state.misc.map || {})[k] ?? "");
   const fits = sh && ecoFits(sh.n); $("jp-eco").disabled = !fits; $("jp-ecov").disabled = !fits; $("jp-eco").title = fits ? "" : "Economizers fit only jump freighters and the Rorqual";
   $("jp-eco").value = String(fits ? +(P.eco || 0) : 0);
   if (document.activeElement !== $("jp-ecov")) { const cur = (ECONOMIZERS.find(e => e.id === +P.ecoId) || ecoVariant()).id, own = ecoOwned(); $("jp-ecov").innerHTML = ECONOMIZERS.map(e => `<option value="${e.id}"${e.id === cur ? " selected" : ""}>${esc(e.short)} (−${e.pct}%)${own && own.id === e.id ? " · in your hangars" : ""}</option>`).join(""); }
@@ -7923,7 +7987,8 @@ $("jp-form").addEventListener("change", (e) => {
   else if (e.target.id === "jp-dock") P.dock = e.target.value;
   else if (e.target.id === "jp-eco") P.eco = +e.target.value;
   else if (e.target.id === "jp-ecov") P.ecoId = +e.target.value;
-  else if (e.target.id === "jp-jdc") { state.misc.map.jdc = +e.target.value; saveMisc(); renderMap(); if (P.from && P.to && $("jp-out").innerHTML) planJumps(); return; }
+  else if (e.target.id === "jp-jfc" || e.target.id === "jp-jfs") { state.misc.map[e.target.id.slice(3)] = e.target.value; }
+  else if (e.target.id === "jp-jdc") { state.misc.map.jdc = e.target.value; saveMisc(); renderMap(); if (P.from && P.to && $("jp-out").innerHTML) planJumps(); return; }
   else if (e.target.id === "jp-ship") { state.misc.map.ship = e.target.value; saveMisc(); renderMap(); if (P.from && P.to && $("jp-out").innerHTML) planJumps(); return; }
   else if (e.target.id === "jp-rounds") P.rounds = Math.max(1, parseInt(e.target.value, 10) || 1);
   else return;
@@ -8133,7 +8198,10 @@ async function readFatigue(c, access) {
     state.misc.map.layout = state.misc.map.layout === "2d" ? "3d" : "2d"; saveMisc(); mapIdx = null; view.k = null; renderMap();
   });
   $("map-ally").addEventListener("change", (e) => {
-    const v = e.target.value.trim().toLowerCase(); if (!v || !sov) return;
+    const v = e.target.value.trim().toLowerCase(); if (!v) return;
+    const co = sovCfg().coals.find(c => c.n.toLowerCase() === v);
+    if (co) { state.misc.map.allyCoals = [...new Set([...allyCoals(), co.id])]; e.target.value = ""; saveMisc(); renderMap(); return; }
+    if (!sov) return;
     const id = Object.entries(sov.names).find(([aid, n]) => n.toLowerCase() === v && sov.list.some(x => x[1] === +aid));
     if (!id) { toast("No alliance with sovereignty by that name"); return; }
     const mm = state.misc.map = state.misc.map || {}; mm.allies = [...new Set([...(mm.allies || []), +id[0]])]; mm.allyNames = { ...(mm.allyNames || {}), [id[0]]: id[1] };
@@ -8142,9 +8210,10 @@ async function readFatigue(c, access) {
   document.addEventListener("click", (e) => {
     const dst = e.target.closest && e.target.closest("[data-map-dest]");
     if (dst) { const m = mapIndex(), o = mapOrigin(), d = m && m.byId.get(+dst.dataset.mapDest); if (o && d) { const P = state.misc.map.plan = state.misc.map.plan || {}; P.from = o.n; P.to = d.n; saveMisc(); renderPlanner(); planJumps(); $("jp").scrollIntoView({ behavior: "smooth", block: "nearest" }); } return; }
-    const t = e.target.closest && e.target.closest("[data-ally-del],[data-map-home],[data-map-homego]"); if (!t) return;
+    const t = e.target.closest && e.target.closest("[data-ally-del],[data-ally-coal-del],[data-map-home],[data-map-homego]"); if (!t) return;
     const mm = state.misc.map = state.misc.map || {};
-    if (t.dataset.allyDel) mm.allies = (mm.allies || []).filter(a => a !== +t.dataset.allyDel);
+    if (t.dataset.allyCoalDel) mm.allyCoals = allyCoals().filter(id => id !== t.dataset.allyCoalDel);
+    else if (t.dataset.allyDel) mm.allies = (mm.allies || []).filter(a => a !== +t.dataset.allyDel);
     else if (t.dataset.mapHome) { const id = +t.dataset.mapHome, h = mm.homes || []; mm.homes = h.includes(id) ? h.filter(x => x !== id) : [...h, id]; }
     else if (t.dataset.mapHomego) { mm.origin = +t.dataset.mapHomego; mapUI.sel = mm.origin; }
     saveMisc(); renderMap();
@@ -8164,7 +8233,9 @@ function ownedBps() {
   return out;
 }
 const ownedLabel = (o) => !o ? "" : [o.bpo ? `BPO owned${o.bpo > 1 ? " ×" + o.bpo : ""} · ME ${o.me} TE ${o.te}` : "", o.bpc ? `${o.bpo ? "" : "No BPO · "}BPC ×${o.bpc}, ${o.runs} runs` : ""].filter(Boolean).join(" · ");
-function slimBps(list) { return list.map(b => [b.type_id, b.material_efficiency || 0, b.time_efficiency || 0, b.runs, b.quantity === -2 ? 1 : 0, Math.max(1, b.quantity || 1)]); }   // last: how many (a stack of unresearched originals is one entry)
+function slimBps(list) { return list.map(b => [b.type_id, b.material_efficiency || 0, b.time_efficiency || 0, b.runs, b.quantity === -2 ? 1 : 0, Math.max(1, b.quantity || 1), bpWhere(b.location_id)]); }   // how many (a stack of unresearched originals is one entry), then the station or structure it's in
+// A blueprint in a container, ship or corporation office: the station or structure that holds it, from the hangars read (Assets)
+const bpWhere = (id) => { for (const a of Object.values(state.assets || {})) if (a.places && a.places[id]) return a.places[id]; return id; };
 // The blueprint search lists, owned ones first, each with what you own in brackets
 let bpListKey = "";
 function fillBpLists() {
@@ -11268,34 +11339,39 @@ function renderBoost() {
 document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.boost; if (!k) return; const C = boostCfg(); C[k] = k === "bio" ? (e.target.value === "" ? null : +e.target.value) : e.target.value; saveMisc(); e.target.blur(); renderBoost(); });
 document.addEventListener("click", (e) => { if (!(e.target.closest && e.target.closest("[data-boost-refresh]"))) return; delete boostPrice[boostAt()]; renderBoost(); });
 
-/* ---------- tests page: blueprint library ---------- */
+/* ---------- misc page: blueprint library ---------- */
 // Originals and copies read from ESI (state.misc.ownedBps, per pilot and corporation); research and copying jobs matched to an original of the same blueprint and owner
 const BPL_JOB = { 4: "ME research", 3: "TE research", 5: "Copying" };
 function bplData() {
   const O = state.misc.ownedBps || {}, bpo = [], bpc = new Map();
-  for (const [k, s] of Object.entries(O)) for (const [t, me, te, runs, copy, n = 1] of s.list) {
-    if (!copy) { bpo.push({ t, me, te, n, k, who: s.name }); continue; }
-    const key = [t, me, te, runs, k].join(":"), e = bpc.get(key) || { t, me, te, runs, who: s.name, n: 0 }; e.n++; bpc.set(key, e);
+  for (const [k, s] of Object.entries(O)) for (const [t, me, te, runs, copy, n = 1, loc] of s.list) {
+    if (!copy) { bpo.push({ t, me, te, n, k, who: s.name, loc }); continue; }
+    const key = [t, me, te, runs, k, loc].join(":"), e = bpc.get(key) || { t, me, te, runs, who: s.name, n: 0, loc }; e.n++; bpc.set(key, e);
   }
   for (const c of state.chars) for (const j of jobsOf(c)) {
     if (!BPL_JOB[j.activity]) continue;
     const k = j.corp ? "corp:" + c.corpId : "char:" + c.esiId; let b = bpo.find(x => x.t === j.bp && x.k === k && !x.job);
     if (b && b.n > 1) { b.n--; b = { ...b, n: 1 }; bpo.push(b); }   // one of a stack of unresearched originals
-    if (!b) { b = { t: j.bp, me: null, te: null, n: 1, k, who: (O[k] || {}).name || c.name }; bpo.push(b); }
+    if (!b) { b = { t: j.bp, me: null, te: null, n: 1, k, who: (O[k] || {}).name || c.name, loc: j.facility || undefined }; bpo.push(b); }
     b.job = j; b.by = c.name;
   }
   return { bpo, bpc: [...bpc.values()] };
 }
 let bplNaming = false;
 function renderBpLib() {
-  const box = $("bpl-table"), cbox = $("bpc-table"), sum = $("bpl-summary"); if (!box) return;
+  const box = $("bpl-table"), sum = $("bpl-summary"); if (!box) return;
   const O = state.misc.ownedBps || {}, srcs = Object.values(O);
   $("bpl-status").textContent = srcs.length ? `Read ${ago(Math.max(...srcs.map(s => s.at || 0)))}` : "";
-  if (!srcs.length) { const msg = `<tbody><tr><td class="empty">Link pilots to ESI with the Blueprints permission to see your blueprints.</td></tr></tbody>`; box.innerHTML = cbox.innerHTML = msg; sum.innerHTML = ""; return; }
-  const { bpo, bpc } = bplData(), nm = (t) => (bp.names && bp.names[t]) || state.typeNames[t] || "";
+  if (!srcs.length) { const msg = `<tbody><tr><td class="empty">Link pilots to ESI with the Blueprints permission to see your blueprints.</td></tr></tbody>`; box.innerHTML = msg; sum.innerHTML = ""; return; }
+  let { bpo, bpc } = bplData(); const nm = (t) => (bp.names && bp.names[t]) || state.typeNames[t] || "";
   const unnamed = [...new Set([...bpo, ...bpc].map(x => x.t).filter(t => !nm(t)))];
-  if (unnamed.length && !bplNaming) { bplNaming = true; esiNames(unnamed).then(n => Object.assign(state.typeNames, n)).catch(() => null).then(() => { if (!$("page-tests").hidden) renderBpLib(); }); }
+  if (unnamed.length && !bplNaming) { bplNaming = true; esiNames(unnamed).then(n => Object.assign(state.typeNames, n)).catch(() => null).then(() => { if (!$("page-misc").hidden) renderBpLib(); }); }
   const q = $("bpl-find").value.trim().toLowerCase(), name = (t) => nm(t) || "Blueprint " + t, hit = (x) => !q || name(x.t).toLowerCase().includes(q);
+  // The location filter: the station or structure each one is in (saves from before it was read show as unknown until the next ESI refresh)
+  const where = (x) => x.loc ? String(x.loc) : "?", ln = (k) => k === "?" ? "Unknown: refresh from ESI" : locName(+k), locs = new Map(), ls = $("bpl-loc");
+  for (const x of [...bpo, ...bpc]) locs.set(where(x), (locs.get(where(x)) || 0) + x.n);
+  if (document.activeElement !== ls) { const cur = ls.value; ls.innerHTML = `<option value="">Every location</option>` + [...locs].sort((a, b) => ln(a[0]).localeCompare(ln(b[0]))).map(([k, n]) => `<option value="${esc(k)}"${k === cur ? " selected" : ""}>${esc(ln(k))} (${n.toLocaleString()})</option>`).join(""); }
+  if (ls.value) { bpo = bpo.filter(x => where(x) === ls.value); bpc = bpc.filter(x => where(x) === ls.value); }
   const now = Date.now(), res = bpo.filter(b => b.job && b.job.activity !== 5), cp = bpo.filter(b => b.job && b.job.activity === 5), idle = bpo.filter(b => !b.job);
   const tile = (l, v, m) => `<div class="slot-tile"><div class="label">${l}</div><span class="big-num">${v.toLocaleString()}</span><div class="muted">${m}</div></div>`;
   sum.innerHTML = tile("Originals", bpo.reduce((a, b) => a + b.n, 0), `${new Set(bpo.map(b => b.t)).size.toLocaleString()} different`) + tile("In research", res.length, res.length ? `next done ${left(Math.min(...res.map(b => b.job.end)) - now)}` : "none")
@@ -11306,17 +11382,113 @@ function renderBpLib() {
     if (j.activity === 3) return `TE research · ${b.te == null ? `+${2 * j.runs}` : `${b.te} → ${Math.min(20, b.te + 2 * j.runs)}`}`;
     return `${j.runs.toLocaleString()} cop${j.runs === 1 ? "y" : "ies"}${j.lr ? ` × ${j.lr.toLocaleString()} runs` : ""}`; };
   const ends = (j) => `<td class="num" data-v="${j.end}">${j.end <= now ? `<span class="pill good">Ready</span>` : `${esc(fmtDate(j.end))} · <b>${left(j.end - now)}</b>`}</td>`;
-  const row = (b) => `<tr><th scope="row" data-v="${esc(name(b.t))}">${iconBp(b.t, 20)} <button type="button" class="copyname" data-copy="${esc(name(b.t))}" data-copy-msg="${esc(name(b.t))} copied">${esc(name(b.t))}</button>${b.n > 1 ? ` <span class="muted">× ${b.n}</span>` : ""}</th>${lvl(b.me)}${lvl(b.te)}<td>${esc(b.who)}</td>`
+  const row = (b) => `<tr><th scope="row" data-v="${esc(name(b.t))}">${iconBp(b.t, 20)} <button type="button" class="copyname" data-copy="${esc(name(b.t))}" data-copy-msg="${esc(name(b.t))} copied">${esc(name(b.t))}</button>${b.n > 1 ? ` <span class="muted">× ${b.n}</span>` : ""}</th>${lvl(b.me)}${lvl(b.te)}<td class="num" data-v="">—</td><td>${esc(b.who)}</td>`
     + (b.job ? `<td>${what(b)}${b.by !== b.who ? ` <span class="muted">· ${esc(b.by)}</span>` : ""}</td>${ends(b.job)}` : `<td class="muted">—</td><td class="num" data-v="">—</td>`) + `</tr>`;
   const byEnd = (L) => L.filter(hit).sort((a, b) => a.job.end - b.job.end), byName = (L) => L.filter(hit).sort((a, b) => name(a.t).localeCompare(name(b.t)) || (b.me ?? -1) - (a.me ?? -1));
-  const groups = [["In research", byEnd(res)], ["Copying", byEnd(cp)], ["Not in a job", byName(idle)]].filter(g => g[1].length);
-  box.innerHTML = `<thead><tr><th scope="col">Blueprint</th><th scope="col" class="num">ME</th><th scope="col" class="num">TE</th><th scope="col">Owner</th><th scope="col">Job</th><th scope="col" class="num">Ends</th></tr></thead>`
-    + `<tbody>${groups.length ? groups.map(([g, L]) => `<tr class="group"><th colspan="6" scope="colgroup">${g} <span class="muted num">${L.length}</span></th></tr>` + L.map(row).join("")).join("") : `<tr><td class="empty" colspan="6">${q ? "No original matches." : "You own no original."}</td></tr>`}</tbody>`;
-  const cps = byName(bpc);
-  cbox.innerHTML = `<thead><tr><th scope="col">Blueprint</th><th scope="col" class="num">ME</th><th scope="col" class="num">TE</th><th scope="col" class="num">Runs</th><th scope="col" class="num">Copies</th><th scope="col">Owner</th></tr></thead>`
-    + `<tbody>${cps.length ? cps.map(c => `<tr><th scope="row" data-v="${esc(name(c.t))}">${iconBp(c.t, 20)} <button type="button" class="copyname" data-copy="${esc(name(c.t))}" data-copy-msg="${esc(name(c.t))} copied">${esc(name(c.t))}</button></th><td class="num" data-v="${c.me}">${c.me}</td><td class="num" data-v="${c.te}">${c.te}</td><td class="num" data-v="${c.runs}">${c.runs.toLocaleString()}</td><td class="num" data-v="${c.n}">${c.n.toLocaleString()}</td><td>${esc(c.who)}</td></tr>`).join("") : `<tr><td class="empty" colspan="6">${q ? "No copy matches." : "You own no copy."}</td></tr>`}</tbody>`;
+  // Copies: one line per blueprint, ME, TE, runs and owner, with how many (× n)
+  const crow = (c) => `<tr><th scope="row" data-v="${esc(name(c.t))}">${iconBp(c.t, 20, true)} <button type="button" class="copyname" data-copy="${esc(name(c.t))}" data-copy-msg="${esc(name(c.t))} copied">${esc(name(c.t))}</button>${c.n > 1 ? ` <span class="muted">× ${c.n.toLocaleString()}</span>` : ""}</th>${lvl(c.me)}${lvl(c.te)}<td class="num" data-v="${c.runs}">${c.runs.toLocaleString()}</td><td>${esc(c.who)}</td><td class="muted">—</td><td class="num" data-v="">—</td></tr>`;
+  const groups = [["In research", byEnd(res), row], ["Copying", byEnd(cp), row], ["Not in a job", byName(idle), row], ["Copies", byName(bpc), crow]].filter(g => g[1].length);
+  box.innerHTML = `<thead><tr><th scope="col">Blueprint</th><th scope="col" class="num">ME</th><th scope="col" class="num">TE</th><th scope="col" class="num">Runs</th><th scope="col">Owner</th><th scope="col">Job</th><th scope="col" class="num">Ends</th></tr></thead>`
+    + `<tbody>${groups.length ? groups.map(([g, L, f]) => `<tr class="group"><th colspan="7" scope="colgroup">${g} <span class="muted num">${L.length}</span></th></tr>` + L.map(f).join("")).join("") : `<tr><td class="empty" colspan="7">${q ? "No blueprint matches." : "You own no blueprint."}</td></tr>`}</tbody>`;
 }
 $("bpl-find").addEventListener("input", () => renderBpLib());
+$("bpl-loc").addEventListener("change", () => renderBpLib());
+
+/* ---------- sovereignty page ---------- */
+// Alliances holding sovereignty (sov.list from loadSov), their corporations and member counts (public ESI, kept a day: IDB "sovinfo" { v, al {id: n, t, corps, at}, corp {id: n, t, m, a, at, from?}, names }),
+// coalitions (state.misc.sov: v, coals [{ id, n }], of { allianceId: coalition id }) and one snapshot a day (IDB "sovhist": snaps [{ at, own [[system, alliance]], ca { corp: alliance } }], 8 days) for the 7-day panels
+const SOV_DAY = 864e5;
+function sovCfg() { const c = state.misc.sov = state.misc.sov || {}; if (c.v !== 1) { c.v = 1; c.coals = c.coals || []; c.of = c.of || {}; } return c; }
+let sovInfo = null, sovHist = null, sovRun = null;
+async function sovLoadLocal() {
+  if (!sovInfo) { const d = await idb.get("sovinfo"); sovInfo = d && d.v === 1 ? d : { v: 1, al: {}, corp: {}, names: {} }; }
+  if (!sovHist) { const d = await idb.get("sovhist"); sovHist = d && d.v === 1 ? d : { v: 1, snaps: [] }; }
+}
+const sovHeld = () => { const h = new Map(); for (const [, a] of (sov && sov.list) || []) if (a) h.set(a, (h.get(a) || 0) + 1); return h; };
+// The snapshot compared with today: the oldest one kept from the last 7 days (a little slack for the hour it was taken)
+const sovBase = () => (sovHist && sovHist.snaps.find(x => Date.now() - x.at <= 7.5 * SOV_DAY)) || null;
+async function sovEnsure(force) {
+  if (sovRun) return;
+  sovRun = { phase: "Reading sovereignty", done: 0, total: 0 }; renderSovPage();
+  try {
+    await sovLoadLocal(); await loadSov(force);
+    if (!sov) throw new Error(esiDown() ? "ESI is down" : "the sovereignty map couldn't be read");
+    const now = Date.now(), I = sovInfo, held = [...sovHeld().keys()], stale = (x) => !x || now - x.at > SOV_DAY;
+    const step = async (phase, items, fn) => { sovRun = { phase, done: 0, total: items.length }; renderSovPage();
+      await pool(items, 8, async (x) => { try { await fn(x); } catch (e) {} sovRun.done++; if (sovRun.done % 40 === 0) renderSovPage(); }); };
+    await step("Reading alliances", held.filter(a => force || stale(I.al[a])), async (a) => {
+      const [i, cs] = await Promise.all([esiGet(`/alliances/${a}/`), esiGet(`/alliances/${a}/corporations/`)]); I.al[a] = { n: i.name, t: i.ticker, corps: cs, at: now }; });
+    const corpInfo = async (c) => { const i = await esiGet(`/corporations/${c}/`); I.corp[c] = { ...(I.corp[c] || {}), n: i.name, t: i.ticker, m: i.member_count || 0, a: i.alliance_id || 0, at: now }; };
+    const nowA = new Map(); for (const a of held) for (const c of (I.al[a] || {}).corps || []) nowA.set(c, a);
+    await step("Reading corporations", [...nowA.keys()].filter(c => stale(I.corp[c])), corpInfo);
+    // Movements need where each corporation is now: those that left the alliances holding sov, and where newcomers came from
+    const base = sovBase();
+    if (base) {
+      await step("Reading corporations that moved", Object.keys(base.ca).map(Number).filter(c => !nowA.has(c) && stale(I.corp[c])), corpInfo);
+      await step("Reading alliance histories", [...nowA.keys()].filter(c => !(c in base.ca) && !((I.corp[c] || {}).from && I.corp[c].from.at > base.at)), async (c) => {
+        const h = await esiGet(`/corporations/${c}/alliancehistory/`), [cur, prev] = [...h].sort((x, y) => Date.parse(y.start_date) - Date.parse(x.start_date));
+        I.corp[c] = { ...(I.corp[c] || {}), from: { at: now, since: cur ? Date.parse(cur.start_date) : 0, a: prev ? prev.alliance_id || 0 : 0 } }; });
+    }
+    const unnamed = [...new Set([...Object.values(I.corp).flatMap(x => [x.a, x.from && x.from.a]), ...sovHist.snaps.flatMap(x => x.own.map(o => o[1]))].filter(a => a && !(I.al[a] || {}).n && !I.names[a] && !(sov.names || {})[a]))];
+    if (unnamed.length) Object.assign(I.names, await esiNames(unnamed).catch(() => ({})));
+    // Today's snapshot (one a day), older than 8 days dropped
+    const last = sovHist.snaps[sovHist.snaps.length - 1];
+    if (!last || now - last.at > 0.8 * SOV_DAY) sovHist.snaps.push({ at: now, own: sov.list.filter(x => x[1]).map(x => [x[0], x[1]]), ca: Object.fromEntries(nowA) });
+    sovHist.snaps = sovHist.snaps.filter(x => now - x.at <= 8 * SOV_DAY);
+    await idb.set("sovinfo", I); await idb.set("sovhist", sovHist); sovRun = null;
+  } catch (e) { sovRun = null; toast(`Sovereignty couldn't be read (${netMsg(e)})`); }
+  renderSovPage();
+}
+function renderSovPage() {
+  const box = $("sov-table"); if (!box || $("page-sov").hidden) return;
+  const cfg = sovCfg(), I = sovInfo || { al: {}, corp: {}, names: {} }, held = sovHeld(), now = Date.now();
+  $("sov-status").textContent = sovRun ? `${sovRun.phase}…${sovRun.total ? ` ${sovRun.done.toLocaleString()} of ${sovRun.total.toLocaleString()}` : ""}` : sov ? `Read ${ago(sov.at)}` : "";
+  $("sov-refresh").disabled = !!sovRun;
+  const aName = (a) => (I.al[a] || {}).n || I.names[a] || ((sov && sov.names) || {})[a] || `Alliance ${a}`;
+  const logo = (k, id) => `<img src="https://images.evetech.net/${k}/${id}/logo?size=32" width="20" height="20" alt="" loading="lazy" style="vertical-align:middle">`;
+  const aCell = (a) => a ? `${logo("alliances", a)} ${esc(aName(a))}${(I.al[a] || {}).t ? ` <span class="muted">[${esc(I.al[a].t)}]</span>` : ""}` : `<span class="muted">No alliance</span>`;
+  const aTick = (a) => a ? `${logo("alliances", a)} ${esc((I.al[a] || {}).t || aName(a))}` : `<span class="muted">None</span>`;   // the narrow movements table: logo and ticker
+  const num = (v) => v == null ? `<td class="num" data-v="">—</td>` : `<td class="num" data-v="${v}">${v.toLocaleString()}</td>`;
+  const stats = [...held].map(([a, sys]) => { const i = I.al[a], cs = (i && i.corps) || [], ms = cs.map(c => I.corp[c]).filter(Boolean);
+    return { a, sys, corps: i ? cs.length : null, m: ms.length ? ms.reduce((t, x) => t + x.m, 0) : null }; }).sort((x, y) => y.sys - x.sys || (y.m || 0) - (x.m || 0));
+  const byA = new Map(stats.map(x => [x.a, x])), coalOf = (a) => cfg.coals.find(c => c.id === cfg.of[a]);
+  $("sov-summary").innerHTML = [["Alliances", stats.length, "holding sovereignty"], ["Systems", stats.reduce((t, x) => t + x.sys, 0), "held by alliances"], ["Members", stats.reduce((t, x) => t + (x.m || 0), 0), "in those alliances"]]
+    .map(([l, v, m]) => `<div class="slot-tile"><div class="label">${l}</div><span class="big-num">${v.toLocaleString()}</span><div class="muted">${m}</div></div>`).join("");
+  // Coalitions: the sums of their alliances that hold sovereignty
+  $("sovc-table").innerHTML = `<thead><tr><th scope="col">Coalition</th><th scope="col">Alliances</th><th scope="col" class="num">Systems</th><th scope="col" class="num">Members</th><th scope="col" class="num">Corporations</th><th scope="col"></th></tr></thead><tbody>${cfg.coals.length ? cfg.coals.map(c => {
+    const as = Object.keys(cfg.of).filter(a => cfg.of[a] === c.id).map(Number).sort((x, y) => ((byA.get(y) || {}).m || 0) - ((byA.get(x) || {}).m || 0)), xs = as.map(a => byA.get(a)).filter(Boolean), sum = (k) => xs.some(x => x[k] != null) ? xs.reduce((t, x) => t + (x[k] || 0), 0) : as.length ? null : 0;
+    return `<tr><th scope="row" data-v="${esc(c.n)}">${esc(c.n)}</th><td data-v="${as.length}" style="font-size:.85rem">${as.length ? as.map(a => `<span title="${esc(aName(a))}">${logo("alliances", a)} ${esc((I.al[a] || {}).t || aName(a))}</span>`).join(" ") : `<span class="muted">none yet</span>`}</td>${num(sum("sys") || 0)}${num(sum("m"))}${num(sum("corps"))}<td><button type="button" class="link" data-sov-coal-del="${esc(c.id)}">Remove</button></td></tr>`; }).join("")
+    : `<tr><td class="empty" colspan="6">No coalition yet. Name one above.</td></tr>`}</tbody>`;
+  // The ranking
+  const q = $("sov-find").value.trim().toLowerCase(), opts = (a) => `<option value="">—</option>` + cfg.coals.map(c => `<option value="${esc(c.id)}"${cfg.of[a] === c.id ? " selected" : ""}>${esc(c.n)}</option>`).join("");
+  const rows = stats.map((x, i) => ({ ...x, rank: i + 1 })).filter(x => !q || aName(x.a).toLowerCase().includes(q) || ((I.al[x.a] || {}).t || "").toLowerCase().includes(q));
+  box.innerHTML = `<thead><tr><th scope="col" class="num">#</th><th scope="col">Alliance</th><th scope="col" class="num">Systems</th><th scope="col" class="num">Members</th><th scope="col" class="num">Corporations</th><th scope="col">Coalition</th></tr></thead><tbody>${rows.length ? rows.map(x => `<tr><td class="num" data-v="${x.rank}">${x.rank}</td><th scope="row" data-v="${esc(aName(x.a))}">${aCell(x.a)}</th>${num(x.sys)}${num(x.m)}${num(x.corps)}<td data-v="${esc((coalOf(x.a) || {}).n || "")}"><select data-sov-of="${x.a}" aria-label="Coalition of ${esc(aName(x.a))}"${cfg.coals.length ? "" : ` disabled title="Add a coalition above first"`}>${opts(x.a)}</select></td></tr>`).join("")
+    : `<tr><td class="empty" colspan="6">${!sov ? (sovRun ? "Reading sovereignty…" : "Sovereignty isn't read yet: Refresh from ESI.") : q ? "No alliance matches." : "No alliance holds sovereignty."}</td></tr>`}</tbody>`;
+  // 7 days: today against the oldest snapshot of the last 7 days
+  const base = sovBase(), since = base && now - base.at > 3600e3 ? `Since ${fmtDate(base.at)}${now - base.at < 6.5 * SOV_DAY ? " (the oldest snapshot this tool has: it keeps one a day while this page is opened)" : ""}.` : "";
+  const wait = `<tr><td class="empty" colspan="4">${sovRun ? "Reading…" : "This tool has no snapshot older than today yet: changes show from tomorrow (it keeps one a day while this page is opened)."}</td></tr>`;
+  $("sovx-since").textContent = $("sovm-since").textContent = since;
+  const ch = new Map(), bump = (a, k) => { if (!a) return; const e = ch.get(a) || ch.set(a, { a, g: 0, l: 0 }).get(a); e[k]++; };
+  if (since && sov) { const then = new Map(base.own); for (const [sid, a] of sov.list) { const b = then.get(sid) || 0; if (a !== b) { bump(a, "g"); bump(b, "l"); } then.delete(sid); } for (const [, b] of then) bump(b, "l"); }
+  const chg = [...ch.values()].sort((x, y) => Math.abs(y.g - y.l) - Math.abs(x.g - x.l) || (y.g + y.l) - (x.g + x.l)).slice(0, 25);
+  const signed = (v) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v)}`;
+  $("sovx-table").innerHTML = `<thead><tr><th scope="col">Alliance</th><th scope="col" class="num">Gained</th><th scope="col" class="num">Lost</th><th scope="col" class="num">Change</th></tr></thead><tbody>${!since ? wait : chg.length ? chg.map(x => `<tr><th scope="row" data-v="${esc(aName(x.a))}" title="${esc(aName(x.a))}">${aCell(x.a)}</th><td class="num" data-v="${x.g}">${signed(x.g)}</td><td class="num" data-v="${x.l}">${signed(-x.l)}</td><td class="num" data-v="${x.g - x.l}" style="color:var(--${x.g >= x.l ? "good" : "bad"})">${signed(x.g - x.l)}</td></tr>`).join("") : `<tr><td class="empty" colspan="4">No system changed hands.</td></tr>`}</tbody>`;
+  // Movements: corporations whose alliance changed (then from the snapshot; now from the alliances' lists, the corporation itself, or its alliance history)
+  const mv = [];
+  if (since) { const nowA = new Map(); for (const a of held.keys()) for (const c of (I.al[a] || {}).corps || []) nowA.set(c, a);
+    for (const [c, b] of Object.entries(base.ca)) { const x = I.corp[c], a = nowA.has(+c) ? nowA.get(+c) : x && x.at > base.at ? x.a : null; if (a != null && a !== b) mv.push({ c: +c, from: b, to: a }); }
+    for (const [c, a] of nowA) if (!(c in base.ca)) { const f = (I.corp[c] || {}).from; if (f && f.since > base.at) mv.push({ c, from: f.a, to: a }); } }
+  const mvs = mv.map(x => ({ ...x, i: I.corp[x.c] || {} })).sort((x, y) => (y.i.m || 0) - (x.i.m || 0));
+  $("sovm-table").innerHTML = `<thead><tr><th scope="col">Corporation</th><th scope="col" class="num">Members</th><th scope="col">From</th><th scope="col">To</th></tr></thead><tbody>${!since ? wait : mvs.length ? mvs.map(x => `<tr><th scope="row" data-v="${esc(x.i.n || "")}" title="${esc(x.i.n || "")}">${logo("corporations", x.c)} ${esc(x.i.n || `Corporation ${x.c}`)}${x.i.t ? ` <span class="muted">[${esc(x.i.t)}]</span>` : ""}</th>${num(x.i.m)}<td data-v="${esc(x.from ? aName(x.from) : "")}" title="${esc(x.from ? aName(x.from) : "No alliance")}">${aTick(x.from)}</td><td data-v="${esc(x.to ? aName(x.to) : "")}" title="${esc(x.to ? aName(x.to) : "No alliance")}">${aTick(x.to)}</td></tr>`).join("") : `<tr><td class="empty" colspan="4">No corporation changed alliance.</td></tr>`}</tbody>`;
+}
+$("sov-find").addEventListener("input", () => renderSovPage());
+$("sov-refresh").addEventListener("click", () => sovEnsure(true));
+$("sovc-form").addEventListener("submit", (e) => { e.preventDefault(); const n = $("sovc-name").value.trim(); if (!n) return; const cfg = sovCfg();
+  if (cfg.coals.some(c => c.n.toLowerCase() === n.toLowerCase())) { toast(`There's already a coalition called ${n}`); return; }
+  cfg.coals.push({ id: "c" + Date.now().toString(36), n }); $("sovc-name").value = ""; saveMisc(); renderSovPage(); });
+document.addEventListener("change", (e) => { const a = e.target.dataset && e.target.dataset.sovOf; if (!a) return; const cfg = sovCfg(); if (e.target.value) cfg.of[a] = e.target.value; else delete cfg.of[a]; saveMisc(); renderSovPage(); });
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-sov-coal-del]"); if (!b) return; const cfg = sovCfg(), id = b.dataset.sovCoalDel;
+  cfg.coals = cfg.coals.filter(c => c.id !== id); for (const a of Object.keys(cfg.of)) if (cfg.of[a] === id) delete cfg.of[a]; saveMisc(); renderSovPage(); });
 
 /* ---------- roles ---------- */
 function saveRoles() { ls.set("eve-industry-roles", state.roles); }
