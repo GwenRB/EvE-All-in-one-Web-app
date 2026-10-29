@@ -161,7 +161,9 @@ async def build_plan(t):
     t.ok(await t.js("document.querySelectorAll('#plan-out svg[aria-label=\"Build timeline\"] rect').length") > 0, "the timeline is drawn")
     nav = await t.js("[...document.querySelectorAll('#plan-nav a')].map(a=>a.textContent)")
     t.ok("Timeline" in nav and "Hauling" in nav and "Materials to buy" in nav and "Materials needed" in nav, "Build planning's left rail", nav)
-    mats = t.show("materials needed", await t.js("[[...document.querySelectorAll('#pl-mats-table tr.group')].map(r=>r.innerText.split(' · ')[0].replace(/[▾▸]/g,'').trim()), [...document.querySelectorAll('#pl-mats-table tbody tr:not(.group)')].map(r=>[r.cells[0].innerText.trim(), r.cells[1].innerText.trim()])]"))
+    mats = t.show("materials needed", await t.js("[[...document.querySelectorAll('#pl-mats-table tr.group')].map(r=>r.innerText.split(' · ')[0].replace(/[▾▸]/g,'').trim()), [...document.querySelectorAll('#pl-mats-table tbody tr:not(.group):not(.subgroup)')].map(r=>[r.cells[0].innerText.trim(), r.cells[1].innerText.trim()])]"))
+    sub = t.show("materials groups", await t.js("[...document.querySelectorAll('#pl-mats-table tbody tr')].map(r=>r.classList.contains('group')?'G':r.classList.contains('subgroup')?'S:'+r.innerText.replace(/[▾▸]/g,'').trim().replace(/\\s+\\d+$/,''):'i')"))
+    t.ok(sub[0] == "G" and sub[1].startswith("S:") and all(x != "G" or sub[i + 1].startswith("S:") for i, x in enumerate(sub[:-1])), "Materials needed: each kind split into the items' groups", sub)
     want = t.show("shop", await t.js("buildState.plan.res.shop.filter(x=>!x.ore).map(x=>[x.name,(x.need??x.qty).toLocaleString()])"))
     t.ok([g.lower() for g in mats[0]] == ["raw materials", "components built on the way"] and all(w in mats[1] for w in want) and any(m[0] == "Fake Component" for m in mats[1]), "Materials needed lists every raw material and the components built", [mats, want])
     # stock in hangars is used first
@@ -592,7 +594,7 @@ async def upcoming_fleets(t):
 @scenario
 async def lp_store(t):
     corps = await t.js("lpCorps()")
-    t.eq(corps, [[1000035, "Caldari Navy"], [1000125, "CONCORD"]], "the NPC corporations are read with their names, A to Z")
+    t.eq(corps, [[1000035, "Caldari Navy"], [1000125, "CONCORD"], [1000130, "Sisters of EVE"], [1000180, "State Protectorate"]], "the NPC corporations are read with their names, A to Z")
     t.ok(await t.js("[LOYALTY_SCOPE, CALENDAR_SCOPE].every(s=>ESI_SCOPE.includes(s) && SCOPE_USE[s] && !requestedScopes().includes(s))"), "the Loyalty points and Calendar permissions are listed and start unticked")
     await t.js("async()=>{state.chars[0].lp={at:Date.now(),list:(await esiAuthGet('/characters/9001/loyalty/points/','tok')).map(x=>[x.corporation_id,x.loyalty_points])}; saveLocal();}")
     t.ok(await t.js("!!document.querySelector('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab=lp]')"), "LP store is in the Market menu")
@@ -619,7 +621,23 @@ async def lp_store(t):
     v2 = await t.js("lpRows('1000035').find(o=>o.t===32880).perLp")
     t.ok(abs(v2 - (330000 * (1 - tax) - 104000) / 1000) < 1e-6 and await t.js("lpCfg().sell") == "jbv", "changing the sell pricing reprices the offers", v2)
     # A corporation without a store
-    await t.pg.select_option("#lp-corp", "1000125"); t.ok(await t.until("!lpBusy && /couldn't be read/.test(document.getElementById('lp-offers').innerText)", 10), "a corporation whose store can't be read says so", await t.text("#lp-offers"))
+    await t.pg.select_option("#lp-corp", "1000130"); t.ok(await t.until("!lpBusy && /couldn't be read/.test(document.getElementById('lp-offers').innerText)", 10), "a corporation whose store can't be read says so", await t.text("#lp-offers"))
+    # CONCORD: the stores its LP converts to, their offers at their price in CONCORD LP
+    await t.pg.select_option("#lp-corp", "1000125")
+    t.ok(await t.until("!!lpConv && !!lpOffers['1000125'] && !lpBusy", 20), "CONCORD's store and the stores its LP converts to are read", await t.text("#lp-conv"))
+    t.eq(await t.js("lpConv"), [[1000035, 0.8], [1000130, 0.4]], "CONCORD LP converts to empire (0.8) and other factions' (0.4) stores with a store in CCP's game data, not to a militia or CONCORD's own")
+    await t.js("()=>{delete lpOffers['1000035']; delete lpErr['1000130']; renderLp();}")
+    t.ok((await t.text("#lp-conv-table")).count("not read") == 2, "a store not read yet says so", await t.text("#lp-conv-table"))
+    await t.pg.click("[data-lp-conv]"); t.ok(await t.until("!lpConvBusy && !!lpOffers['1000035'] && !!lpErr['1000130']", 20), "Read every store reads them one after the other", await t.text("#lp-conv"))
+    cv = t.show("converted", await t.js("lpConvRows('1000125').filter(o=>o.t===32880).map(o=>[o.store, o.rate, o.lp, o.slp, o.perLp])"))
+    own = [x for x in cv if x[0] == [1000125]]; cn = [x for x in cv if x[0] == [1000035]]
+    t.ok(own and own[0][2] == 2000 and abs(own[0][4] - 330000 * (1 - tax) / 2000) < 1e-6, "CONCORD's own offer at its own LP", own)
+    t.ok(cn and cn[0][1:4] == [0.8, 1250, 1000] and abs(cn[0][4] - (330000 * (1 - tax) - 104000) / 1250) < 1e-6, "Caldari Navy's offer costs its LP ÷ 0.8 in CONCORD LP, ISK per CONCORD LP from that", cn)
+    ct = t.show("conv table", await t.js("[...document.querySelectorAll('#lp-conv-table tbody tr:not(.group)')].map(r=>r.innerText.replace(/\\s+/g,' '))"))
+    t.ok(any(x.startswith("Caldari Navy") and "800" in sq(x) for x in ct) and any(x.startswith("Sisters of EVE") and "couldn't be read" in x for x in ct), "each store: what your CONCORD LP gives there, a store that can't be read", ct)
+    tb = t.show("offers", await t.js("[...document.querySelectorAll('#lp-offers tbody tr:not(.group)')].map(r=>r.innerText.replace(/\\s+/g,' '))"))
+    t.ok("Store" in await t.text("#lp-offers thead") and tb[0].strip().startswith("Venture") and "Caldari Navy · 0.8" in tb[0] and any("CONCORD" in x for x in tb), "the offers of both stores in one list with their store, the best per CONCORD LP first", tb)
+    await t.pg.screenshot(path=SP + "lp_concord.png", full_page=True)
 
 @scenario
 async def server_status(t):
@@ -1305,6 +1323,28 @@ async def contracts_browser(t):
     await t.pg.fill("#cb-find", ""); await asyncio.sleep(0.3); await t.pg.screenshot(path=SP + "contracts-browser.png", full_page=True)
 
 @scenario
+async def owned_and_priced(t):
+    """Economizers fitted on a ship count as owned; a stack of formulas counts every one; suppliers priced at a % of a pricing show prices; Planets' who makes what."""
+    await t.js("()=>{state.assets['char:9001'].other=[{t:34124,loc:60003760,h:'LoSlot0',in:28844,hg:'Hangar',q:1}]; saveAssets();}")
+    t.eq(await t.js("(ecoOwned()||{}).id"), 34124, "an economizer fitted on a jump freighter is found")
+    t.eq(await t.js("[slimBps([{type_id:46166,quantity:22,runs:-1}])[0][5], slimBps([{type_id:1,quantity:-1,runs:-1},{type_id:2,quantity:-2,runs:5}]).map(b=>b[5])]"), [22, [1, 1]], "a blueprint stack keeps how many it holds")
+    await t.js("state.misc.ownedBps['char:1'].list.push([46166,0,0,-1,0,22],[46166,0,0,-1,0,1])")
+    t.eq(await t.js("ownedBps().get(46166).bpo"), 23, "every formula in a stack counts")
+    await t.tab("suppliers")
+    await t.js("()=>{supList().push({id:'s9',name:'Carl',url:'',stock:{34:{q:50,n:'Tritanium'},35:{q:5,n:'Pyerite',price:7}},pricing:{mode:'pct',pct:90,base:'jsv'}}); supOpen='s9'; saveMisc(); renderSuppliers();}")
+    t.ok(await t.until("priceIn('jsv',34)>0 && !/no price/.test(document.getElementById('sup-out').innerText)", 15), "a % of a pricing: every item gets its price", await t.text("#sup-out"))
+    want = await t.js("isk(priceIn('jsv',34)*0.9)"); out = t.show("supplier", await t.text("#sup-out"))
+    t.ok(want in out, "the price is the % of the pricing", [want, out])
+    await t.js("""()=>{const pl={id:1,name:'Delta I',type:'barren',system:'Delta',lastUpdate:Date.now(),factories:2,extractors:[],inputs:[],stock:[],unneeded:[]};
+      state.chars[0].planets=[{...pl,makes:[{name:'Nano-Factory',perHour:2,t:2869},{name:'Coolant',perHour:40}]},{...pl,id:2,makes:[{name:'Nano-Factory',perHour:1,t:2869}]}];
+      state.chars[1].planets=[{...pl,id:3,factories:0,makes:[],extractors:[{product:'Base Metals',qty:6000,cycle:1800,end:Date.now()+864e5}]}]; delete state.misc.piSchem; saveLocal(); renderPlanets();}""")
+    await t.tab("planets", 0.4)
+    who = t.show("who makes what", await t.js("[...document.querySelectorAll('#piw-table tbody tr')].map(r=>r.innerText.replace(/[▾▸]/g,'').replace(/\\s+/g,' ').trim())"))
+    t.ok(len(who) == 4 and who[0].upper().startswith("P4") and "Ender Alpha" in who[1] and "Nano-Factory 3/h" in who[1] and "Coolant" not in who[1] and who[1].endswith("2")
+         and who[2].upper().startswith("RAW (P0)") and "Ender Beta" in who[3] and "Base Metals 12k/h" in who[3], "Who makes what: each pilot's highest tier, summed over their colonies", who)
+    t.eq(await t.js("(()=>{state.misc.piSchem={s:{3:{ins:[[2,1]]},2:{ins:[[1,1],[9,1]]},1:{ins:[[0,1]]}}}; const r=[3,2,1,0].map(piTierOf); delete state.misc.piSchem; return r})()"), [3, 2, 1, 0], "PI tiers from CCP's planet schematics")
+
+@scenario
 async def item_database(t):
     """Item database: every item from CCP's game data, by name or category, grouped; an item's facts, what makes it, what it's used in, attributes named from ESI."""
     await t.tab("itemdb", 0.5); t.ok(await t.until("!!idbData && !!document.querySelector('#idb-table tbody tr')", 25), "the list is read from CCP's game data", await t.text("#idb-note"))
@@ -1312,6 +1352,18 @@ async def item_database(t):
     names = "[...document.querySelectorAll('#idb-table tbody tr:not(.group):not(.subgroup) th')].map(th=>th.textContent.trim())"
     t.eq(sorted(await t.js(names)), ["Venture", "Venture Blueprint"], "finding items by name")
     t.ok(await t.js("document.querySelectorAll('#idb-table tr.group').length") >= 2, "results grouped by category")
+    await t.pg.fill("#idb-find", ""); await asyncio.sleep(0.4)
+    shape = "[...document.querySelectorAll('#idb-table tbody tr')].map(r=>r.classList.contains('group')?'G':r.classList.contains('subgroup')?'S':r.querySelector('[data-idb-more]')?'M':'i')"
+    sh = t.show("shape", await t.js(shape))
+    t.ok(sh and all(x == "i" or (i + 1 < len(sh) and sh[i + 1] != "G" and (x == "G" or sh[i + 1] == "i")) for i, x in enumerate(sh) if x in "GS"), "every category and group shown has its items under it", sh)
+    cat = await t.js("(()=>{const c=[...byCatNames()].find(([,n])=>n>1); return c&&c[0]})()".replace("byCatNames()", "new Map([...document.querySelectorAll('#idb-table tr.group')].map(r=>[r.dataset.fold,+r.dataset.n]))"))
+    await t.js("c=>{idbLimit[c]=1; renderItemDb();}", cat); await asyncio.sleep(0.2)
+    sh = t.show("limited", await t.js(shape))
+    t.ok("M" in sh, "a long category ends with a Show more row", sh)
+    n0 = await t.js("document.querySelectorAll('#idb-table tbody tr:not(.group):not(.subgroup)').length")
+    await t.pg.click("#idb-table [data-idb-more]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("document.querySelectorAll('#idb-table tbody tr:not(.group):not(.subgroup)').length") > n0, "Show more shows more of that category")
+    await t.pg.fill("#idb-find", "venture"); await asyncio.sleep(0.4)
     await t.js("()=>{cfCfg('itemdb').rules=[{f:'made',op:'is',a:'manufacturing'}]; renderItemDb();}"); await asyncio.sleep(0.3)
     t.eq(await t.js(names), ["Venture"], "a filter on what makes it")
     await t.js("()=>{cfCfg('itemdb').rules=[]; renderItemDb();}")
@@ -1335,8 +1387,8 @@ async def item_database(t):
 
 @scenario
 async def boosters(t):
-    """Tests page: attribute boosters from CCP's game data, ISK and extra SP a month with their duration and Biology, the best per attribute, expiry warnings, pricings and markets."""
-    await t.tab("tests", 0.5); await t.js("()=>{boostCfg().bio=0; renderBoost();}")
+    """Misc page: attribute boosters from CCP's game data, ISK and extra SP a month with their duration and Biology, the best per attribute, expiry warnings, pricings and markets."""
+    await t.tab("misc", 0.5); await t.js("()=>{boostCfg().bio=0; renderBoost();}")
     t.ok(await t.until("boostList && boostPrice['pr:jsv'] && !boostPrice['pr:jsv'].busy", 25), "boosters and their prices are read", await t.text("#boost-status"))
     await asyncio.sleep(0.3)
     rows = t.show("rows", await t.js("Object.fromEntries([...document.querySelectorAll('#boost-table tbody tr:not(.group)')].map(r=>[r.cells[0].textContent.trim(), [...r.cells].slice(1).map(c=>c.textContent.trim())]))"))
@@ -1358,6 +1410,27 @@ async def boosters(t):
     await t.pg.select_option("#boost-at", "st:60008494"); t.ok(await t.until("boostPrice['st:60008494'] && !boostPrice['st:60008494'].busy", 15), "prices read at Amarr")
     t.eq(await t.js("boostRows().find(r=>r.t===9501).p"), 10000000, "the cheapest sell order at the market")
     await t.pg.screenshot(path=SP + "boosters.png", full_page=True)
+
+@scenario
+async def bp_library(t):
+    """Tests page: the Blueprint library (originals with their levels, research and copying jobs matched to them, the others, every copy)."""
+    await t.js("""()=>{const now=Date.now(); state.misc.ownedBps={'char:9001':{at:now,name:'Ender Alpha',list:[[32881,5,10,-1,0],[601,0,0,-1,0,3],[501,8,16,10,1],[501,8,16,10,1],[501,10,20,5,1]]}};
+      state.chars[0].jobs=[{id:1,activity:4,bp:32881,runs:3,start:now-3600e3,end:now+7200e3,product:'x'},{id:2,activity:5,bp:601,runs:4,lr:10,start:now,end:now+864e5,product:'x'},{id:3,activity:3,bp:701,runs:2,start:now-7200e3,end:now-3600e3,product:'x'},{id:4,activity:1,bp:32881,runs:1,start:now,end:now+3600e3,product:'x'}];
+      saveMisc(); saveLocal();}""")
+    await t.tab("tests", 0.5)
+    t.ok(await t.js("!document.getElementById('page-tests').querySelector('#boost-table') && !!document.getElementById('page-misc').querySelector('#boost-table')"), "the attribute boosters are on the Misc page, not on Tests")
+    grp = t.show("groups", await t.js("[...document.querySelectorAll('#bpl-table tr.group th')].map(h=>h.textContent.replace(/[▾▸]/g,'').replace(/·.*$/,'').trim())"))
+    t.eq(grp, ["In research 2", "Copying 1", "Not in a job 1"], "originals grouped: in research, copying, the others")
+    rows = t.show("rows", await t.js("[...document.querySelectorAll('#bpl-table tbody tr:not(.group)')].map(r=>[...r.cells].map(c=>c.innerText.replace(/\\s+/g,' ').trim()))"))
+    t.ok(rows[1][1:3] == ["5", "10"] and "ME research · 5 → 8" in rows[1][4] and "h" in rows[1][5], "ME research adds its runs to the original's ME, with when it ends", rows[1])
+    t.ok(rows[0][1] == "—" and "TE research · +4" in rows[0][4] and "Ready" in rows[0][5], "a job whose blueprint isn't in the list still shows, without levels; past its end it's ready", rows[0])
+    t.ok("4 copies × 10 runs" in rows[2][4] and "× 2" in rows[3][0], "a copying job takes one original from a stack, the others stay idle", rows[2:])
+    t.ok(not any("Manufacturing" in r[4] for r in rows), "manufacturing jobs aren't listed", rows)
+    tiles = t.show("tiles", await t.js("[...document.querySelectorAll('#bpl-summary .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' '))"))
+    t.ok([x.lower()[:13] for x in tiles] == ["originals 5 3", "in research 2", "copying 1 nex", "copies 3 25 r"], "tiles: originals, in research, copying, copies and their runs", tiles)
+    cps = t.show("copies", await t.js("[...document.querySelectorAll('#bpc-table tbody tr')].map(r=>[...r.cells].slice(1).map(c=>c.innerText.trim()))"))
+    t.eq(sorted(cps), [["10", "20", "5", "1", "Ender Alpha"], ["8", "16", "10", "2", "Ender Alpha"]], "copies: one line per ME, TE and runs, with how many")
+    await t.pg.screenshot(path=SP + "bp_library.png", full_page=True)
 
 @scenario
 async def shared_ui(t):

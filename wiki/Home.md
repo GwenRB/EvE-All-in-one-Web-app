@@ -27,10 +27,10 @@ The tab bar, left to right:
 | **Market ▾** | [Prices](Prices), [Trading board](Trading-board), [Suppliers](Suppliers), [Contract management](Contract-management), [Contracts browser](Contracts-browser), [Shortages](Shortages), [Profit and loss](Profit-and-loss), [LP store](LP-store) | Buying, selling, clients and money |
 | **Stock ▾** | [Assets](Assets) | What you own and where |
 | **Pilots ▾** | [Characters](Characters), [Skills](Skills), [Omega](Omega), [Fittings](Fittings) | Your pilots |
-| **Other ▾** | [Misc](Misc), [Corporation](Corporation), [Intel](Intel), [Item database](Item-database) | Calculators, wallets, structure fuel, moon mining, in-game notifications, every item in the game |
+| **Other ▾** | [Misc](Misc), [Corporation](Corporation), [Intel](Intel), [Item database](Item-database) | Calculators, wallets, attribute boosters, structure fuel, moon mining, in-game notifications, every item in the game |
 | **Settings** | [Settings and backups](Settings-and-backups) | Pilots, backups, pricings, taxes, news, clocks |
 | **Notes** | [Settings and backups](Settings-and-backups#notes) | Your own notes |
-| **Tests** | [Tests](Tests) | New tools: the best attribute booster for your ISK |
+| **Tests** | [Tests](Tests) | New tools: your blueprint library |
 
 ## When something looks wrong
 See [FAQ and troubleshooting](FAQ-and-troubleshooting).

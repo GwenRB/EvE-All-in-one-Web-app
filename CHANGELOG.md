@@ -9,7 +9,31 @@ How entries are kept:
 
 ---
 
-## 2026-10-29 — Tests page with attribute boosters, Reddit news channel, steadier background sync
+## 2026-10-29 · 27b69a3 — Blueprint library, CONCORD LP conversion, boosters on Misc
+
+### Added
+- Tests: a **Blueprint library**: every original your pilots and corporations own with its ME and TE, in three groups: in research (the levels it will reach and when it's done), copying (how many copies, their runs, when it's done) and the others. Below it, every copy with its ME, TE and runs. Refresh from ESI once so copying jobs show the runs of each copy.
+- LP store: picking **CONCORD** shows the stores CONCORD LP converts to (10 CONCORD LP give 8 LP of an empire faction's corporation, 4 of another faction's; militias, pirates and a few others can't be converted to), what your CONCORD LP gives in each and each store's best ISK per CONCORD LP. **Read every store** adds their offers to the list, their LP price turned into CONCORD LP, with the store each comes from. CCP's game data is read again once, to learn which faction each corporation belongs to.
+- LP store: a list longer than 300 offers shows the best 300 first, with a "Show more" line.
+
+### Changed
+- The **Attribute boosters** panel moved from Tests to Misc.
+
+## 2026-10-29 · 50cc4ec — Who makes what on Planets, owned economizers and formulas found, supplier prices
+
+### Added
+- Planets: a **Who makes what** panel: each pilot's highest tier output (P4, P3… or what they extract), summed over their colonies, grouped by tier.
+
+### Changed
+- Build planning → Materials needed: raw materials and components are each split into the items' groups (Mineral, Moon materials, Composite…), A→Z.
+
+### Fixed
+- Settings → Jump drive economizers: an economizer fitted on a ship (or in its cargo) now counts as one you own; only hangars were looked at.
+- Reaction formulas (and other blueprints) bought from the market and never used sit in a stack, which ESI lists once: every one in the stack now counts. Refresh from ESI once to read them again.
+- Item database: categories further down the list showed their count but no items (the first 100 items were shared by every category). Each category now shows its first 100 items with its own "Show more" row.
+- Suppliers: a supplier priced at a % of a pricing showed "no price" in their stock list; it now shows their price for every item that has one in that pricing.
+
+## 2026-10-29 · 06d308d — Tests page with attribute boosters, Reddit news channel, steadier background sync
 
 ### Added
 - A **Tests** page at the end of the tab bar, with an **Attribute boosters** panel: every booster that adds to your attributes (cerebral accelerators), what it costs a month (30 days, injected back to back), the extra skill points it gives a month and what each costs, with its bonuses, how long it lasts (your Biology level counts) and the best one for each attribute. Buy at any of your pricings, a trade hub or a citadel market. Boosters with an expiry date are flagged, expired ones listed apart.
@@ -18,7 +42,7 @@ How entries are kept:
 ### Fixed
 - Logins: the background sync could stay on "Syncing in the background" for hours for a pilot whose corporation has many contracts. ESI only lets the tool read so many contracts' items at a time; when it says to slow down, the sync now stops reading items and finishes, and the rest are read at the next syncs. The line also says what each pilot is reading (skills, contracts, hangars…), an ESI request that never answers gives up after a minute and is tried again, and a save the browser refuses no longer waits forever.
 
-## 2026-10-27 — Import calculator with suppliers, map legend toggles, materials needed
+## 2026-10-27 · 1b658ed — Import calculator with suppliers, map legend toggles, materials needed
 
 ### Added
 - Prices → Import calculator: a "Look at your suppliers too" tick box (their stock is bought when it's cheaper; picked up in Jita pays the hauling), a "Sync markets" button to read both markets again after you bought there, and item names copy on click.

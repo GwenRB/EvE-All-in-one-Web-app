@@ -32,7 +32,7 @@ The **best possible yield %**, used to value ore and ice on [Assets](Assets) and
 - **Broker fee** in NPC stations (from Broker Relations and standings; standings need the **Standings** permission) and **in citadels** (the owner sets it; type it).
 
 ## Jump drive economizers
-Build planning uses the best economizer found in your hangars; when there's none, it uses the one you pick here.
+Build planning uses the best economizer you own (in a hangar, or fitted on or carried in a ship); when there's none, it uses the one you pick here.
 
 ## EvE News channels
 What the [Overview's](Overview#eve-news) news panel shows:

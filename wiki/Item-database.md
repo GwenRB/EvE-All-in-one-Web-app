@@ -8,7 +8,7 @@
 3. Tick **Include items not in the game** to also see CCP's unpublished entries.
 4. Use [Filters](The-basics#filters) for the rest: volume, packaged volume, mass, capacity, CCP base price, tech level, meta group, race, *Made by* (manufacturing, reaction, invention), *Used to make things*, *Can be reprocessed*, *You own*…
 
-Results are grouped by category and group (fold them like any grouped table) and sorted by the column you click. **Show more** pages through long lists.
+Results are grouped by category and group (fold them like any grouped table) and sorted by the column you click. Each category shows its first 100 items; its **Show more** line shows more of that category.
 
 ## Open an item
 Click its name. The panel below shows:

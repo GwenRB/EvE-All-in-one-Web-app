@@ -6,7 +6,7 @@
 1. Type a blueprint in the search box (for example *Sleipnir Blueprint*) and a **Quantity**.
 2. Click **Plan the build**.
 3. Read the result top to bottom, using the left navigation:
-   - **Materials needed**: the summary of everything the build uses: each raw material (needed, from your stock, still to buy) and the components built on the way. **Copy raw materials** copies the full list.
+   - **Materials needed**: the summary of everything the build uses: each raw material (needed, from your stock, still to buy) and the components built on the way, each split into the items' groups (Mineral, Moon materials, Composite…). **Copy raw materials** copies the full list.
    - **Final build** and **Components to manufacture**: the build tree. Switch any component between **build** and **buy**.
    - **Materials you already own**, **Components you already own**: your stock is used first (from [Assets](Assets)).
    - **Materials to buy**: with where to buy each (Jita, a local citadel market, your [suppliers](Suppliers)) and a copy button per source, ready to paste in game.
