@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-30 — Sovereignty page, Blueprint library on Misc, jump planner skills
+## 2026-10-30 · 6154026 — Sovereignty page, Blueprint library on Misc, jump planner skills
 
 ### Added
 - **Sovereignty** page (the last tab): every alliance holding sovereignty, ranked by the systems it holds, with its members and corporations. Above it, your own **coalitions**: name one, then put alliances in it with the Coalition list next to each; it adds up their systems, members and corporations. Beside them, **Top sov changes (7 days)** (systems gained and lost) and **Alliance movements (7 days)** (corporations that changed alliance). Those two compare with a snapshot the tool keeps once a day while the page is opened, so they fill in over the first week.
