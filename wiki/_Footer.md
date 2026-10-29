@@ -1,1 +1,1 @@
-This guide matches the tool as of 2026-10-29 (changelog: *2026-10-29 — Blueprint library, CONCORD LP conversion, boosters on Misc*) · [What changed](https://github.com/GwenRB/EvE-All-in-one-Web-app/blob/main/CHANGELOG.md)
+This guide matches the tool as of 2026-10-29 (changelog: *2026-10-29 · 27b69a3 — Blueprint library, CONCORD LP conversion, boosters on Misc*) · [What changed](https://github.com/GwenRB/EvE-All-in-one-Web-app/blob/main/CHANGELOG.md)

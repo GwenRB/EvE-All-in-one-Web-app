@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-29 — Blueprint library, CONCORD LP conversion, boosters on Misc
+## 2026-10-29 · 27b69a3 — Blueprint library, CONCORD LP conversion, boosters on Misc
 
 ### Added
 - Tests: a **Blueprint library**: every original your pilots and corporations own with its ME and TE, in three groups: in research (the levels it will reach and when it's done), copying (how many copies, their runs, when it's done) and the others. Below it, every copy with its ME, TE and runs. Refresh from ESI once so copying jobs show the runs of each copy.
