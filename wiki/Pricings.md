@@ -1,4 +1,4 @@
-<!-- tracks: Pricings, pricing, no price, Jita, citadel market, buyback -->
+<!-- tracks: Pricings, pricing, no price, Jita, citadel market, buyback , trade hubs, Pricings and HUBs -->
 
 Every price in the tool comes from a **pricing**: a named way of valuing items. Every page that shows prices lets you pick one from the same list.
 
@@ -27,3 +27,11 @@ This is on purpose: a number that looks real but isn't would be worse than a gap
 Just a few examples: [Assets](Assets) values, [Build planning](Build-planning) "where to buy", [Reactions](Reactions-management) and [PI](PI-Management) inputs and outputs, [Profit and loss](Profit-and-loss) contract splits, [LP store](LP-store), [Corporation](Corporation) fuel costs, [Prices](Prices) comparisons.
 
 The Import calculator and Arbitrage (Market pages) keep their own freight fields.
+
+## Trade hubs
+**Settings → Pricings and HUBs**, under the pricings. The stations every market menu offers: the Trading board's **Where**, the Import calculator, Market watch, Arbitrage, Build planning's public contracts and the broker fee in Settings.
+- Jita, Amarr, Dodixie, Rens and Hek are built in.
+- To add one: type the NPC station's full name as in the game (for example *Jita IV - Moon 4 - Caldari Navy Assembly Plant*) or its ID, then **Add hub**. Its system and region are read from ESI.
+- **Remove** takes out a station you added.
+
+Player structures aren't trade hubs here: add a citadel as a [pricing](Pricings) or through your citadels instead.

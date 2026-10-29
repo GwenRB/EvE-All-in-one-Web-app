@@ -16,7 +16,7 @@ Common jobs from start to finish. Each step links to the page that explains it i
 1. Start the launcher and open http://localhost:8642/ ([Getting started](Getting-started)).
 2. Create your EVE application and link every character ([Getting started](Getting-started#3-create-your-eve-application-one-time), [ESI permissions](ESI-permissions)).
 3. **Map → Citadels:** refresh from ESI, then add the structures you build, react and refine in, with their rigs ([Map and jump planner](Map-and-jump-planner#citadels)).
-4. **Settings → Pricings:** add your citadel markets or buyback rates ([Pricings](Pricings)). **Market taxes:** check them.
+4. **Settings → Pricings and HUBs:** add your citadel markets or buyback rates ([Pricings](Pricings)). **Market taxes:** check them.
 5. **Pilots → Omega:** enter each account's end date ([Omega](Omega)).
 6. **Settings → Export backup** ([Settings and backups](Settings-and-backups#backups)).
 

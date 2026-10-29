@@ -22,6 +22,13 @@
 - A contract split needs every item priced in the chosen pricing.
 - Ideas: cost of goods sold (profit per unit built using the build's material cost; see Profit per trade under EVE Tycoon below); actual profit per activity on the Forecast.
 
+## Trading board (market browser)
+- Every region is read item by item: about 70 market requests per item (ESI has no "all regions" order list). They share `esiMarket`'s budget, so browsing many items fast can make other pages' price reads wait.
+- A player structure's name is only read when one of your pilots may dock there (else "Structure in <system>"), at most 10 new ones per item; a refusal is remembered for good (`state.misc.mbLoc`).
+- Jumps are stargate jumps only (no jump bridges, no wormholes) and need the map loaded once; security too.
+- Orders aren't kept: each item is read again after 5 minutes. History is ESI's per region; there's no all-regions history. PLEX's history before it moved to the global market stays in the old regions (pick one under History).
+- Ideas: favourites / recently viewed items; "Open market in game" (`esi-ui.open_window.v1`); undercut warnings on your own orders (see Market orders below); sold per day for each trade hub in By market (one history read per hub region).
+
 ## Corporation and Intel
 - Fuel per service module comes from CCP's game data; a service ESI names in a way the page doesn't know isn't counted (the total shows ≥). Hyasyoda labs and other faction modules count as the standard module.
 - Moon mining and notifications are kept 90 days in this browser only (not in backups); a structure's name in a notification is only known for structures the tool already knows.
@@ -80,5 +87,5 @@ Features of EVE Tycoon (evetycoon.com, the web profit tracker for traders and in
 - Table headers wrap onto two lines when a table runs short of room (e.g. "Unit / price" on Assets).
 
 ## Testing
-- `tests/e2e_smoke.py` runs independent scenarios with assertions; pages still without one: Assets filters, Orders management (reopen, status), Trading board, Prices' import calculator, Suppliers' page, Omega, Wallets, the Jobs calendar, Ships you can build, Roles.
+- `tests/e2e_smoke.py` runs independent scenarios with assertions; pages still without one: Assets filters, Orders management (reopen, status), Market watch (only its history columns), Prices' import calculator, Suppliers' page, Omega, Wallets, the Jobs calendar, Ships you can build, Roles.
 - The layout audit (`AUDIT=1`) prints what doesn't fit but doesn't fail.

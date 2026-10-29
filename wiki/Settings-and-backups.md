@@ -21,8 +21,8 @@ Importing **joins** the backup's Profit and loss history with what's already the
 ## Pages
 Untick a page to hide its tab. Settings always stays.
 
-## Pricings
-See [Pricings](Pricings).
+## Pricings and HUBs
+Your pricings and the trade hubs every market menu offers. See [Pricings](Pricings) (its last section is the trade hubs).
 
 ## Ore reprocessing
 The **best possible yield %**, used to value ore and ice on [Assets](Assets) and mined ore on [Corporation](Corporation) (about 90.6%: Tatara with tech II rigs in null-sec, all skills at V, a 4% implant). [Build planning](Build-planning#ore-instead-of-minerals-optional-off-by-default) uses its own reprocessing places instead.

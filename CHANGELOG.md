@@ -9,6 +9,16 @@ How entries are kept:
 
 ---
 
+## 2026-10-29 · 3b15b21 — Trading board: a market browser, and a list of trade hubs
+
+### Added
+- **Trading board**: a market browser like the game's, over the whole width of the window and one screen tall (scroll past the header and it fills the screen; its notes open from **How this page works** in the item panel). Pick an item in the market groups or find it by name, and see every sell and buy order for it in every region and in your citadels, or only in one region, trade hub or citadel (the **Where** dropdown): price, quantity, location with its security, jumps from a pilot or a trade hub, range, expiry. PLEX is found too, in its global market. Tiles give the 5% sell and buy prices, the margin, units for sale and wanted. **Show history** (under the Market panel) charts a region's daily prices and units traded over 7 days to everything, with ISK on the left and volume on the right (PLEX: the global market's; point at a day to see its numbers), and **Show markets comparison** puts the trade hubs and your citadels that have orders side by side; both can open in a window of their own, to put on another screen. Sellers and buyers share the screen, with thin rows, and a clicked line stays highlighted. Filters: price, quantity, jumps, security, NPC stations or player structures, trade hubs only, your own orders, location. Your own orders are marked; click the item's name or a price to copy it.
+- Settings: **Pricings** is now **Pricings and HUBs**, with a list of trade hubs. The five main hubs are built in; add any NPC station by its name or ID. Every menu that offers a trade hub (Trading board, Import calculator, Market watch, Arbitrage, public contracts, broker fees) uses this list.
+- Item database: a **Trading board** button next to every item sold on the market (and **View on the Trading board** on an opened item).
+
+### Changed
+- The **Trading board** is now its own tab, between the Market and Stock menus. Its **Market watch** and **Arbitrage** panels moved to the **Prices** page.
+
 ## 2026-10-29 · 5786ba0 — Build planning: reactors, invention structures and refineries as lists, test copies, folding sections
 
 ### Changed

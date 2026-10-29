@@ -28,6 +28,22 @@ NAMES.update({10000001:"The Forge",10000002:"Delve",20000001:"Con A",20000002:"C
 TYPES[28844]={"group_id":902,"category_id":6,"required_skills":{"29029":1},"dogma_attributes":dd({866:17888,867:5,868:10000,38:144000,12:3,1137:0}),"traits":{"role_bonuses":{"2":{"bonus":90,"bonus_text":{"en":"reduction to effective distance traveled for jump fatigue"}}},"types":{"29029":{"2":{"bonus":10,"bonus_text":{"en":"reduction in jump fuel requirement"}}}}}}
 TYPES[1319]={"dogma_attributes":dd({149:1.275})}
 PRICE[17888]=600.0
+# market groups (Trading board): Manufacture & Research › Materials › Minerals (Tritanium, Pyerite), Ships › Frigates (Venture), and a group with nothing in the game
+for k in (34,35): TYPES[k]["market_group_id"]=1857
+TYPES[32880]["market_group_id"]=1361
+TYPES[44992]={"group_id":1875,"category_id":63,"volume":0.01,"market_group_id":1922}; NAMES[44992]="PLEX"
+MARKET_GROUPS={9:("Manufacture & Research",None),1031:("Materials",9),1857:("Minerals",1031),4:("Ships",None),1361:("Frigates",4),77:("Empty group",None),1922:("PLEX",None)}
+NAMES.update({60003760:"Jita IV - Moon 4 - Caldari Navy Assembly Plant",60008494:"Amarr VIII (Oris) - Emperor Family Academy",60000099:"Delta VII - Station"})
+# every order for Tritanium in each region (Trading board, order_type=all): The Forge (10000001) and Delve (10000002) of the fake map;
+# PLEX only in the global market (19000001), at Jita (in Echo, Delve) and Amarr (in Alpha, The Forge)
+def mb_orders(reg, tid, now):
+    iso=lambda s: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(s))
+    o=lambda i,buy,p,q,loc,sys,rng="region",mn=1,ago=3600: {"order_id":i,"type_id":tid,"is_buy_order":buy,"price":p,"volume_remain":q,"volume_total":q,"location_id":loc,"system_id":sys,"range":rng,"min_volume":mn,"issued":iso(now-ago),"duration":90}
+    if reg==19000001: return [o(2001,False,5e6,530,60003760,30000005),o(2002,True,4.9e6,100,60008494,30000001)] if tid==44992 else []
+    if tid!=34: return []
+    if reg==10000002: return [o(1001,False,4.0,1000,60003760,30000005),o(1002,False,5.0,3000,1022734985679,30000006),o(1003,True,3.0,500,60003760,30000005)]
+    if reg==10000001: return [o(1101,False,4.5,2000,60008494,30000001),o(1102,False,3.5,100,60000099,30000004),o(1103,True,3.8,10000,60008494,30000001,"station",10,7200)]
+    return []
 NAMES.update({7000:"Fake Exhumer",7001:"Fake Exhumer Blueprint",20410:"Datacore - Mechanical Engineering",20411:"Datacore - Caldari Starship Engineering",3398:"Caldari Starship Engineering",21791:"Caldari Encryption Methods",34201:"Accelerant Decryptor",34202:"Attainment Decryptor",34203:"Augmentation Decryptor",34204:"Parity Decryptor",34205:"Process Decryptor",34206:"Symmetry Decryptor",34207:"Optimized Attainment Decryptor",34208:"Optimized Augmentation Decryptor"})
 BPS[32881]["invention"]={"materials":{"20410":{"type_id":20410,"quantity":2},"20411":{"type_id":20411,"quantity":2}},"products":{"7001":{"type_id":7001,"quantity":1,"probability":0.3}},"time":60000,"required_skills":{"3392":1,"3398":1,"21791":1}}
 BPS[7001]={"manufacturing":{"materials":{"32880":{"type_id":32880,"quantity":1},"500":{"type_id":500,"quantity":5},"34":{"type_id":34,"quantity":1000}},"products":{"7000":{"type_id":7000,"quantity":1}},"time":7200,"required_skills":{"3380":5}}}
@@ -123,6 +139,9 @@ def build_sde():
     # NPC corporations (faction, loyalty store) and the Caldari militia: CONCORD LP converts to Caldari Navy (0.8) and Sisters of EVE (0.4), not to the militia
     for k, f in ((1000035, 500001), (1000125, 500006), (1000130, 500016), (1000180, 500001)): add("npcCorporations.jsonl", k, {"name": {"en": NAMES[k]}, "factionID": f, "lpOfferTables": [1]})
     add("factions.jsonl", 500001, {"name": {"en": "Caldari State"}, "corporationID": 1000035, "militiaCorporationID": 1000180})
+    for g, (n, up) in MARKET_GROUPS.items(): add("marketGroups.jsonl", g, {"name": {"en": n}, **({"parentGroupID": up} if up else {})})
+    for k, T in TYPES.items():   # items the fixture already has get their market group too
+        if "market_group_id" in T and k in files["types.jsonl"]: files["types.jsonl"][k].setdefault("marketGroupID", T["market_group_id"])
     files.setdefault("marketGroups.jsonl", {}); files.setdefault("typeMaterials.jsonl", {}); files.setdefault("npcStations.jsonl", {})
     for sid, (n, x, y, z, sec, c) in SYS.items():
         add("mapSolarSystems.jsonl", sid, {"name": {"en": n}, "position": {"x": x*LYm, "y": y*LYm, "z": z*LYm}, "position2D": {"x": x*LYm, "y": z*LYm}, "securityStatus": sec, "constellationID": c, "regionID": CON[c]})
@@ -186,7 +205,7 @@ async def handle(route):
         inv+=[{"id":k,"name":NAMES[k]} for k in range(34201,34209) if NAMES[k].lower() in low]
         inv+= [{"id":1319,"name":"Expanded Cargohold II"}] if "expanded cargohold ii" in low else []
         inv+= [{"id":k,"name":v} for k,v in {32880:"Venture",34:"Tritanium",35:"Pyerite",16633:"Hydrocarbons"}.items() if v.lower() in low]
-        return await j({"systems":sysl,"inventory_types":inv})
+        return await j({"systems":sysl,"inventory_types":inv,**({"stations":[{"id":60000099,"name":"Delta VII - Station"}]} if "delta vii - station" in low else {})})
     if "everef.net/solar_systems" in u:
         tail=u.split("/solar_systems")[1].split("?")[0].strip("/")
         if not tail: return await j(list(SYS))
@@ -195,10 +214,15 @@ async def handle(route):
     if "/incursions" in path: return await j([{"constellation_id":20000003,"infested_solar_systems":[30000006],"staging_solar_system_id":30000006,"state":"established"}])
     if "/sovereignty/map" in path: return await j([])
     if "/universe/systems/" in path:
-        sid=int(path.split("/")[3]); return await j({"security_status":SYS.get(sid,("",0,0,0,0.9,0))[4]})
+        sid=int(path.split("/")[3]); v=SYS.get(sid,("",0,0,0,0.9,0)); return await j({"security_status":v[4],"name":v[0],"constellation_id":v[5]})
+    if path.startswith("/universe/stations/60000099"): return await j({"station_id":60000099,"name":"Delta VII - Station","system_id":30000004})
+    if path.startswith("/universe/constellations/"):
+        cid=int(path.split("/")[3]); return await j({"constellation_id":cid,"region_id":CON.get(cid,10000001)})
     if "/universe/systems/30000142" in path: return await j({"security_status":0.95})
     if "/industry/systems" in path: return await j([{"solar_system_id":30000142,"cost_indices":[{"activity":"manufacturing","cost_index":0.05},{"activity":"reaction","cost_index":0.02}]},{"solar_system_id":30000004,"cost_indices":[{"activity":"manufacturing","cost_index":0.03}]},{"solar_system_id":30000005,"cost_indices":[{"activity":"reaction","cost_index":0.01}]}])
     if "markets/prices" in path: return await j([{"type_id":k,"average_price":v,"adjusted_price":v*0.9} for k,v in PRICE.items()])
+    if "/orders" in path and path.startswith("/markets/") and "order_type=all" in u:
+        return await j(mb_orders(int(path.split("/")[2]), int(parse_qs(urlparse(u).query)["type_id"][0]), time.time()), pages=1)
     if "/markets/10000002/orders" in path:
         tid=int(parse_qs(urlparse(u).query)["type_id"][0]); p=PRICE.get(tid,0)
         return await j([{"location_id":60003760,"price":p*1.1},{"location_id":60003760,"price":p},{"location_id":1,"price":p*0.5}] if p else [], pages=1)
@@ -227,6 +251,9 @@ async def handle(route):
     if path.rstrip("/")=="/status": return await j({"players":23456,"server_version":"3100000","start_time":time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time()-60))})
     if path.rstrip("/")=="/universe/system_kills": return await j([{"system_id":30000002,"ship_kills":6,"pod_kills":2,"npc_kills":10},{"system_id":30000006,"ship_kills":1,"pod_kills":0,"npc_kills":0}])
     # market history (The Forge) for Tritanium, Pyerite and the Venture: yesterday +10% on the day before, +37.5% on 8 days ago; 100 sold a day this week
+    if path.startswith("/markets/19000001/history"):
+        day=lambda i: time.strftime("%Y-%m-%d", time.gmtime(time.time()-i*86400))
+        return await j([{"date":day(i),"average":5e6,"highest":5.1e6,"lowest":4.9e6,"order_count":900,"volume":800000} for i in range(10,0,-1)] if "type_id=44992" in u else [])
     if path.startswith("/markets/10000002/history"):
         tid=int(parse_qs(urlparse(u).query)["type_id"][0]); p=PRICE.get(tid)
         if tid not in (34,35,32880) or not p: return await j({"error":"Type not found"},404)
