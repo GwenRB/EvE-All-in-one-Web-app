@@ -39,6 +39,7 @@ What the [Overview's](Overview#eve-news) news panel shows:
 - Untick a channel to hide it, type over a name to rename it, move channels up or down (an article two channels carry shows under the higher one).
 - The launcher's news can't be removed, only unticked, and its categories (News, Patch notes, Dev blogs…) can be hidden one by one.
 - **Add channel:** any RSS, Atom or JSON feed by its link (the tool reads it first to check it).
+- **Reddit r/Eve: top today** is on by default: the day's 5 most upvoted posts. Reddit only allows about one read a minute, so if it shows an error, wait a minute and press **Refresh**.
 
 ## Time zones
 The Overview's clocks, after EVE time: rename, move, remove, or add any city by its time zone (*Tokyo*, or *Asia/Tokyo*).

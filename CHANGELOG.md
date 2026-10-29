@@ -9,6 +9,15 @@ How entries are kept:
 
 ---
 
+## 2026-10-29 — Tests page with attribute boosters, Reddit news channel, steadier background sync
+
+### Added
+- A **Tests** page at the end of the tab bar, with an **Attribute boosters** panel: every booster that adds to your attributes (cerebral accelerators), what it costs a month (30 days, injected back to back), the extra skill points it gives a month and what each costs, with its bonuses, how long it lasts (your Biology level counts) and the best one for each attribute. Buy at any of your pricings, a trade hub or a citadel market. Boosters with an expiry date are flagged, expired ones listed apart.
+- EvE News: a **Reddit r/Eve: top today** channel, the day's 5 most upvoted posts on r/Eve, on by default (untick it in Settings → EvE News channels).
+
+### Fixed
+- Logins: the background sync could stay on "Syncing in the background" for hours for a pilot whose corporation has many contracts. ESI only lets the tool read so many contracts' items at a time; when it says to slow down, the sync now stops reading items and finishes, and the rest are read at the next syncs. The line also says what each pilot is reading (skills, contracts, hangars…), an ESI request that never answers gives up after a minute and is tried again, and a save the browser refuses no longer waits forever.
+
 ## 2026-10-27 — Import calculator with suppliers, map legend toggles, materials needed
 
 ### Added

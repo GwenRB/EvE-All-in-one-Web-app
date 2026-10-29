@@ -30,6 +30,7 @@ The tab bar, left to right:
 | **Other ▾** | [Misc](Misc), [Corporation](Corporation), [Intel](Intel), [Item database](Item-database) | Calculators, wallets, structure fuel, moon mining, in-game notifications, every item in the game |
 | **Settings** | [Settings and backups](Settings-and-backups) | Pilots, backups, pricings, taxes, news, clocks |
 | **Notes** | [Settings and backups](Settings-and-backups#notes) | Your own notes |
+| **Tests** | [Tests](Tests) | New tools: the best attribute booster for your ISK |
 
 ## When something looks wrong
 See [FAQ and troubleshooting](FAQ-and-troubleshooting).

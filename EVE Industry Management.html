@@ -486,6 +486,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="tabmenu" role="menu" aria-label="Other"><button type="button" data-tab="misc">Misc</button><button type="button" data-tab="corp">Corporation</button><button type="button" data-tab="intel">Intel</button><button type="button" data-tab="itemdb">Item database</button></div></div>
     <button type="button" data-tab="settings">Settings</button>
     <button type="button" data-tab="notes">Notes</button>
+    <button type="button" data-tab="tests">Tests</button>
   </nav>
   <datalist id="skill-names"></datalist>
 
@@ -886,6 +887,15 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div id="pnl-ent-cf"></div>
       <div class="scroller"><table id="pnl-ent" class="bp-table"></table></div><div id="pnl-more"></div></section>
    </div></div>
+  </div>
+
+  <div id="page-tests" class="page" hidden>
+    <section class="panel" aria-labelledby="boost-title"><div class="bp-head"><div><h2 id="boost-title">Attribute boosters</h2><p class="muted" style="margin:4px 0 0">Every booster that adds to your attributes (cerebral accelerators): what it costs for each hour it runs and per extra skill point, and the best one for each attribute.</p></div></div>
+      <div class="toolbar" id="boost-bar"></div>
+      <div class="toolbar"><span class="muted" id="boost-status" style="font-size:.85rem"></span></div>
+      <div id="boost-summary" class="slot-tiles"></div>
+      <div id="boost-note"></div>
+      <div class="scroller"><table id="boost-table" class="bp-table" data-sorted="6:1"></table></div></section>
   </div>
 
   <div id="page-lp" class="page" hidden>
@@ -1584,10 +1594,10 @@ async function fetchRetry(url, init, tries = 6) {
   let last;
   for (let i = 0; i < tries; i++) {
     try {
-      const r = await fetch(url, init);
+      const r = await fetch(url, { ...init, signal: AbortSignal.timeout(60e3) });   // a stalled request fails and is retried, it never hangs a sync
       if (r.status !== 429 && r.status !== 420 && r.status < 500) return r;
       const ra = +r.headers.get("Retry-After");
-      last = new Error("the service answered " + r.status);
+      last = Object.assign(new Error("the service answered " + r.status), { status: r.status });
       await sleep(ra > 0 ? Math.min(ra, 60) * 1000 : Math.min(30000, 800 * 2 ** i) + Math.random() * 400);
     } catch (e) { last = e; await sleep(Math.min(20000, 800 * 2 ** i) + Math.random() * 400); }
   }
@@ -1626,7 +1636,7 @@ function esiMarket(url, init, tries = 6) {
   if (esiDown()) return Promise.resolve(new Response("", { status: 503 }));   // downtime: refused, so prices keep what they had
   return new Promise((resolve, reject) => {
     let n = 0; const job = { page: mktPage(), go: async () => {
-      let r = null, err = null; try { r = await fetch(url, init); } catch (e) { err = e; }
+      let r = null, err = null; try { r = await fetch(url, { ...init, signal: AbortSignal.timeout(60e3) }); } catch (e) { err = e; }
       MKT.active--; if (r) mktHeaders(r);
       const busy = r && (r.status === 429 || r.status === 420 || r.status >= 500);
       if ((err || busy) && ++n < tries) {
@@ -2065,7 +2075,7 @@ $("keys-reset-no").addEventListener("click", () => { $("keys-reset-confirm").hid
 $("keys-reset-yes").addEventListener("click", () => { state.keys = DEFAULT_KEYS.map(k => ({ ...k })); saveKeys(); $("keys-reset-confirm").hidden = true; renderKeys(); toast("Key skills reset"); });
 
 /* ---------- pages ---------- */
-const PAGES = { todo: "to-do", shortages: "shortages", reactions: "reactions-management", pimgmt: "pi-management", orders: "orders-management", trading: "trading-board", suppliers: "suppliers", stockmgmt: "stock-management", contracts: "contract-management", prices: "prices", notes: "notes", settings: "settings", plan: "build-planning", map: "map", misc: "misc", overview: "blueprints", jobs: "jobs", planets: "planets", forecast: "overview", omega: "omega", stock: "assets", fittings: "fittings", characters: "characters", pnl: "profit-and-loss", lp: "lp-store", corp: "corporation", intel: "intel", cbrowse: "contracts-browser", itemdb: "item-database" };
+const PAGES = { todo: "to-do", shortages: "shortages", reactions: "reactions-management", pimgmt: "pi-management", orders: "orders-management", trading: "trading-board", suppliers: "suppliers", stockmgmt: "stock-management", contracts: "contract-management", prices: "prices", notes: "notes", settings: "settings", plan: "build-planning", map: "map", misc: "misc", overview: "blueprints", jobs: "jobs", planets: "planets", forecast: "overview", omega: "omega", stock: "assets", fittings: "fittings", characters: "characters", pnl: "profit-and-loss", lp: "lp-store", corp: "corporation", intel: "intel", cbrowse: "contracts-browser", itemdb: "item-database", tests: "tests" };
 function showPage(tab) {
   const t = PAGES[tab] ? tab : "overview";
   for (const k of Object.keys(PAGES)) $("page-" + k).hidden = k !== t;
@@ -2090,6 +2100,7 @@ function showPage(tab) {
   if (t === "intel") renderIntel();
   if (t === "cbrowse") renderCbrowse();
   if (t === "itemdb") renderItemDb();
+  if (t === "tests") renderBoost();
   if (t === "trading") { renderImportCalc(); renderBoards(); if (!(state.misc.catList || []).length) categoryList().then(() => renderBoards()).catch(() => null); }
   document.querySelectorAll(".tabs button[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   tabGroupsSync(); uiQueue(); renderHowto(t);
@@ -2108,6 +2119,7 @@ const HOWTO = {
   stock: "Values use the pricing chosen at the top: Jita prices are read live from ESI's orders and kept 6 hours; a citadel pricing only uses that citadel's own orders. An item without a price is shown empty and left out of the totals; blueprint copies count as zero. The search and the filters look in every hangar, ticked or not, and also find what sits in ship cargo, Deliveries and your open contracts (marked not counted); a filter's conditions test each stack (one item in one hangar or container), so Value more than 1b means a stack worth that much. " + CF_NOTE,
   cbrowse: "Contracts come from ESI at each sync (Contracts permission on each pilot, Corporation contracts for your corporation's): ESI gives the active ones and those of the last 30 days; ended ones are kept here for 90 days. A contract several of your pilots see shows once. What each one gives and asks for is read once per contract. Your side: You sell (you put items up for a price), You buy (you pay for someone's items, or ask for items and pay a reward), You give / You receive (no ISK), You ship (your courier contract), You haul (a courier you accepted), Between your pilots. Items worth = what it gives less what it asks for, in the pricing chosen above (blueprint copies count as zero; an item without a price there leaves the worth unknown, never 0). Against worth = how much better than that worth the price is for you: selling, price less worth; buying, worth less price. A contract still waiting after its expiry date is Expired. " + CF_NOTE,
   itemdb: "Items come from CCP's own game data (the static data export of the current game build, read once and kept in this browser; the same data every page uses). Attribute names and units come from ESI's dogma attributes, read once each when you open an item. Prices: the pricing chosen on the item, Jita sell and buy (ESI's live orders), ESI's average price and its adjusted price (what job costs are worked out from). CCP base price is the game's own reference value, not a market price. You own counts everything in the hangars read from ESI, ship cargo and containers included. Used in lists every blueprint and planet factory that takes the item as a material. " + CF_NOTE,
+  tests: "Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price.",
   lp: "Loyalty points come from ESI at each sync (Loyalty points permission). The store's offers are ESI's public list for that corporation, read when you open it (Refresh reads it again). Sells for = the item's price in the \"Sell items at\" pricing × the quantity, less your sales tax (Settings: your best Accounting level, or your own rate); broker fees aren't counted. Costs = the offer's ISK plus each other item it asks for at its price in the \"Buy other items at\" pricing. ISK per LP = (sells for − costs) ÷ LP. An item with no price in its pricing (blueprint copies usually have none) leaves its offer's profit and ISK per LP unknown: never 0, never another market's price. Analysis Kredits (AK) are shown but not valued. You can buy = your pilots' LP with that corporation, added up, ÷ the offer's LP.",
   fittings: `Can fly it counts every skill the hull, modules, rigs, drones and fighters need. Skill levels are the last ESI sync's, plus the levels the pilot's skill queue has finished since (needs the Skill queues permission). For a pilot who can't fly it yet: when every missing level is in their queue, the date the last of them finishes (the queue's own order and dates); otherwise the time to train only what's missing, prerequisites included, from their attributes and implants (~ when attributes weren't read yet), whatever else is queued. ${SYNC_NOTE}`,
   jobs: `Corporation jobs need one linked pilot with the Factory Manager role; they then count against the slots of whichever of your pilots installed them. Job slots in use come from ESI and include jobs that are finished but not yet delivered. ${SLOTS_NOTE}`,
@@ -3594,7 +3606,7 @@ async function esiAuthGet(path, access, page) {
   const q = page ? `&page=${page}` : "", sep = path.includes("?") ? "&" : "?";   // a path may carry its own query (from_id, include_completed)
   for (const url of [`https://esi.evetech.net/latest${path}${sep}datasource=tranquility${q}`, `https://esi.evetech.net${path}${page ? sep + "page=" + page : ""}`]) {
     try { r = await fetchRetry(url, { headers: { Authorization: "Bearer " + access } }, 3); if (r.ok) break; lastErr = new Error("ESI answered " + r.status); lastErr.status = r.status; if (r.status === 403) break; }
-    catch (e) { lastErr = new Error("couldn't reach ESI"); }
+    catch (e) { lastErr = new Error("couldn't reach ESI"); if (e.status === 429 || e.status === 420) { lastErr = new Error("ESI is limiting requests: try again in a few minutes"); lastErr.status = e.status; break; } }   // rate-limited: the other address is the same server
   }
   if (!r || !r.ok) throw lastErr;
   const data = await r.json();
@@ -3684,6 +3696,8 @@ async function fetchQueue(charId, access) {
 }
 async function applyToken(tok) {
   const p = jwtPayload(tok.access_token), charId = +String(p.sub).split(":").pop(), name = p.name;
+  const step = (x) => { syncStep[charId] = x; bgSyncMsg(); };   // what the background status line says this pilot is reading
+  step("skills");
   const { skills, totalSp, alpha } = await fetchSkills(charId, tok.access_token);
   let attrs = null; try { attrs = await esiAuthGet(`/characters/${charId}/attributes/`, tok.access_token); } catch (e) {}
   const scopes = [].concat(p.scp || []).join(" ");
@@ -3692,12 +3706,14 @@ async function applyToken(tok) {
   if (scopes.includes(IMPLANTS_SCOPE)) { try { const ids = await esiAuthGet(`/characters/${charId}/implants/`, tok.access_token); const nm = await esiNames(ids).catch(() => ({}));
     implants = await pool(ids, 3, async (id) => { const out = { id, name: nm[id] || "Implant #" + id, bonus: {} }; try { const t = await getJSON(REF + "/types/" + id); out.slot = dogma(t, 331) || null; for (const [aid, k] of Object.entries(IMPLANT_ATTR)) { const v = dogma(t, +aid); if (v) out.bonus[k] = v; } if (!nm[id]) out.name = tName(t); } catch (e) {} return out; }); } catch (e) {} }
   let jobs = null, jobsError = "", corpId = null, allyId = null, corpError = "", planets = null, planetsError = "";
+  step("industry jobs");
   if (scopes.includes(JOBS_SCOPE)) { try { jobs = await fetchJobs(charId, tok.access_token); } catch (e) { jobsError = netMsg(e); } }
   try { const ci = await esiGet(`/characters/${charId}/`); corpId = ci.corporation_id || null; allyId = ci.alliance_id || null; } catch (e) {}
   if (corpId && scopes.includes(CORP_JOBS_SCOPE)) {
     try { state.corpJobs[corpId] = { jobs: await fetchCorpJobs(corpId, tok.access_token), syncedAt: Date.now(), via: name }; saveCorpJobs(); }
     catch (e) { corpError = e.status === 403 ? "no Factory Manager role in the corporation" : netMsg(e); }
   }
+  step("wallets");
   let wallet = null, walletError = "", corpWalletError = "";
   if (scopes.includes(WALLET_SCOPE)) { try { wallet = await esiAuthGet(`/characters/${charId}/wallet/`, tok.access_token); } catch (e) { walletError = netMsg(e); } }
   if (corpId) {
@@ -3708,10 +3724,13 @@ async function applyToken(tok) {
     }
   }
   // Wallet history for Profit and loss (journal and market transactions, kept beyond ESI's 30 days)
+  step("wallet history");
   try { await pnlSync(charId, name, corpId, tok.access_token, scopes); } catch (e) {}
+  step("planets");
   if (scopes.includes(PLANETS_SCOPE)) { try { planets = await fetchPlanets(charId, tok.access_token); } catch (e) { planetsError = netMsg(e); } }
   if (corpId && scopes.includes(POCO_SCOPE)) { try { await pocoSync(corpId, name, tok.access_token); } catch (e) {} }
   // Citadels: where jobs run, and the corporation's own structures (with fuel) when the pilot is a Station Manager
+  step("structures");
   let corpStructError = "";
   try { await discoverStructs([...(jobs || []), ...((corpId && state.corpJobs[corpId]) ? state.corpJobs[corpId].jobs : [])].map(j => j.facility), tok.access_token, scopes, "jobs"); } catch (e) {}
   if (corpId && scopes.includes(CORP_STRUCTS_SCOPE)) {
@@ -3719,17 +3738,21 @@ async function applyToken(tok) {
     catch (e) { corpStructError = e.status === 403 ? "no Station Manager role in the corporation" : netMsg(e); }
   }
   // Moon mining (Corporation page) and in-game notifications (Intel page)
+  step("mining and notifications");
   try { await minSync(charId, name, corpId, tok.access_token, scopes); } catch (e) {}
   if (scopes.includes(NOTIF_SCOPE)) { try { await intelSync(charId, name, tok.access_token); } catch (e) {} }
+  step("contracts");
   let contractsError = "";
   if (scopes.includes(CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/characters/${charId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("char:" + charId, raw); await contractItems("char:" + charId, [...L, ...P], (cid) => `/characters/${charId}/contracts/${cid}/items/`, tok.access_token, scopes); const sent = await cmDeliveries("char:" + charId, raw, charId, tok.access_token).catch(() => (state.contracts["char:" + charId] || {}).sent); state.contracts["char:" + charId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = netMsg(e); } }
   if (corpId && scopes.includes(CORP_CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/corporations/${corpId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("corp:" + corpId, raw); await contractItems("corp:" + corpId, [...L, ...P], (cid) => `/corporations/${corpId}/contracts/${cid}/items/`, tok.access_token, scopes); const sent = await cmDeliveries("corp:" + corpId, raw, null, tok.access_token, corpId).catch(() => (state.contracts["corp:" + corpId] || {}).sent); state.contracts["corp:" + corpId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = contractsError || (e.status === 403 ? "corporation contracts refused" : netMsg(e)); } }
   if (scopes.includes(CONTRACTS_SCOPE) || scopes.includes(CORP_CONTRACTS_SCOPE)) { try { await contractNames(); } catch (e) {} }
   // Market orders (Net worth on the Overview): what sell orders will bring in and the ISK held in buy orders (escrow)
+  step("market orders");
   let orders = null, ordersError = "";
   if (scopes.includes(ORDERS_SCOPE)) { try { orders = slimOrders(await esiAuthGet(`/characters/${charId}/orders/`, tok.access_token)); } catch (e) { ordersError = netMsg(e); } }
   if (corpId && scopes.includes(CORP_ORDERS_SCOPE)) { try { (state.misc.corpOrders = state.misc.corpOrders || {})[corpId] = { at: Date.now(), via: name, list: slimOrders(await esiAuthGetAll(`/corporations/${corpId}/orders/`, tok.access_token)) }; saveMisc(); } catch (e) { ordersError = ordersError || (e.status === 403 ? "corporation orders refused (no Accountant or Trader role)" : netMsg(e)); } }
   if (orders || (corpId && (state.misc.corpOrders || {})[corpId])) { try { const L = [...(orders || []), ...(((state.misc.corpOrders || {})[corpId] || {}).list || [])], types = [...new Set(L.map(o => o.t))].filter(t => !state.typeNames[t]); if (types.length) Object.assign(state.typeNames, await esiNames(types)); await locationNames(L.map(o => o.loc), tok.access_token, scopes); } catch (e) {} }
+  step("hangars");
   let assetsError = "", corpAssetsError = "";
   if (scopes.includes(ASSETS_SCOPE)) {
     try { await syncAssets("char:" + charId, name, "Personal", await esiAuthGetAll(`/characters/${charId}/assets/`, tok.access_token), false, tok.access_token, scopes, null); }
@@ -3750,6 +3773,7 @@ async function applyToken(tok) {
   if (!c) { c = { id: "c" + Date.now().toString(36), name }; state.chars.push(c); }
   if (attrs) c.attrs = attrs;
   c.corpStructError = corpStructError;
+  step("blueprints, clones and the rest");
   // Blueprints owned (pilot, and corporation for a Director)
   state.misc.ownedBps = state.misc.ownedBps || {};
   if (scopes.includes(BPS_SCOPE)) { try { state.misc.ownedBps["char:" + charId] = { at: Date.now(), name, list: slimBps(await esiAuthGetAll(`/characters/${charId}/blueprints/`, tok.access_token)) }; } catch (e) {} }
@@ -3783,7 +3807,7 @@ async function applyToken(tok) {
   return c;
 }
 // Syncs running now (by ESI id): a pilot is never read twice at once, a second sync waits for the first
-const syncRuns = {};
+const syncRuns = {}, syncStep = {};
 async function syncChar(c) {
   if (esiDown()) throw new Error(DOWNTIME_MSG);
   const rt = esiTokens()[c.esiId];
@@ -3793,7 +3817,7 @@ async function syncChar(c) {
   syncRuns[id] = (async () => {
     try { return await applyToken(await refreshTok(id)); }
     catch (e) { if (e.grant) { saveToken(id, null); throw new Error(`${c.name}'s login has expired. Use "Log in again to sync"`); } throw e; }
-  })().finally(() => { delete syncRuns[id]; render(); bgSyncMsg(); });
+  })().finally(() => { delete syncRuns[id]; delete syncStep[id]; render(); bgSyncMsg(); });
   render(); bgSyncMsg();
   return syncRuns[id];
 }
@@ -3822,7 +3846,7 @@ function bgSyncPump() {
 // Where a pilot's sync stands: "run" (reading now), "wait" (queued after a login) or ""
 const syncState = (c) => !c.esiId ? "" : syncRuns[c.esiId] ? "run" : bgSyncQ.includes(c.esiId) ? "wait" : "";
 function bgSyncMsg() {
-  const run = state.chars.filter(c => syncState(c) === "run").map(c => c.name), wait = bgSyncQ.length;
+  const run = state.chars.filter(c => syncState(c) === "run").map(c => c.name + (syncStep[c.esiId] ? ` (${syncStep[c.esiId]})` : "")), wait = bgSyncQ.length;
   const m = $("esi-sync-bg"); if (!m) return;
   m.hidden = !run.length && !wait;
   m.textContent = run.length || wait ? `Syncing in the background: ${run.join(", ") || "starting"}${wait ? ` · ${wait} waiting` : ""}. You can log in the next character now.` : "";
@@ -5633,11 +5657,13 @@ function pastContracts(key, raw) {
 // ESI takes their items out of your assets while the contract is up). A contract that can't be read (too old, not yours) isn't asked again
 async function contractItems(key, list, path, access, scopes) {
   const old = state.contracts[key] || {}, prev = new Map([...(old.list || []), ...(old.past || [])].map(c => [c.id, c]));
+  let limited = false;   // ESI rate-limits contract items: once it says so, the rest are read at the next sync instead of holding this one for hours
   await pool(list, 3, async (c) => {
     const p = prev.get(c.id); if (p && (p.ask || p.noItems)) { c.items = p.items; c.ask = p.ask; if (p.noItems) c.noItems = 1; return; }
     if (c.ask || c.noItems) return;
+    if (limited) { if (p && p.items) c.items = p.items; return; }
     try { const L = await esiAuthGet(path(c.id), access); c.items = L.filter(i => i.is_included).map(i => [i.type_id, i.quantity, i.raw_quantity === -2 ? 1 : 0]); c.ask = L.filter(i => !i.is_included).map(i => [i.type_id, i.quantity]); }   // [type, quantity, copy]
-    catch (e) { if (p && p.items) c.items = p.items; if (e.status === 404 || e.status === 403) c.noItems = 1; }
+    catch (e) { if (p && p.items) c.items = p.items; if (e.status === 404 || e.status === 403) c.noItems = 1; if (e.status === 429 || e.status === 420) limited = true; }
   });
   const have = list.filter(c => (c.items && c.items.length) || (c.ask && c.ask.length)), types = [...new Set(have.flatMap(c => [...(c.items || []), ...(c.ask || [])].map(i => i[0])))].filter(t => !state.typeNames[t]);
   if (types.length) Object.assign(state.typeNames, await esiNames(types).catch(() => ({})));
@@ -6717,7 +6743,7 @@ const idb = {
   _db: null,
   open() { return this._db || (this._db = new Promise((res, rej) => { const r = indexedDB.open("eve-industry", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); })); },
   async get(k) { try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); } catch (e) { return null; } },
-  async set(k, v) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { return false; } }
+  async set(k, v) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = res; tx.onerror = tx.onabort = () => rej(tx.error); }); return true; } catch (e) { return false; } }
 };
 let mapData = null, mapIdx = null, mapLoad = null, mapTried = false;
 const view = { k: null, cx: 0, cy: 0 };
@@ -9099,12 +9125,15 @@ function renderFcNav() {
 // EvE News: the channels picked in Settings (state.misc.news): the EVE launcher's news list (launcher.eveonline.com) and any RSS, Atom or JSON feed
 // added there, all read through the launcher's /proxy. Each channel is kept for an hour; links go to the article itself, without the launcher's tracking.
 const NEWS_FEED = "https://launcher.eveonline.com/resources/eve-online/news_v4/en.json";
+const REDDIT_FEED = "https://www.reddit.com/r/Eve/top/.rss?t=day&limit=5";   // the day's 5 most upvoted; its JSON API refuses reads without a Reddit login; the feed allows about one read a minute
 const newsUrl = (u) => { u = String(u || "").replace(/^cache\+/, "").replace(/[?&]utm_source=.*$/, ""); return /^https:\/\//.test(u) ? u : ""; };
 const newsCat = (k) => { k = String(k || "").replace(/-/g, " "); return k ? k[0].toUpperCase() + k.slice(1) : ""; };
 const newsText = (h) => h ? (new DOMParser().parseFromString(String(h).replace(/<(br|\/p|\/li|\/div|\/h\d)\b[^>]*>/gi, "$& "), "text/html").body.textContent || "").replace(/\s+/g, " ").trim() : "";
 // Channels: the launcher's list can't be removed (untick it to hide it); the categories it gives can be hidden one by one (hideCats)
 const newsCfg = () => { const C = state.misc.news = state.misc.news || {};
   if (!C.v) Object.assign(C, { v: 1, hideCats: [], channels: [{ id: "launcher", name: "EVE launcher news", url: NEWS_FEED, on: true }, { id: "patch", name: "Patch notes", url: "https://www.eveonline.com/rss/patch-notes", on: false }, { id: "forums", name: "EVE forums: latest topics", url: "https://forums.eveonline.com/latest.rss", on: false }] });
+  if (C.v < 2) { C.v = 2; if (!C.channels.some(x => x.id === "reddit")) C.channels.push({ id: "reddit", name: "Reddit r/Eve: top today", url: REDDIT_FEED, on: true }); }
+  if (C.v < 3) { C.v = 3; const r = C.channels.find(x => x.id === "reddit"); if (r && r.url === "https://www.reddit.com/r/Eve/top/.rss?t=day") r.url = REDDIT_FEED; }   // v2 read all 25
   return C; };
 // Cache (localStorage "news"): per channel { at, url, title, items }; the old single-feed cache becomes the launcher's
 const newsCache = () => { let c = ls.get("eve-industry-news", null) || {}; if (c.v !== 2) c = { v: 2, ch: Array.isArray(c.items) && c.items.length ? { launcher: { at: c.at || 0, url: NEWS_FEED, items: c.items } } : {} }; return c; };
@@ -9123,7 +9152,7 @@ function newsParse(text) {
     const html = txt(e, "description", "summary", "encoded", "content");
     const media = [...e.getElementsByTagName("*")].find(c => (c.localName === "thumbnail" || (c.localName === "content" && (/^image\//.test(c.getAttribute("type") || "") || c.getAttribute("medium") === "image"))) && c.getAttribute("url")) || [...e.children].find(c => c.localName === "enclosure" && /^image\//.test(c.getAttribute("type") || ""));
     const img = media ? media.getAttribute("url") : ([...html.matchAll(/<img[^>]+src=["']([^"']+)/gi)].map(m => m[1]).find(u => !/emoji/i.test(u)) || "");   // not a post's emoji
-    return { title: newsText(txt(e, "title")), at: Date.parse(txt(e, "pubDate", "published", "updated", "date")) || 0, cat: "", desc: clip(newsText(html)), img: newsUrl(img.replace(/^\/\//, "https://")), url: newsUrl(l ? l.getAttribute("href") || l.textContent.trim() : "") };
+    return { title: newsText(txt(e, "title")), at: Date.parse(txt(e, "pubDate", "published", "updated", "date")) || 0, cat: "", desc: clip(newsText(html).replace(/\s*submitted by \/u\/\S+ \[link\] \[comments\]$/, "")), img: newsUrl(img.replace(/^\/\//, "https://")), url: newsUrl(l ? l.getAttribute("href") || l.textContent.trim() : "") };
   }).filter(x => x.title && x.url);
   return { title: newsText(txt(ch, "title")), items };
 }
@@ -9528,9 +9557,11 @@ async function pnlWallet(key, meta, jPath, tPath, access, personalOnly) {
 async function pnlContents(w, path, access) {
   const D = pnlData; if (!w) return;
   const ids = [...new Set(Object.values(w.j).filter(e => PNL_REF[e[1]] === "cprice" && e[6] === "contract_id" && e[5]).map(e => e[5]))].filter(c => !D.cont[c]);
+  let limited = false;   // rate-limited by ESI: the rest at the next sync
   await pool(ids, 3, async (cid) => {
+    if (limited) return;
     try { const L = await esiAuthGet(path(cid), access), inc = L.filter(i => i.is_included), use = inc.length ? inc : L; D.cont[cid] = { i: use.map(i => [i.type_id, i.quantity]) }; }
-    catch (e) { if (e.status === 404 || e.status === 403) D.cont[cid] = { gone: e.status }; }   // too old or not yours to read: not asked again
+    catch (e) { if (e.status === 404 || e.status === 403) D.cont[cid] = { gone: e.status }; if (e.status === 429 || e.status === 420) limited = true; }   // too old or not yours to read: not asked again
   });
 }
 // One pilot's wallet and its corporation's divisions (read at most every 30 minutes unless forced; `corps` = corporations already read this round)
@@ -10408,6 +10439,75 @@ document.addEventListener("click", (e) => {
   if (b.dataset.idbClose) { idbItem = null; $("idb-item-panel").hidden = true; return; }
   idbShow(+b.dataset.idbOpen);
 });
+
+/* ---------- tests page ---------- */
+// Attribute boosters (cerebral accelerators) from CCP's game data: published group 303 items with attribute bonuses (175–179), their duration (330, ms,
+// +20% per Biology level) and expiry (2422, days since 1970). Priced in a pricing ("pr:<id>") or at a market's cheapest sell order ("st:<id>" / "cit:<id>")
+const BOOST_MONTH = 720;   // hours in a month (30 days)
+const BOOST_ATTR = [[175, "Charisma"], [176, "Intelligence"], [177, "Memory"], [178, "Perception"], [179, "Willpower"]];
+function boostCfg() { const c = state.misc.boost = state.misc.boost || {}; if (c.v !== 1) Object.assign(c, { v: 1, at: "pr:jsv", bio: null }); return c; }
+let boostList = null, boostBusy = false, boostErr = ""; const boostPrice = {};   // per place: { busy, p: { type: price or null }, err }
+function boostAt() { const at = String(boostCfg().at || ""), [k, id] = at.split(":");
+  return k === "pr" && pricings().some(p => p.id === at.slice(3)) || k === "st" && TRADE_HUBS.some(h => String(h.id) === id) || k === "cit" && citadelMarkets().some(c => String(c.id) === id) ? at : "pr:jsv"; }
+const boostBio = () => { const b = boostCfg().bio; return b != null ? b : Math.max(0, ...state.chars.map(c => lv(c, "Biology"))); };
+async function boostLoad() {
+  if (boostList || boostBusy) return; boostBusy = true; boostErr = ""; renderBoost();
+  try {
+    const D = await idbLoad(); if (!D) throw new Error("CCP's game data can't be read right now");
+    const L = await pool(D.L.filter(x => x.g === 303 && x.p), 8, async (x) => { const t = await getJSON(REF + "/types/" + x.id).catch(() => null); if (!t) return null;
+      const b = BOOST_ATTR.map(([a]) => dogma(t, a) || 0), ms = dogma(t, 330), ex = dogma(t, 2422);
+      return b.some(v => v > 0) && ms > 0 ? { t: x.id, n: x.n, b, ms, exp: ex ? ex * 864e5 : null, mkt: t.market_group_id != null } : null; });
+    boostList = L.filter(Boolean);
+  } catch (e) { boostErr = netMsg(e); }
+  boostBusy = false; renderBoost(); boostPrices();
+}
+async function boostPrices() {
+  const at = boostAt(); if (!boostList || boostPrice[at]) return;
+  const ids = boostList.filter(x => x.mkt && !(x.exp && x.exp < Date.now())).map(x => x.t), E = boostPrice[at] = { busy: true, p: {} }; renderBoost();
+  try {
+    if (at.startsWith("pr:")) E.p = await pricesIn(ids, at.slice(3));
+    else { const B = await marketBooks(at, ids, (d, n) => { $("boost-status").textContent = `Reading prices… ${d} of ${n}`; }, ["sell"]); for (const t of ids) { const s = (B.get(t) || {}).sells || []; E.p[t] = s.length ? s[0][0] : null; } }
+  } catch (e) { E.err = netMsg(e); }
+  E.busy = false; renderBoost();
+}
+function boostRows() {
+  const P = (boostPrice[boostAt()] || {}).p || {}, mult = 1 + 0.2 * boostBio(), now = Date.now();
+  return boostList.map(x => { const h = x.ms / 3600e3 * mult, s = [...x.b].sort((a, b) => b - a), sp = 60 * BOOST_MONTH * (s[0] + s[1] / 2), old = x.exp != null && x.exp < now, p = x.mkt && !old && P[x.t] > 0 ? P[x.t] : null;
+    return { ...x, h, sp, p, old, perM: p == null ? null : p / h * BOOST_MONTH, perSp: p == null ? null : p / h * BOOST_MONTH / sp }; });
+}
+function renderBoost() {
+  const bar = $("boost-bar"), box = $("boost-table"), sum = $("boost-summary"), note = $("boost-note"); if (!box) return;
+  const C = boostCfg(), at = boostAt(), bio = boostBio(), E = boostPrice[at] || {};
+  if (!bar.contains(document.activeElement)) {
+    const who = (l) => state.chars.filter(c => lv(c, "Biology") === l).map(c => c.name);
+    bar.innerHTML = `<label class="label" for="boost-at">Buy at</label><select id="boost-at" data-boost="at" style="max-width:320px"><optgroup label="Pricings">${pricings().map(p => `<option value="pr:${esc(p.id)}"${"pr:" + p.id === at ? " selected" : ""}>${esc(p.name)}</option>`).join("")}</optgroup>${marketOptions(at)}</select>
+      <label class="label" for="boost-bio">Biology</label><select id="boost-bio" data-boost="bio"><option value=""${C.bio == null ? " selected" : ""}>Your best pilot's (${bio ? ROMAN[bio] : "none"})</option>${[0, 1, 2, 3, 4, 5].map(l => { const w = who(l); return `<option value="${l}"${C.bio === l ? " selected" : ""}>${l ? "Level " + ROMAN[l] : "Not trained"}${w.length ? ` · ${esc(w.join(", "))}` : ""}</option>`; }).join("")}</select>
+      <button type="button" data-boost-refresh="1"${!boostList || E.busy ? " disabled" : ""}>Refresh prices</button>`;
+  }
+  $("boost-status").textContent = boostBusy ? "Reading the boosters from CCP's game data…" : E.busy ? "Reading prices…" : "";
+  const clear = (msg) => { box.innerHTML = msg ? `<tbody><tr><td class="empty">${msg}</td></tr></tbody>` : ""; sum.innerHTML = ""; note.innerHTML = ""; };
+  if (boostErr) return clear(`The boosters couldn't be read: ${esc(boostErr)}`);
+  if (!boostList) { if (!boostBusy) setTimeout(boostLoad, 0); return clear("Reading the boosters…"); }
+  if (!boostList.length) return clear("No attribute booster in the game data.");
+  if (!boostPrice[at]) setTimeout(boostPrices, 0);
+  const rows = boostRows(), ok = rows.filter(r => r.perM != null), [k, id] = at.split(":"), where = k === "pr" ? pricingName(at.slice(3)) : marketName(at);
+  const warn = (r) => r.old ? ` <span class="pill bad">Expired ${esc(fmtDate(r.exp))}</span>` : r.exp ? ` <span class="pill mid" title="It can't be injected after this date">⚠ Expires ${esc(fmtDate(r.exp))}</span>` : "";
+  // The best booster for each attribute: the least ISK a month per point it adds there
+  sum.innerHTML = BOOST_ATTR.map(([, name], i) => { const pt = (r) => r.perM / r.b[i], best = ok.filter(r => r.b[i] > 0).reduce((a, r) => !a || pt(r) < pt(a) ? r : a, null);
+    return `<div class="slot-tile"><div class="label">Best for ${name}</div><span class="big-num">${best ? `${isk(best.perM)} <small>ISK a month</small>` : "—"}</span><div class="muted">${best ? `${esc(best.n)} · +${best.b[i]} for ${fmtDur(best.h * 3600)} · ${isk(pt(best))} a month per point${warn(best)}` : "no booster with a price"}</div></div>`; }).join("");
+  const miss = E.busy ? [] : rows.filter(r => r.mkt && !r.old && r.p == null);
+  note.innerHTML = (E.err ? `<div class="notice" style="color:var(--bad);border-color:var(--bad)">Prices at ${esc(where)} couldn't be read: ${esc(E.err)}</div>` : "")
+    + (k === "pr" ? noPriceNote(at.slice(3), miss.map(r => ({ t: r.t, name: r.n })), "they show no ISK a month") : miss.length ? `<div class="notice" style="margin-top:6px">${miss.length} booster${miss.length === 1 ? " has" : "s have"} no sell order at ${esc(where)}: they show no ISK a month.</div>` : "");
+  const attrs = (b) => b.every(x => x === b[0]) ? `+${b[0]} to all` : BOOST_ATTR.map(([, n], i) => b[i] ? `${n.slice(0, 3)} +${b[i]}` : "").filter(Boolean).join(", ");
+  const why = (r) => r.old ? "expired" : !r.mkt ? "not on the market" : E.busy ? "…" : "no price";
+  const v = (r, x, f) => x == null ? `<td class="num" data-v=""><span class="muted">${why(r)}</span></td>` : `<td class="num" data-v="${x}">${f(x)}</td>`;
+  const groups = [["On the market", rows.filter(r => r.mkt && !r.old)], ["Not sold on the market", rows.filter(r => !r.mkt && !r.old)], ["Expired", rows.filter(r => r.old)]].filter(g => g[1].length);
+  box.innerHTML = `<thead><tr><th scope="col">Booster</th><th scope="col">Attributes</th><th scope="col" class="num" title="With the Biology level chosen above">Lasts</th><th scope="col" class="num">Price</th><th scope="col" class="num" title="Price ÷ the hours it lasts × 720 (30 days, a new one injected each time one runs out)">ISK a month</th><th scope="col" class="num" title="What a skill gains when its primary and secondary attributes are the two the booster adds most to, over 30 days">Extra SP a month</th><th scope="col" class="num">ISK per SP</th></tr></thead>`
+    + `<tbody>${groups.map(([g, L]) => `<tr class="group"><th colspan="7" scope="colgroup">${g} <span class="muted num">${L.length}</span></th></tr>` + [...L].sort((a, b) => (a.perSp ?? Infinity) - (b.perSp ?? Infinity) || a.n.localeCompare(b.n)).map(r => `<tr><th scope="row" data-v="${esc(r.n)}">${icon(r.t, 20)} <button type="button" class="copyname" data-copy="${esc(r.n)}" data-copy-msg="${esc(r.n)} copied">${esc(r.n)}</button>${warn(r)}</th>
+      <td data-v="${r.b.reduce((a, x) => a + x, 0)}">${attrs(r.b)}</td><td class="num" data-v="${r.h}">${fmtDur(r.h * 3600)}</td>${v(r, r.p, isk)}${v(r, r.perM, isk)}<td class="num" data-v="${r.sp}">${Math.round(r.sp).toLocaleString()}</td>${v(r, r.perSp, (x) => x.toFixed(x < 10 ? 2 : 0))}</tr>`).join("")).join("")}</tbody>`;
+}
+document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.boost; if (!k) return; const C = boostCfg(); C[k] = k === "bio" ? (e.target.value === "" ? null : +e.target.value) : e.target.value; saveMisc(); e.target.blur(); renderBoost(); });
+document.addEventListener("click", (e) => { if (!(e.target.closest && e.target.closest("[data-boost-refresh]"))) return; delete boostPrice[boostAt()]; renderBoost(); });
 
 /* ---------- roles ---------- */
 function saveRoles() { ls.set("eve-industry-roles", state.roles); }

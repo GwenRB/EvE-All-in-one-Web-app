@@ -35,7 +35,7 @@ The tool reads your characters through **ESI**, CCP's official API. For that you
 2. Tick the permissions you want (the same ones as in your application). **Copy** puts the list on your clipboard, ready to paste into the application.
 3. Paste the application's **Client ID**. Only the Client ID: **never paste the secret key**, the tool doesn't need it.
 4. Click **Log in with EVE Online**, sign in and pick a character.
-5. You come back to the tool and the character is linked right away. Its skills, jobs, assets and the rest sync in the background (one pilot at a time), so log in the next character straight away. The login box, the **Characters** page and the pilot cards show who is still syncing or waiting. If you close the page before they finish, use **Sync all** later.
+5. You come back to the tool and the character is linked right away. Its skills, jobs, assets and the rest sync in the background (one pilot at a time), so log in the next character straight away. The login box, the **Characters** page and the pilot cards show who is still syncing or waiting; the login box also says what the pilot is reading (skills, contracts, hangars…). A first sync with a big corporation can take several minutes. If you close the page before they finish, use **Sync all** later.
 
 If you opened the HTML file without the launcher, EVE sends you to an address that doesn't load: copy that whole address from the address bar and paste it in the box the tool shows.
 
