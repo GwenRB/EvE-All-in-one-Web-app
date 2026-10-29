@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-29 — Blueprint locations, citadel hubs, Trading board scrolling
+## 2026-10-29 · 6a62574 — Blueprint locations, citadel hubs, Trading board scrolling
 
 ### Added
 - Blueprint library: a **Location** filter. Pick a station or structure to see only the originals and copies kept there (and the tiles for them). Blueprints inside containers, ships or corporation offices count where that container is. Refresh from ESI once so each blueprint's place is read.
