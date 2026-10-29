@@ -7,7 +7,7 @@
 2. Paste their **link**: a Google Sheet, a Janice appraisal, or a web page with a table. Click **Add and read**.
 3. Or, under **Or paste their stock**, paste names and quantities (one per line, or a copied table) and click **Add pasted stock**.
 
-Then price their stock **as listed**, or as **a % of a pricing** (for example 95% of Jita sell).
+Then price their stock **as listed**, or as **a % of a pricing** (for example 95% of Jita sell). Opening a supplier shows **their price** for every item: their listed price, or the % of the pricing (an item with no price in that pricing shows *no price*).
 
 ### Good to know
 - A Google Sheet is read whole, but only its stock tabs (tabs with an item name column and a quantity column). Notes and lookup tabs are left out.

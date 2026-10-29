@@ -1,4 +1,4 @@
-<!-- tracks: Planets, colonies, customs, harvest -->
+<!-- tracks: Planets, colonies, customs, harvest, Who makes what -->
 
 **Planets** tab. Every colony of your linked pilots (needs the **Planets** permission), ordered by **when it stops**: an extractor expiring, or a factory running out of an input.
 
@@ -11,5 +11,8 @@ The [Supply chain](Supply-chain) uses these harvest days to plan when P4 is pick
 
 ## Customs tax
 Under each planet: the **customs tax** its pilot pays when your corporation owns the customs office in that system (a range when your offices there differ). Needs a Director with the customs offices permission.
+
+## Who makes what
+Below the colonies: each pilot's **highest tier output** (P4, P3, P2, P1, or what they extract when they have no factory), summed over all their colonies, per hour. Pilots are grouped by that tier.
 
 To plan what your planets should make, see [PI Management](PI-Management).

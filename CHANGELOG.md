@@ -9,6 +9,20 @@ How entries are kept:
 
 ---
 
+## 2026-10-29 — Who makes what on Planets, owned economizers and formulas found, supplier prices
+
+### Added
+- Planets: a **Who makes what** panel: each pilot's highest tier output (P4, P3… or what they extract), summed over their colonies, grouped by tier.
+
+### Changed
+- Build planning → Materials needed: raw materials and components are each split into the items' groups (Mineral, Moon materials, Composite…), A→Z.
+
+### Fixed
+- Settings → Jump drive economizers: an economizer fitted on a ship (or in its cargo) now counts as one you own; only hangars were looked at.
+- Reaction formulas (and other blueprints) bought from the market and never used sit in a stack, which ESI lists once: every one in the stack now counts. Refresh from ESI once to read them again.
+- Item database: categories further down the list showed their count but no items (the first 100 items were shared by every category). Each category now shows its first 100 items with its own "Show more" row.
+- Suppliers: a supplier priced at a % of a pricing showed "no price" in their stock list; it now shows their price for every item that has one in that pricing.
+
 ## 2026-10-29 — Tests page with attribute boosters, Reddit news channel, steadier background sync
 
 ### Added

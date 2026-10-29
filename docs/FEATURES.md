@@ -32,6 +32,7 @@ Tab bar: **Overview · To-Do · Map · Industry ▾ (PI Management, Reactions ma
 
 ## Planets
 Colonies of every linked pilot, ordered by when they stop (extractor end or an input running out). Under each planet: the customs tax its pilot pays when your corporation owns the customs office in that system (a range when your offices there differ).
+**Who makes what** (user's request 2026-10-29): per pilot, the products of their highest PI tier (tiers from CCP's planet schematics, `piTierOf`; extract-only pilots are P0), per hour summed over their colonies, grouped by tier. Reads the colonies only.
 
 ## Market
 - **Prices** — import calculator (delivery vs buying station, hauling; user's rules 2026-10-27: every unit is bought from the cheapest offer, local sell orders, imported ones landed with hauling, and with **Look at your suppliers too** ticked your suppliers' stock (`impFill`; "picked up in Jita" pays the calculator's hauling); with sell orders only what is for sale counts, missing units are shown and left out of the totals, never priced; **Sync markets** forgets both markets' cached orders and reads them again; item names copy on click; other pages can open a list in it with `data-imp-send`, e.g. PI Shopping), price comparison (citadel vs another market, by item/group/category).

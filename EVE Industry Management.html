@@ -583,6 +583,9 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div id="pi-note"></div>
       <div class="scroller"><table id="pi-table" class="bp-table"></table></div>
     </section>
+    <section class="panel" aria-labelledby="piw-title"><div class="bp-head"><div><h2 id="piw-title">Who makes what</h2><p class="muted" style="margin:4px 0 0">Each pilot's highest tier output, summed over their colonies.</p></div></div>
+      <div class="scroller"><table id="piw-table" class="bp-table"></table></div>
+    </section>
   </div>
 
 
@@ -955,7 +958,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="finder"><label for="idb-find" class="label">Find an item</label><input type="search" id="idb-find" placeholder="Type part of a name, e.g. Tritanium, Venture or Hydrogen Fuel Block" aria-label="Find an item"></div>
       <div class="toolbar"><select id="idb-cat" aria-label="Category" style="max-width:260px"><option value="">All categories</option></select><select id="idb-grp" aria-label="Group" style="max-width:260px"><option value="">All groups</option></select><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="idb-unpub"> Include items not in the game</label></div>
       <div id="idb-cf"></div>
-      <div class="scroller"><table id="idb-table" class="bp-table"></table></div><div id="idb-more"></div></section>
+      <div class="scroller"><table id="idb-table" class="bp-table"></table></div></section>
     <section class="panel" aria-labelledby="idb-item-title" id="idb-item-panel" hidden><div class="bp-head"><div><h2 id="idb-item-title">Item</h2></div><div class="toolbar" id="idb-item-bar"></div></div>
       <div id="idb-item"></div></section>
    </div></div>
@@ -2648,14 +2651,17 @@ async function refreshSupplier(sp) {
   } catch (e) { sp.err = netMsg(e); saveMisc(); st.textContent = `${sp.name}: ${sp.err}`; }
   renderSuppliers();
 }
-let supOpen = null;
+let supOpen = null; const supPriced = new Set();
 function renderSuppliers() {
   const L = supList(), box = $("sup-list"); if (!box) return;
   box.innerHTML = L.length ? `<div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Supplier</th><th scope="col">Source</th><th scope="col">Pricing</th><th scope="col" class="num">Items</th><th scope="col">Read</th><th scope="col"></th></tr></thead><tbody>${L.map(sp => `<tr${supOpen === sp.id ? ` style="background:var(--panel-2)"` : ""}><th scope="row">${esc(sp.name)}</th><td style="font-size:.85rem">${sp.url ? `<a href="${esc(sp.url)}" target="_blank" rel="noopener">${esc(sp.how || "link")}</a>` : "Pasted"}${sp.err ? `<div style="color:var(--bad)">${esc(sp.err)}</div>` : ""}</td><td style="white-space:nowrap;font-size:.85rem">${(() => { const P = sp.pricing || { mode: "list" }; return `<select data-sup-pm="${sp.id}" aria-label="How they price"><option value="list"${P.mode !== "pct" ? " selected" : ""}>Their listed prices</option><option value="pct"${P.mode === "pct" ? " selected" : ""}>% of a pricing</option></select>${P.mode === "pct" ? ` <input type="text" data-sup-pct="${sp.id}" value="${esc(P.pct ?? 100)}" inputmode="decimal" style="width:52px" aria-label="Percent">% of ${pricingOptions(validPricing(P.base || "jbv"), `data-sup-base="${sp.id}" aria-label="Pricing"`)}` : ""}<div style="margin-top:4px"><select data-sup-at="${sp.id}" aria-label="Where they deliver"><option value="D"${P.at !== "jita" ? " selected" : ""}>Delivered in your delivery system</option><option value="jita"${P.at === "jita" ? " selected" : ""}>Picked up in Jita</option></select></div>`; })()}</td><td class="num">${Object.keys(sp.stock || {}).length}</td><td>${sp.at ? ago(sp.at) : "—"}</td><td style="white-space:nowrap">${sp.url ? `<button type="button" class="link" data-sup-refresh="${sp.id}">Read again</button>` : ""}<button type="button" class="link" data-sup-open="${sp.id}">${supOpen === sp.id ? "Hide" : "Show"}</button><button type="button" class="link" data-sup-del="${sp.id}">Remove</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0">No supplier yet.</p>`;
   const q = ($("sup-find").value || "").trim().toLowerCase(), out = $("sup-out"), sp = L.find(x => x.id === supOpen);
-  const rowsOf = (x) => Object.entries(x.stock || {}).map(([t, e]) => ({ t: +t, ...e, sup: x.name }));
+  const rowsOf = (x) => Object.entries(x.stock || {}).map(([t, e]) => ({ t: +t, ...e, sup: x.name, x, price: supplierPrice(x, t) }));
   const rows = q ? L.flatMap(rowsOf).filter(r => r.n.toLowerCase().includes(q)) : sp ? rowsOf(sp) : [];
-  out.innerHTML = rows.length ? `<h3 style="margin:12px 0 6px">${q ? `“${esc(q)}” at your suppliers` : esc(sp.name)} <button type="button" class="cargo" data-copy="${esc(rows.map(r => `${r.n}\t${r.q}`).join("\n"))}">Copy list</button></h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th>${q ? `<th scope="col">Supplier</th>` : ""}<th scope="col" class="num">Available</th><th scope="col" class="num">Their price</th></tr></thead><tbody>${rows.sort((a, b) => a.n.localeCompare(b.n)).slice(0, 2000).map(r => `<tr><th scope="row">${icon(r.t)} <button type="button" class="copyname" data-copy="${esc(r.n)}" data-copy-msg="${esc(r.n)} copied">${esc(r.n)}</button></th>${q ? `<td>${esc(r.sup)}</td>` : ""}<td class="num">${(r.q || 0).toLocaleString()}</td><td class="num">${r.price ? isk(r.price) : "—"}</td></tr>`).join("")}</tbody></table></div>` : q ? `<p class="muted" style="margin:8px 0 0">No supplier lists “${esc(q)}”.</p>` : "";
+  // suppliers priced at a % of a pricing: read that pricing for the items shown without a price (each item once), then draw again
+  const need = new Map(); for (const r of rows) if (r.price == null && (r.x.pricing || {}).mode === "pct") { const base = validPricing(r.x.pricing.base || "jbv"); if (supPriced.has(base + "|" + r.t)) continue; supPriced.add(base + "|" + r.t); (need.get(base) || need.set(base, []).get(base)).push(r.t); }
+  for (const [base, ids] of need) ensurePrices(ids, base).then(() => renderSuppliers(), () => {});
+  out.innerHTML = rows.length ? `<h3 style="margin:12px 0 6px">${q ? `“${esc(q)}” at your suppliers` : esc(sp.name)} <button type="button" class="cargo" data-copy="${esc(rows.map(r => `${r.n}\t${r.q}`).join("\n"))}">Copy list</button></h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th>${q ? `<th scope="col">Supplier</th>` : ""}<th scope="col" class="num">Available</th><th scope="col" class="num">Their price</th></tr></thead><tbody>${rows.sort((a, b) => a.n.localeCompare(b.n)).slice(0, 2000).map(r => `<tr><th scope="row">${icon(r.t)} <button type="button" class="copyname" data-copy="${esc(r.n)}" data-copy-msg="${esc(r.n)} copied">${esc(r.n)}</button></th>${q ? `<td>${esc(r.sup)}</td>` : ""}<td class="num">${(r.q || 0).toLocaleString()}</td><td class="num">${r.price ? isk(r.price) : `<span class="muted">no price</span>`}</td></tr>`).join("")}</tbody></table></div>` : q ? `<p class="muted" style="margin:8px 0 0">No supplier lists “${esc(q)}”.</p>` : "";
 }
 $("sup-add").addEventListener("click", () => { const name = $("sup-name").value.trim(), url = $("sup-url").value.trim(); if (!name || !url) { $("sup-status").textContent = "Enter a name and a link."; return; } const sp = { id: "s" + Date.now().toString(36), name, url, stock: {} }; supList().push(sp); saveMisc(); $("sup-name").value = ""; $("sup-url").value = ""; supOpen = sp.id; refreshSupplier(sp); });
 $("sup-paste").addEventListener("click", async () => { const name = $("sup-name").value.trim() || "Pasted stock", text = $("sup-text").value; if (!text.trim()) return; $("sup-status").textContent = "Reading the items…";
@@ -3656,7 +3662,7 @@ async function fetchPlanets(charId, access) {
       const x = sch[p.schematic_id]; if (!x) { unknownSch++; continue; }
       const k = 3600 / (x.cycle_time || 3600);
       for (const m of Object.values(x.materials || {})) { add(m.type_id, -m.quantity * k); usedHere.add(+m.type_id); }
-      for (const m of Object.values(x.products || {})) { add(m.type_id, m.quantity * k); madeHere.add(+m.type_id); makes[nm(m.type_id)] = (makes[nm(m.type_id)] || 0) + m.quantity * k; }
+      for (const m of Object.values(x.products || {})) { add(m.type_id, m.quantity * k); madeHere.add(+m.type_id); makes[m.type_id] = (makes[m.type_id] || 0) + m.quantity * k; }
     }
     // Inputs the planet uses up faster than it makes them, and how long their stock lasts
     const inputs = Object.entries(rate).filter(([, v]) => v < -1e-9).map(([t, v]) => {
@@ -3665,7 +3671,7 @@ async function fetchPlanets(charId, access) {
     }).sort((a, b) => a.end - b.end);
     return {
       id: col.planet_id, name: pname || `Planet in ${names[col.solar_system_id] || "unknown system"}`, type: col.planet_type, system: names[col.solar_system_id] || "", sys: col.solar_system_id, lastUpdate, level: col.upgrade_level,
-      factories, unknownSch, extractors, inputs, makes: Object.entries(makes).map(([name, perHour]) => ({ name, perHour })),
+      factories, unknownSch, extractors, inputs, makes: Object.entries(makes).map(([t, perHour]) => ({ name: nm(t), perHour, t: +t })),
       stock: Object.entries(stock).map(([t, a]) => ({ name: nm(t), amount: a })).sort((a, b) => b.amount - a.amount),
       // In storage but neither used by a factory nor made here (e.g. a commodity sent to the wrong planet)
       unneeded: Object.entries(stock).filter(([t]) => !usedHere.has(+t) && !madeHere.has(+t)).map(([t, a]) => ({ name: nm(t), amount: a }))
@@ -4737,6 +4743,7 @@ function renderPlanets() {
   if (old) notes.push("Press Refresh from ESI once to calculate factory run-out times.");
   notes.push("Factory planets: time left is the stock of each input divided by what the factories use per hour, counted from the last time you opened the colony in game (ESI only updates stock then). Inputs made on the same planet are netted out.");
   $("pi-note").innerHTML = `<div class="notice" style="display:grid;gap:4px">${notes.map(n => `<span>${n}</span>`).join("")}</div>`;
+  renderPiWho(rows);
   if (!rows.length) { sum.innerHTML = ""; $("pi-week").innerHTML = ""; $("pi-table").innerHTML = `<tbody><tr><td class="empty">${linked.length ? "No planet data yet. Refresh from ESI after allowing planets." : "Link pilots to ESI to see their planets."}</td></tr></tbody>`; return; }
   renderWeek(rows, now);
   const stopped = rows.filter(r => r.fin && r.fin.end <= now).length, soon = rows.filter(r => r.fin && r.fin.end > now && r.fin.end - now < 864e5).length;
@@ -4758,6 +4765,24 @@ function renderPlanets() {
     const stock = pl.stock.length ? pl.stock.slice(0, 4).map(it => `${esc(it.name)} <span class="num muted">${it.amount.toLocaleString()}</span>`).join("<br>") + (pl.stock.length > 4 ? `<br><span class="muted" title="${esc(pl.stock.slice(4).map(it => it.name + " " + it.amount.toLocaleString()).join(", "))}">+${pl.stock.length - 4} more</span>` : "") : `<span class="muted">Empty</span>`;
     return `${head}<tr><th scope="row" data-v="${end || ""}">${end ? fmtDate(end) : "—"}</th><td data-v="${end ? end - now : ""}">${tl}</td><td style="white-space:normal;min-width:170px">${why}</td><td>${esc(c.name)}</td><td>${esc(pl.name)}${(pl.unneeded || []).length && !pl.unknownSch ? ` <span class="pill bad" style="cursor:help" title="${esc("Nothing on this planet uses or makes:\n" + pl.unneeded.map(u => `${u.name} ×${Math.round(u.amount).toLocaleString()}`).join("\n") + "\nMove it out, or check the factory setup.")}">⚠ ${pl.unneeded.length === 1 ? esc(pl.unneeded[0].name) : pl.unneeded.length + " items"} not needed</span>` : ""}<div class="label">${esc(pl.type)}${pl.system ? " · " + esc(pl.system) : ""}${tax(c, pl)}</div></td><td>${prods}</td><td style="white-space:normal;min-width:170px">${stock}</td><td>${pl.lastUpdate ? ago(pl.lastUpdate) : "—"}</td></tr>`;
   }).join("")}</tbody>`;
+}
+// PI tier of a product (0 = raw … 4) from CCP's planet schematics (state.misc.piSchem); without them only the P4 are known
+function piTierOf(t) {
+  const S = (state.misc.piSchem || {}).s, f = (x, d) => !S[x] ? (PI_P4[x] ? 4 : 0) : d > 5 ? 0 : 1 + Math.max(0, ...S[x].ins.map(([y]) => f(y, d + 1)));
+  return S ? f(t, 0) : PI_P4[t] ? 4 : null;
+}
+// Who makes what: per pilot, the products of their highest tier (factory output, or what they extract), grouped by that tier
+function renderPiWho(rows) {
+  const tbl = $("piw-table"); if (!tbl) return;
+  const ids = new Map(Object.entries(state.typeNames).map(([id, n]) => [n, +id])), tid = (m) => m.t || ids.get(m.name) || null, by = new Map();
+  for (const { c, pl } of rows) { const P = by.get(c) || by.set(c, { n: 0, prods: new Map() }).get(c); P.n++;
+    const out = (pl.makes || []).length ? pl.makes.map(m => [m.name, tid(m), m.perHour]) : (pl.extractors || []).filter(e => e.cycle).map(e => [e.product, null, e.qty * 3600 / e.cycle, 0]);
+    for (const [name, t, h, tier] of out) { const x = P.prods.get(name) || P.prods.set(name, { name, t, h: 0, tier: tier ?? (t ? piTierOf(t) : null) }).get(name); x.h += h; } }
+  const L = [...by].map(([c, P]) => { const all = [...P.prods.values()], top = Math.max(-1, ...all.map(x => x.tier ?? -1)); return { c, n: P.n, top, prods: all.filter(x => (x.tier ?? -1) === top).sort((a, b) => a.name.localeCompare(b.name)) }; });
+  if (!L.length) { tbl.innerHTML = `<tbody><tr><td class="empty">No planet data yet.</td></tr></tbody>`; return; }
+  const tiers = [...new Set(L.map(x => x.top))].sort((a, b) => b - a), lab = (k) => k < 0 ? "Tier unknown" : k ? "P" + k : "Raw (P0)";
+  tbl.innerHTML = `<thead><tr><th scope="col">Character</th><th scope="col">Makes</th><th scope="col" class="num">Colonies</th></tr></thead><tbody>${tiers.map(k => { const G = L.filter(x => x.top === k);
+    return `<tr class="group" data-fold="${lab(k)}"><th colspan="3" scope="colgroup">${lab(k)} <span class="muted num">${G.length}</span></th></tr>` + G.map(x => `<tr><th scope="row">${esc(x.c.name)}</th><td>${x.prods.map(m => `${m.t ? icon(m.t) + " " : ""}${esc(m.name)} <span class="muted num">${qty(m.h)}/h</span>`).join("<br>")}</td><td class="num">${x.n}</td></tr>`).join(""); }).join("")}</tbody>`;
 }
 $("jobs-noammo").addEventListener("change", (e) => { state.misc.hideAmmo = e.target.checked; saveMisc(); renderJobs(); });
 $("jobs-refresh").addEventListener("click", async () => { const b = $("jobs-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; });
@@ -6272,7 +6297,7 @@ const JFS = ["Ark", "Rhea", "Anshar", "Nomad", "Rorqual"];
 const ECONOMIZERS = [{ id: 34126, n: "Prototype Jump Drive Economizer", short: "Prototype", pct: 10 }, { id: 34124, n: "Experimental Jump Drive Economizer", short: "Experimental", pct: 7 }, { id: 34122, n: "Limited Jump Drive Economizer", short: "Limited", pct: 4 }];
 const ECO_VOL = 3500;
 const ecoMult = (pct, n) => { let m = 1; for (let i = 0; i < n; i++) m *= 1 - pct / 100 * Math.exp(-((i / 2.67) ** 2)); return m; };
-const ecoOwned = () => { const have = new Set(Object.values(state.assets || {}).flatMap(a => (a.rows || []).map(r => r.t))); return ECONOMIZERS.find(e => have.has(e.id)) || null; };
+const ecoOwned = () => { const have = new Set(Object.values(state.assets || {}).flatMap(a => [...(a.rows || []), ...(a.other || [])].map(r => r.t))); return ECONOMIZERS.find(e => have.has(e.id)) || null; };
 const ecoDefault = () => ECONOMIZERS.find(e => e.id === +state.misc.ecoDefault) || ECONOMIZERS[1];
 // The variant used for hauling: the best one in your hangars, else the default from Settings
 const ecoVariant = () => ecoOwned() || ecoDefault();
@@ -7495,15 +7520,15 @@ async function readFatigue(c, access) {
 // Blueprints read from ESI (pilots and corporations), summarised per blueprint type
 function ownedBps() {
   const out = new Map();
-  for (const src of Object.values((state.misc || {}).ownedBps || {})) for (const [t, me, te, runs, copy] of src.list) {
+  for (const src of Object.values((state.misc || {}).ownedBps || {})) for (const [t, me, te, runs, copy, n = 1] of src.list) {
     const o = out.get(t) || { bpo: 0, me: -1, te: 0, bpc: 0, runs: 0, bpcMe: -1, bpcTe: 0 };
-    if (copy) { o.bpc++; o.runs += Math.max(0, runs); if (me > o.bpcMe) { o.bpcMe = me; o.bpcTe = te; } } else { o.bpo++; if (me > o.me) { o.me = me; o.te = te; } }
+    if (copy) { o.bpc++; o.runs += Math.max(0, runs); if (me > o.bpcMe) { o.bpcMe = me; o.bpcTe = te; } } else { o.bpo += n; if (me > o.me) { o.me = me; o.te = te; } }
     out.set(t, o);
   }
   return out;
 }
 const ownedLabel = (o) => !o ? "" : [o.bpo ? `BPO owned${o.bpo > 1 ? " ×" + o.bpo : ""} · ME ${o.me} TE ${o.te}` : "", o.bpc ? `${o.bpo ? "" : "No BPO · "}BPC ×${o.bpc}, ${o.runs} runs` : ""].filter(Boolean).join(" · ");
-function slimBps(list) { return list.map(b => [b.type_id, b.material_efficiency || 0, b.time_efficiency || 0, b.runs, b.quantity === -2 ? 1 : 0]); }
+function slimBps(list) { return list.map(b => [b.type_id, b.material_efficiency || 0, b.time_efficiency || 0, b.runs, b.quantity === -2 ? 1 : 0, Math.max(1, b.quantity || 1)]); }   // last: how many (a stack of unresearched originals is one entry)
 // The blueprint search lists, owned ones first, each with what you own in brackets
 let bpListKey = "";
 function fillBpLists() {
@@ -9426,10 +9451,15 @@ function renderBuildInner(page) {
   const raw = r.shop.filter(x => !x.ore).map(x => { const need = x.need ?? x.qty, ore = x.fromBuyOre || 0; return { t: x.type, name: x.name, need, own: need - x.qty - ore, buy: x.qty, ore, vol: x.vol || 0 }; });
   const comp = [...r.jobs.filter(j => j.type !== r.top.type).map(j => { const u = cu.get(j.type); return { t: j.type, name: j.name, need: u ? u.need : j.made - j.extra, own: u ? u.fromLocal + u.fromD : 0, made: j.made, vol: j.vol || 0 }; }),
     ...[...cu.values()].filter(u => !r.jobs.some(j => j.type === u.type)).map(u => ({ t: u.type, name: u.name, need: u.need, own: u.fromLocal + u.fromD, made: 0, vol: u.vol }))];
+  // each kind grouped by the items' group (Mineral, Moon materials, Composite…), A→Z, then by name; groups are read once (loadTypeMeta) and the plan drawn again
+  const metaTried = renderBuildInner.metaTried = renderBuildInner.metaTried || new Set(), metaNeed = [...raw, ...comp].map(x => x.t).filter(t => !state.typeMeta[t] && !metaTried.has(t));
+  if (metaNeed.length) { metaNeed.forEach(t => metaTried.add(t)); loadTypeMeta(metaNeed).catch(() => null).then(() => { if (metaNeed.some(t => state.typeMeta[t])) renderBuild(page); }); }
+  const mGroups = (L, kind, fn) => { const G = new Map(); for (const x of L) { const g = grpOfType(x.t); (G.get(g) || G.set(g, []).get(g)).push(x); }
+    return [...G].sort((a, b) => a[0].localeCompare(b[0])).map(([g, xs]) => `<tr class="subgroup" data-fold="${esc(kind + " › " + g)}"><th colspan="5" scope="colgroup">${esc(g)} <span class="muted num">${xs.length}</span></th></tr>${xs.sort((a, b) => a.name.localeCompare(b.name)).map(fn).join("")}`).join(""); };
   const mRow = (x, last) => `<tr><th scope="row">${icon(x.t)} <button type="button" class="copyname" data-copy="${esc(x.name)}" data-copy-msg="${esc(x.name)} copied" title="Click to copy the name">${esc(x.name)}</button></th><td class="num">${x.need.toLocaleString()}</td><td class="num">${x.own > 0 ? x.own.toLocaleString() : "—"}</td><td class="num">${last}</td><td class="num">${Math.round(x.need * x.vol).toLocaleString()} m³</td></tr>`;
   const matsBox = raw.length || comp.length ? `<h3 id="pl-mats" style="margin:16px 0 6px">Materials needed ${raw.length ? `<button type="button" class="cargo" data-copy="${esc(raw.map(x => `${x.name}\t${x.need}`).join("\n"))}" data-copy-msg="Raw materials copied">Copy raw materials</button>` : ""}</h3><div class="scroller"><table class="bp-table" id="pl-mats-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">From your stock</th><th scope="col" class="num">To buy or build</th><th scope="col" class="num">Volume</th></tr></thead><tbody>
-      ${raw.length ? `<tr class="group"><th colspan="5" scope="colgroup">Raw materials · ${raw.length}</th></tr>${raw.map(x => mRow(x, x.buy ? `${x.buy.toLocaleString()}${x.ore ? `<div class="label">−${x.ore.toLocaleString()} from ore</div>` : ""}` : x.ore ? `<span class="muted">from ore</span>` : "—")).join("")}` : ""}
-      ${comp.length ? `<tr class="group"><th colspan="5" scope="colgroup">Components built on the way · ${comp.length}</th></tr>${comp.map(x => mRow(x, x.made ? `<span class="muted">build</span> ${x.made.toLocaleString()}` : "—")).join("")}` : ""}</tbody>
+      ${raw.length ? `<tr class="group" data-fold="Raw materials"><th colspan="5" scope="colgroup">Raw materials · ${raw.length}</th></tr>${mGroups(raw, "Raw", x => mRow(x, x.buy ? `${x.buy.toLocaleString()}${x.ore ? `<div class="label">−${x.ore.toLocaleString()} from ore</div>` : ""}` : x.ore ? `<span class="muted">from ore</span>` : "—"))}` : ""}
+      ${comp.length ? `<tr class="group" data-fold="Components built on the way"><th colspan="5" scope="colgroup">Components built on the way · ${comp.length}</th></tr>${mGroups(comp, "Components", x => mRow(x, x.made ? `<span class="muted">build</span> ${x.made.toLocaleString()}` : "—"))}` : ""}</tbody>
       <tfoot><tr class="total"><th scope="row" colspan="4">Raw materials volume</th><td class="num">${Math.round(raw.reduce((a, x) => a + x.need * x.vol, 0)).toLocaleString()} m³</td></tr></tfoot></table></div>` : "";
   box.innerHTML = tiles + (VW ? `<div class="notice" style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span>The order <b>${VW.qty.toLocaleString()} × ${esc(VW.name)}</b> as it was sent on ${fmtDate(VW.at)}: prices, stock and jobs from that day.</span><button type="button" class="primary" data-replan="1">Plan it again with today's data</button></div>` : `<div class="toolbar" style="margin-top:8px"><button type="button" data-send-order="1">Send to Orders management</button></div>`) + `<div class="slot-tiles" style="margin-top:8px">
       <div class="slot-tile"><div class="label">Estimated time</div><span class="big-num">${fmtDur(sch.span)}</span><div class="muted">until the last job ends, each job starting when its inputs are made and a slot is free${r.invCost ? ", copying and invention included" : ""} (hauling not counted)</div></div>
@@ -10317,7 +10347,7 @@ document.addEventListener("click", async (e) => {
 // Every item from CCP's game data index (ccpReady / ccpPart): a light list read once from its 64 parts (idbLoad), with what each item is used in
 // (every blueprint's materials, planet schematics). Opening an item reads it through getJSON like everywhere else; attribute names come from ESI's
 // dogma attributes (CCP's own data), read once each and kept in state.misc.dogmaAttrs. Settings in state.misc.idb (idbCfg, v1: price, all = every attribute)
-let idbData = null, idbP = null, idbLimit = 100, idbItem = null; const idbSeq = { n: 0 };
+let idbData = null, idbP = null, idbLimit = {}, idbItem = null; const idbSeq = { n: 0 };   // idbLimit: items shown per category (100 until "Show more")
 function idbCfg() { const c = state.misc.idb = state.misc.idb || {}; if (!c.v) Object.assign(c, { v: 1, price: "split", all: false }); return c; }
 function idbLoad() {
   return idbP || (idbP = (async () => {
@@ -10354,19 +10384,22 @@ function renderItemDb() {
     { k: "v", n: "Volume (m³)", t: "num", get: x => x.v ?? null }, { k: "pv", n: "Packaged volume (m³)", t: "num", get: x => x.pv ?? null }, { k: "m", n: "Mass (kg)", t: "num", get: x => x.m ?? null }, { k: "cap", n: "Capacity (m³)", t: "num", get: x => x.cap ?? null }, { k: "bp", n: "CCP base price", t: "num", get: x => x.bp ?? null },
     { k: "tl", n: "Tech level", t: "num", get: x => x.tl ?? null }, { k: "mt", n: "Meta group", t: "list", get: x => x.mt != null ? String(x.mt) : "", opts: () => Object.entries(IDB_META) }, { k: "r", n: "Race", t: "list", get: x => x.r != null ? String(x.r) : "", opts: () => Object.entries(IDB_RACE) },
     { k: "made", n: "Made by", t: "list", get: x => x.made, opts: () => [["manufacturing", "Manufacturing"], ["reaction", "Reaction"], ["invention", "Invention"]] }, { k: "used", n: "Used to make things", t: "list", get: x => D.used.has(x.id) ? "yes" : "no", opts: () => CF_YESNO },
-    { k: "tm", n: "Can be reprocessed", t: "list", get: x => x.tm ? "yes" : "no", opts: () => CF_YESNO }, { k: "pub", n: "In the game", t: "list", get: x => x.p ? "yes" : "no", opts: () => CF_YESNO }, { k: "own", n: "You own", t: "num", get: x => own.get(x.id) || 0 }], () => { idbLimit = 100; renderItemDb(); });
+    { k: "tm", n: "Can be reprocessed", t: "list", get: x => x.tm ? "yes" : "no", opts: () => CF_YESNO }, { k: "pub", n: "In the game", t: "list", get: x => x.p ? "yes" : "no", opts: () => CF_YESNO }, { k: "own", n: "You own", t: "num", get: x => own.get(x.id) || 0 }], () => { idbLimit = {}; renderItemDb(); });
   const rows = sortRows("itemdb", { key: "name", dir: 1 }, cfApply("itemdb", base), { name: x => x.n, grp: idbGrp, v: x => x.v ?? -1, pv: x => x.pv ?? -1, meta: x => IDB_META[x.mt] || "", own: x => own.get(x.id) || 0 });
-  if (!rows.length) { tbl.innerHTML = `<tbody><tr><td class="empty">${q || cfOn("itemdb") || cf ? "No item matches." : "No items."}</td></tr></tbody>`; $("idb-more").innerHTML = ""; return; }
-  // grouped by category, then group (like Assets); folded groups only show their title, "Show more" pages through the open ones
+  if (!rows.length) { tbl.innerHTML = `<tbody><tr><td class="empty">${q || cfOn("itemdb") || cf ? "No item matches." : "No items."}</td></tr></tbody>`; return; }
+  // grouped by category, then group (like Assets); folded groups only show their title; each category shows its first items and a "Show more" row
+  // (its later groups wait behind it, so no group title is shown without its items)
   const byCat = new Map(); for (const x of rows) { const c = idbCat(x) || "Other", g = idbGrp(x) || "Other"; if (!byCat.has(c)) byCat.set(c, new Map()); const G = byCat.get(c); (G.get(g) || G.set(g, []).get(g)).push(x); }
   const filt = !!(q || cfOn("itemdb")), folds = filt ? {} : state.misc.folds || {}, folded = (l) => !!folds["t:itemdb|" + l], body = []; let shownN = 0, open = 0;
-  for (const c of [...byCat.keys()].sort((a, b) => a.localeCompare(b))) { const G = byCat.get(c); body.push({ head: c, n: [...G.values()].reduce((s, L) => s + L.length, 0), cls: "group" }); if (folded(c)) continue;
-    for (const g of [...G.keys()].sort((a, b) => a.localeCompare(b))) { const L = G.get(g); if (G.size > 1) { body.push({ head: g, key: c + " › " + g, n: L.length, cls: "subgroup" }); if (folded(c + " › " + g)) continue; } open += L.length; for (const x of L) { if (shownN >= idbLimit) break; body.push(x); shownN++; } } }
+  for (const c of [...byCat.keys()].sort((a, b) => a.localeCompare(b))) { const G = byCat.get(c), lim = idbLimit[c] || 100; let n = 0, rest = 0; body.push({ head: c, n: [...G.values()].reduce((s, L) => s + L.length, 0), cls: "group" }); if (folded(c)) continue;
+    for (const g of [...G.keys()].sort((a, b) => a.localeCompare(b))) { const L = G.get(g), k = c + " › " + g; if (G.size > 1 && folded(k) && n < lim) { body.push({ head: g, key: k, n: L.length, cls: "subgroup" }); continue; } if (G.size > 1 && folded(k)) continue;
+      open += L.length; if (n >= lim) { rest += L.length; continue; } if (G.size > 1) body.push({ head: g, key: k, n: L.length, cls: "subgroup" }); for (const x of L) { if (n >= lim) rest++; else { body.push(x); n++; } } }
+    shownN += n; if (rest) body.push({ more: c, rest }); }
   const R = (k, l) => sortHead("itemdb", k, l, { key: "name", dir: 1 }).replace("<th ", ["v", "pv", "own"].includes(k) ? '<th style="text-align:right" ' : "<th ");
   tbl.dataset.sortId = "itemdb"; if (filt) tbl.dataset.nofold = ""; else delete tbl.dataset.nofold;
   tbl.innerHTML = `<thead><tr>${R("name", "Item")}${R("grp", "Group")}${R("meta", "Meta group")}${R("v", "Volume")}${R("pv", "Packaged")}${R("own", "You own")}</tr></thead><tbody>${body.map(x => x.head ? `<tr class="${x.cls}" data-fold="${esc(x.key || x.head)}" data-n="${x.n}"><th colspan="6" scope="colgroup">${esc(x.head)} <span class="muted num">${x.n.toLocaleString()}</span></th></tr>`
+    : x.more ? `<tr><td colspan="6"><button type="button" class="link" data-idb-more="${esc(x.more)}">Show ${Math.min(200, x.rest).toLocaleString()} more of ${x.rest.toLocaleString()} in ${esc(x.more)}</button></td></tr>`
     : `<tr><th scope="row"><span class="item-cell"><img src="https://images.evetech.net/types/${x.id}/icon?size=32" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'"><button type="button" class="link" data-idb-open="${x.id}" style="color:inherit;text-align:left">${esc(x.n)}</button>${x.p ? "" : ` <span class="pill mid">not in the game</span>`}</span></th><td>${esc(idbGrp(x))}</td><td>${esc(IDB_META[x.mt] || (x.mt != null ? "Meta group " + x.mt : ""))}</td><td class="num">${x.v != null ? (+x.v).toLocaleString() + " m³" : "—"}</td><td class="num">${x.pv != null ? (+x.pv).toLocaleString() + " m³" : "—"}</td><td class="num">${own.get(x.id) ? own.get(x.id).toLocaleString() : ""}</td></tr>`).join("")}</tbody><tfoot><tr class="total"><th scope="row" colspan="6">${rows.length.toLocaleString()} item${rows.length === 1 ? "" : "s"}${open > shownN ? ` <span class="muted" style="font-weight:400">(${shownN.toLocaleString()} shown)</span>` : ""}</th></tr></tfoot>`;
-  $("idb-more").innerHTML = open > shownN ? `<button type="button" data-idb-more="1">Show ${Math.min(200, open - shownN)} more of ${(open - shownN).toLocaleString()} remaining</button>` : "";
   if (idbItem) renderIdbItem();
 }
 // Dogma attribute names and units (ESI's /dogma/attributes/, CCP's own data), read once each: [name, unit, published]
@@ -10431,11 +10464,11 @@ function renderIdbItem() {
   <div class="bp-head" style="margin-top:12px"><h3 id="idbn-attrs" style="margin:0">Attributes <span class="muted num" style="font-weight:400">${attrs.length}</span></h3><label style="display:flex;gap:6px;align-items:center;font-size:.85rem"><input type="checkbox" data-idb-all="1" ${C.all ? "checked" : ""}> Show every attribute (also the ones the game hides)</label></div>
   ${attrs.length ? `<div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Attribute</th><th scope="col">Value</th>${C.all ? `<th scope="col">ID</th>` : ""}</tr></thead><tbody>${attrs.map(a => `<tr><td>${esc(a.n || "Attribute " + a.id)}</td><td class="num" data-v="${a.v}">${esc(idbUnit(a.v, a.u))}</td>${C.all ? `<td class="num">${a.id}</td>` : ""}</tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0;font-size:.85rem">${I.busy ? "Reading attribute names…" : Object.keys(t.dogma_attributes || {}).length ? "No attribute the game shows (tick the box to see every one)." : "This item has no attributes."}</p>`}`;
 }
-["idb-find", "idb-cat", "idb-grp", "idb-unpub"].forEach(id => $(id).addEventListener("input", () => { idbLimit = 100; renderItemDb(); }));
+["idb-find", "idb-cat", "idb-grp", "idb-unpub"].forEach(id => $(id).addEventListener("input", () => { idbLimit = {}; renderItemDb(); }));
 document.addEventListener("change", (e) => { if (e.target.id === "idb-price") { idbCfg().price = e.target.value; saveMisc(); if (idbItem) idbShow(idbItem.id); } else if (e.target.dataset && e.target.dataset.idbAll) { idbCfg().all = e.target.checked; saveMisc(); renderIdbItem(); } });
 document.addEventListener("click", (e) => {
   const b = e.target.closest && e.target.closest("[data-idb-open],[data-idb-more],[data-idb-close]"); if (!b) return;
-  if (b.dataset.idbMore) { idbLimit += 200; renderItemDb(); return; }
+  if (b.dataset.idbMore) { const c = b.dataset.idbMore; idbLimit[c] = (idbLimit[c] || 100) + 200; renderItemDb(); return; }
   if (b.dataset.idbClose) { idbItem = null; $("idb-item-panel").hidden = true; return; }
   idbShow(+b.dataset.idbOpen);
 });

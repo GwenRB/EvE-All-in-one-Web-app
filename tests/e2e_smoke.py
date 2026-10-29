@@ -161,7 +161,9 @@ async def build_plan(t):
     t.ok(await t.js("document.querySelectorAll('#plan-out svg[aria-label=\"Build timeline\"] rect').length") > 0, "the timeline is drawn")
     nav = await t.js("[...document.querySelectorAll('#plan-nav a')].map(a=>a.textContent)")
     t.ok("Timeline" in nav and "Hauling" in nav and "Materials to buy" in nav and "Materials needed" in nav, "Build planning's left rail", nav)
-    mats = t.show("materials needed", await t.js("[[...document.querySelectorAll('#pl-mats-table tr.group')].map(r=>r.innerText.split(' · ')[0].replace(/[▾▸]/g,'').trim()), [...document.querySelectorAll('#pl-mats-table tbody tr:not(.group)')].map(r=>[r.cells[0].innerText.trim(), r.cells[1].innerText.trim()])]"))
+    mats = t.show("materials needed", await t.js("[[...document.querySelectorAll('#pl-mats-table tr.group')].map(r=>r.innerText.split(' · ')[0].replace(/[▾▸]/g,'').trim()), [...document.querySelectorAll('#pl-mats-table tbody tr:not(.group):not(.subgroup)')].map(r=>[r.cells[0].innerText.trim(), r.cells[1].innerText.trim()])]"))
+    sub = t.show("materials groups", await t.js("[...document.querySelectorAll('#pl-mats-table tbody tr')].map(r=>r.classList.contains('group')?'G':r.classList.contains('subgroup')?'S:'+r.innerText.replace(/[▾▸]/g,'').trim().replace(/\\s+\\d+$/,''):'i')"))
+    t.ok(sub[0] == "G" and sub[1].startswith("S:") and all(x != "G" or sub[i + 1].startswith("S:") for i, x in enumerate(sub[:-1])), "Materials needed: each kind split into the items' groups", sub)
     want = t.show("shop", await t.js("buildState.plan.res.shop.filter(x=>!x.ore).map(x=>[x.name,(x.need??x.qty).toLocaleString()])"))
     t.ok([g.lower() for g in mats[0]] == ["raw materials", "components built on the way"] and all(w in mats[1] for w in want) and any(m[0] == "Fake Component" for m in mats[1]), "Materials needed lists every raw material and the components built", [mats, want])
     # stock in hangars is used first
@@ -1305,6 +1307,28 @@ async def contracts_browser(t):
     await t.pg.fill("#cb-find", ""); await asyncio.sleep(0.3); await t.pg.screenshot(path=SP + "contracts-browser.png", full_page=True)
 
 @scenario
+async def owned_and_priced(t):
+    """Economizers fitted on a ship count as owned; a stack of formulas counts every one; suppliers priced at a % of a pricing show prices; Planets' who makes what."""
+    await t.js("()=>{state.assets['char:9001'].other=[{t:34124,loc:60003760,h:'LoSlot0',in:28844,hg:'Hangar',q:1}]; saveAssets();}")
+    t.eq(await t.js("(ecoOwned()||{}).id"), 34124, "an economizer fitted on a jump freighter is found")
+    t.eq(await t.js("[slimBps([{type_id:46166,quantity:22,runs:-1}])[0][5], slimBps([{type_id:1,quantity:-1,runs:-1},{type_id:2,quantity:-2,runs:5}]).map(b=>b[5])]"), [22, [1, 1]], "a blueprint stack keeps how many it holds")
+    await t.js("state.misc.ownedBps['char:1'].list.push([46166,0,0,-1,0,22],[46166,0,0,-1,0,1])")
+    t.eq(await t.js("ownedBps().get(46166).bpo"), 23, "every formula in a stack counts")
+    await t.tab("suppliers")
+    await t.js("()=>{supList().push({id:'s9',name:'Carl',url:'',stock:{34:{q:50,n:'Tritanium'},35:{q:5,n:'Pyerite',price:7}},pricing:{mode:'pct',pct:90,base:'jsv'}}); supOpen='s9'; saveMisc(); renderSuppliers();}")
+    t.ok(await t.until("priceIn('jsv',34)>0 && !/no price/.test(document.getElementById('sup-out').innerText)", 15), "a % of a pricing: every item gets its price", await t.text("#sup-out"))
+    want = await t.js("isk(priceIn('jsv',34)*0.9)"); out = t.show("supplier", await t.text("#sup-out"))
+    t.ok(want in out, "the price is the % of the pricing", [want, out])
+    await t.js("""()=>{const pl={id:1,name:'Delta I',type:'barren',system:'Delta',lastUpdate:Date.now(),factories:2,extractors:[],inputs:[],stock:[],unneeded:[]};
+      state.chars[0].planets=[{...pl,makes:[{name:'Nano-Factory',perHour:2,t:2869},{name:'Coolant',perHour:40}]},{...pl,id:2,makes:[{name:'Nano-Factory',perHour:1,t:2869}]}];
+      state.chars[1].planets=[{...pl,id:3,factories:0,makes:[],extractors:[{product:'Base Metals',qty:6000,cycle:1800,end:Date.now()+864e5}]}]; delete state.misc.piSchem; saveLocal(); renderPlanets();}""")
+    await t.tab("planets", 0.4)
+    who = t.show("who makes what", await t.js("[...document.querySelectorAll('#piw-table tbody tr')].map(r=>r.innerText.replace(/[▾▸]/g,'').replace(/\\s+/g,' ').trim())"))
+    t.ok(len(who) == 4 and who[0].upper().startswith("P4") and "Ender Alpha" in who[1] and "Nano-Factory 3/h" in who[1] and "Coolant" not in who[1] and who[1].endswith("2")
+         and who[2].upper().startswith("RAW (P0)") and "Ender Beta" in who[3] and "Base Metals 12k/h" in who[3], "Who makes what: each pilot's highest tier, summed over their colonies", who)
+    t.eq(await t.js("(()=>{state.misc.piSchem={s:{3:{ins:[[2,1]]},2:{ins:[[1,1],[9,1]]},1:{ins:[[0,1]]}}}; const r=[3,2,1,0].map(piTierOf); delete state.misc.piSchem; return r})()"), [3, 2, 1, 0], "PI tiers from CCP's planet schematics")
+
+@scenario
 async def item_database(t):
     """Item database: every item from CCP's game data, by name or category, grouped; an item's facts, what makes it, what it's used in, attributes named from ESI."""
     await t.tab("itemdb", 0.5); t.ok(await t.until("!!idbData && !!document.querySelector('#idb-table tbody tr')", 25), "the list is read from CCP's game data", await t.text("#idb-note"))
@@ -1312,6 +1336,18 @@ async def item_database(t):
     names = "[...document.querySelectorAll('#idb-table tbody tr:not(.group):not(.subgroup) th')].map(th=>th.textContent.trim())"
     t.eq(sorted(await t.js(names)), ["Venture", "Venture Blueprint"], "finding items by name")
     t.ok(await t.js("document.querySelectorAll('#idb-table tr.group').length") >= 2, "results grouped by category")
+    await t.pg.fill("#idb-find", ""); await asyncio.sleep(0.4)
+    shape = "[...document.querySelectorAll('#idb-table tbody tr')].map(r=>r.classList.contains('group')?'G':r.classList.contains('subgroup')?'S':r.querySelector('[data-idb-more]')?'M':'i')"
+    sh = t.show("shape", await t.js(shape))
+    t.ok(sh and all(x == "i" or (i + 1 < len(sh) and sh[i + 1] != "G" and (x == "G" or sh[i + 1] == "i")) for i, x in enumerate(sh) if x in "GS"), "every category and group shown has its items under it", sh)
+    cat = await t.js("(()=>{const c=[...byCatNames()].find(([,n])=>n>1); return c&&c[0]})()".replace("byCatNames()", "new Map([...document.querySelectorAll('#idb-table tr.group')].map(r=>[r.dataset.fold,+r.dataset.n]))"))
+    await t.js("c=>{idbLimit[c]=1; renderItemDb();}", cat); await asyncio.sleep(0.2)
+    sh = t.show("limited", await t.js(shape))
+    t.ok("M" in sh, "a long category ends with a Show more row", sh)
+    n0 = await t.js("document.querySelectorAll('#idb-table tbody tr:not(.group):not(.subgroup)').length")
+    await t.pg.click("#idb-table [data-idb-more]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("document.querySelectorAll('#idb-table tbody tr:not(.group):not(.subgroup)').length") > n0, "Show more shows more of that category")
+    await t.pg.fill("#idb-find", "venture"); await asyncio.sleep(0.4)
     await t.js("()=>{cfCfg('itemdb').rules=[{f:'made',op:'is',a:'manufacturing'}]; renderItemDb();}"); await asyncio.sleep(0.3)
     t.eq(await t.js(names), ["Venture"], "a filter on what makes it")
     await t.js("()=>{cfCfg('itemdb').rules=[]; renderItemDb();}")
