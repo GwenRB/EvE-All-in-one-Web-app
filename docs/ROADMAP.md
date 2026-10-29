@@ -21,7 +21,7 @@
 ## Profit and loss
 - Broker fees aren't tied to an item by ESI (only to the order), so they follow their kind's activity, not the item's.
 - A contract split needs every item priced in the chosen pricing.
-- Ideas: cost of goods sold (profit per unit built using the build's material cost; see Profit per trade under EVE Tycoon below); actual profit per activity on the Forecast.
+- Ideas: cost of goods sold (profit per unit built using the build's material cost); actual profit per activity on the Forecast.
 
 ## Trading board (market browser)
 - Every region is read item by item: about 70 market requests per item (ESI has no "all regions" order list). They share `esiMarket`'s budget, so browsing many items fast can make other pages' price reads wait.
@@ -64,14 +64,6 @@ Features of jEveAssets (the Java asset manager) the tool doesn't have, or only p
 - **Contracts browser, what's left** (jEveAssets: Contracts): auction bids (`/contracts/{id}/bids/`); contracts older than ESI's 30 days only exist here if a sync saw them; open a contract in game (`esi-ui.open_window.v1`).
 - **Market orders tool** (jEveAssets: Market Orders): see "Market orders, what's left" above (undercut, order slots, relist cost, history).
 - **Item database, what's left** (jEveAssets: Items): names in English only; several items side by side.
-
-## From EVE Tycoon (not built yet)
-Features of EVE Tycoon (evetycoon.com, the web profit tracker for traders and industrialists; compared from its 2019–2020 forum thread) the tool doesn't have, or only partly. Compared on 2026-10-26; built since: Market browser (the Trading board), clicking a price copies it (no % yet); already here: transactions, jobs and blueprints from ESI, every pilot pooled, corporation wallets and jobs, a margin calculator (Misc → Quotation), market orders read (Net worth).
-- **Profit per trade** (EVE Tycoon: profit tracking): each sale matched to what the items cost: the buys that brought them in, or the finished jobs that made them (their inputs in turn from buys or other jobs), across pilots (bought on one, built on a second, sold on a third). Profit per item and per sale on Profit and loss, which today is per activity only; replaces the "cost of goods sold" idea above.
-- **Fees per structure and period** (EVE Tycoon: custom broker fees): a broker fee (and sales tax) per citadel or station and per date range (an owner who changed the tax for a while), used by Profit and loss and the sell-order prices; today there's one "Broker fee in citadels %" for every citadel (Settings → Market taxes).
-- **Undercut checks** (EVE Tycoon: price undercut checks, private citadels included): see "Market orders, what's left" above; for citadels, against the citadel orders a citadel pricing already reads.
-- **Relist price copy** (EVE Tycoon: price copy): a button on a sale or an order that copies the price paid or sold at, plus a % you set, ready to paste in game.
-- **Phone layout** (EVE Tycoon: works on phones and tablets): the tool has narrow-screen rules but hasn't been checked at phone width; wide tables would need work.
 
 ## Data and other limits
 - EVE Ref is now only a fallback (game data lookups, map, reaction formulas). Prices come from ESI; `esiNames` too. `resolveIds` (name → type ID) answers from CCP's static data (`ccpNames`) and only asks ESI about leftovers (max 100 characters a name, else ESI refuses the whole request).

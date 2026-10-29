@@ -9,6 +9,20 @@ How entries are kept:
 
 ---
 
+## 2026-10-29 — Blueprint locations, citadel hubs, Trading board scrolling
+
+### Added
+- Blueprint library: a **Location** filter. Pick a station or structure to see only the originals and copies kept there (and the tiles for them). Blueprints inside containers, ships or corporation offices count where that container is. Refresh from ESI once so each blueprint's place is read.
+- Settings → Trade hubs: add a **player citadel** as a hub, by its name (one the tool already knows from your assets, jobs or structures) or its ID. It needs a pilot with the Structures permission, and it shows the orders the citadel shares with its region (a public market).
+
+### Changed
+- Blueprint library: copies show the blueprint copy icon, so they don't look like originals.
+- Settings → Pilots and backup: **Add pilot** is now **Add custom pilot**, and **Import backup** comes before **Export backup**.
+- Trading board: scrolling the sellers, buyers or market groups to their end no longer scrolls the page, and opening an item no longer scrolls the page down past the top of the board.
+
+### Removed
+- Roadmap: the EVE Tycoon comparison (to be explained again later).
+
 ## 2026-10-29 · 4b15bdc — Gather items on the Map, filter groups, industry jobs in Net worth
 
 ### Added

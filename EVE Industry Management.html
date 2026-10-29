@@ -85,7 +85,7 @@ body:has(#page-trading:not([hidden])) .wrap > :is(header.top, #status, #esi-pane
 .mb-filters { display: grid; gap: 6px; margin-top: 6px; font-size: .88rem } .mb-filters input[type=text] { width: 90px }
 .mb-main, #mb-body:not([hidden]) { display: grid; gap: 16px; min-width: 0 }
 .mb-books { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) } .mb-books[hidden] { display: none }
-.mb-book .scroller { overflow: auto } .mb-book thead th { position: sticky; top: 0; z-index: 1; background: var(--panel) }
+.mb-book .scroller { overflow: auto } .mb .scroller, .mb-tree, #mb-hist-panel, #mb-hubs-panel { overscroll-behavior: contain }   /* reaching a list's end doesn't scroll the page */ .mb-book thead th { position: sticky; top: 0; z-index: 1; background: var(--panel) }
 .mb-book tbody tr { cursor: pointer } .mb-book tbody tr.sel > * { background: color-mix(in srgb, var(--accent) 22%, transparent) }
 .mb-views { gap: 8px } .mb-views button { width: 100% }
 .mb-pop { width: min(760px, 94vw); max-height: 92vh; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); padding: 14px } .mb-pop::backdrop { background: rgba(0,0,0,.55) }
@@ -939,7 +939,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
 
   <div id="page-tests" class="page" hidden>
     <section class="panel" aria-labelledby="bpl-title"><div class="bp-head"><div><h2 id="bpl-title">Blueprint library</h2><p class="muted" style="margin:4px 0 0">The originals your pilots and corporations own, with their research levels: those in research or copying and when they finish, then the others.</p></div></div>
-      <div class="toolbar"><input type="search" id="bpl-find" placeholder="Find a blueprint" style="width:240px" aria-label="Find a blueprint"><span class="muted" id="bpl-status" style="font-size:.85rem"></span></div>
+      <div class="toolbar"><input type="search" id="bpl-find" placeholder="Find a blueprint" style="width:240px" aria-label="Find a blueprint"><select id="bpl-loc" aria-label="Location" style="max-width:320px"><option value="">Every location</option></select><span class="muted" id="bpl-status" style="font-size:.85rem"></span></div>
       <div id="bpl-summary" class="slot-tiles"></div>
       <div class="scroller"><table id="bpl-table" class="bp-table" data-sorted=""></table></div></section>
     <section class="panel" aria-labelledby="bpc-title"><div class="bp-head"><div><h2 id="bpc-title">Blueprint copies</h2><p class="muted" style="margin:4px 0 0">Every copy your pilots and corporations own.</p></div></div>
@@ -1107,7 +1107,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
   <div id="page-settings" class="page" hidden>
    <div class="plan-layout"><div class="plan-rail"><nav id="set-nav" class="plan-nav" data-auto aria-label="Settings sections"></nav></div><div class="plan-main">
     <section class="panel" aria-labelledby="set-pilots-title"><div class="bp-head"><div><h2 id="set-pilots-title">Pilots and backup</h2><p class="muted" style="margin:4px 0 0">Add a pilot by hand (or use "Link EVE character" at the top), and save or restore everything this tool keeps.</p></div></div>
-      <div class="toolbar" style="margin-top:8px"><button class="primary" id="btn-add" type="button">Add pilot</button><button id="btn-export" type="button">Export backup</button><button id="btn-import" type="button">Import backup</button><input type="file" id="import-file" accept=".json,application/json" hidden></div>
+      <div class="toolbar" style="margin-top:8px"><button class="primary" id="btn-add" type="button">Add custom pilot</button><button id="btn-import" type="button">Import backup</button><button id="btn-export" type="button">Export backup</button><input type="file" id="import-file" accept=".json,application/json" hidden></div>
   <form id="add-form" class="inline-form" style="margin-top:10px" hidden>
     <label class="label" for="add-name">New pilot name</label>
     <div class="row">
@@ -1131,9 +1131,9 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <button type="submit" class="primary">Add pricing</button>
       </form>
       <p class="muted" id="pr-note" style="margin:6px 0 0;font-size:.8rem"></p>
-      <h3 style="margin:14px 0 4px">Trade hubs</h3><p class="muted" style="margin:0 0 6px">The stations every market menu offers (Trading board, Import calculator, Market watch, Arbitrage, public contracts, broker fees…). The five main hubs are built in; add any other NPC station.</p>
+      <h3 style="margin:14px 0 4px">Trade hubs</h3><p class="muted" style="margin:0 0 6px">The stations every market menu offers (Trading board, Import calculator, Market watch, Arbitrage, public contracts, broker fees…). The five main hubs are built in; add any other NPC station or player citadel. A citadel added here shows the orders it shares with its region (a public market); for a private market, use a citadel pricing above.</p>
       <div class="scroller"><table id="hub-table" class="bp-table"></table></div>
-      <form id="hub-form" class="toolbar" style="margin-top:8px"><input type="text" id="hub-name" placeholder="Station name as in the game, or its ID" aria-label="Station" style="width:380px" required><button type="submit">Add hub</button><span class="muted" id="hub-msg" style="font-size:.85rem"></span></form>
+      <form id="hub-form" class="toolbar" style="margin-top:8px"><input type="text" id="hub-name" placeholder="Station or citadel name, or its ID" aria-label="Station or citadel" style="width:380px" required><button type="submit">Add hub</button><span class="muted" id="hub-msg" style="font-size:.85rem"></span></form>
     </section>
     <section class="panel" aria-labelledby="reproc-title">
       <div class="bp-head"><div><h2 id="reproc-title">Ore reprocessing</h2><p class="muted" style="margin:4px 0 0">The share of an ore's minerals you get when you reprocess it. Assets values ore and ice at the best possible yield, about 90.6% (Tatara with tech II rigs in null-sec, all skills at V, a 4% implant). Build planning reprocesses your own ore at your best refinery in the system where its minerals are used, by your best pilot for that ore.</p></div></div>
@@ -2240,7 +2240,9 @@ window.addEventListener("resize", fitLogos); window.addEventListener("load", fit
 // The trade hubs every market menu offers (Settings → Pricings and HUBs): these five, plus the NPC stations you add (state.misc.hubs)
 const HUBS_DEFAULT = [{ id: 60003760, name: "Jita 4-4 (Caldari Navy Assembly Plant)", region: 10000002, sys: 30000142, sysName: "Jita" }, { id: 60008494, name: "Amarr VIII (Emperor Family Academy)", region: 10000043, sys: 30002187, sysName: "Amarr" }, { id: 60011866, name: "Dodixie IX - Moon 20 (Federation Navy)", region: 10000032, sys: 30002659, sysName: "Dodixie" }, { id: 60004588, name: "Rens VI - Moon 8 (Brutor Tribe Treasury)", region: 10000030, sys: 30002510, sysName: "Rens" }, { id: 60005686, name: "Hek VIII - Moon 12 (Boundless Creation)", region: 10000042, sys: 30002053, sysName: "Hek" }];
 const tradeHubs = () => [...HUBS_DEFAULT, ...(state.misc.hubs || []).filter(h => !HUBS_DEFAULT.some(d => d.id === h.id))];
-function marketOptions(cur) { return `<optgroup label="Trade hubs">${tradeHubs().map(h => `<option value="st:${h.id}"${cur === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join("")}</optgroup>${citadelMarkets().length ? `<optgroup label="Citadels">${citadelMarkets().map(c => `<option value="cit:${c.id}"${cur === "cit:" + c.id ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</optgroup>` : ""}`; }
+// Your citadels for a market menu, less those added as trade hubs (listed there already); one already picked (cur) stays
+const citsNotHubs = (cur) => citadelMarkets().filter(c => cur === "cit:" + c.id || !tradeHubs().some(h => String(h.id) === c.id));
+function marketOptions(cur) { return `<optgroup label="Trade hubs">${tradeHubs().map(h => `<option value="st:${h.id}"${cur === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join("")}</optgroup>${citsNotHubs(cur).length ? `<optgroup label="Citadels">${citsNotHubs(cur).map(c => `<option value="cit:${c.id}"${cur === "cit:" + c.id ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</optgroup>` : ""}`; }
 const marketName = (v) => { const [k, id] = String(v).split(":"); return k === "st" ? (tradeHubs().find(h => String(h.id) === id) || {}).name || "Station " + id : citName(id); };
 // Order book of a market for some items: sell orders (cheapest first) and the best buy order
 const bookCache = {};
@@ -3063,7 +3065,7 @@ function mbFilters() {
 }
 // Where to look: every region, a trade hub, one of your citadels or a region
 function mbWhereSel() {
-  const C = mbCfg(), o = (v, l) => `<option value="${esc(v)}"${v === (C.reg || "") ? " selected" : ""}>${esc(l)}</option>`, cits = citadelMarkets();
+  const C = mbCfg(), o = (v, l) => `<option value="${esc(v)}"${v === (C.reg || "") ? " selected" : ""}>${esc(l)}</option>`, cits = citsNotHubs(C.reg);
   return `<select id="mb-where" aria-label="Where to look" style="max-width:260px">${o("", "Every region")}<optgroup label="Trade hubs">${tradeHubs().map(h => o("st:" + h.id, h.name)).join("")}</optgroup>${cits.length ? `<optgroup label="Your citadels">${cits.map(c => o("cit:" + c.id, c.name)).join("")}</optgroup>` : ""}<optgroup label="Regions">${(mbRegions.list || []).map(([id, nm]) => o("r:" + id, nm)).join("")}</optgroup></select>`;
 }
 // The item: its market group path, tiles over the filtered orders, both order books, its history and the trade hubs side by side
@@ -3094,7 +3096,7 @@ function mbRenderHubs(orders) {
 }
 function mbHubsHtml(orders) {
   const by = new Map(); for (const o of orders) (by.get(o.loc) || by.set(o.loc, []).get(o.loc)).push(o);
-  const rows = [...tradeHubs().map(h => ({ id: h.id, name: h.name })), ...citadelMarkets().map(c => ({ id: +c.id, name: c.name, cit: true }))].filter(m => by.has(m.id)).map((m, i) => {
+  const rows = [...tradeHubs().map(h => ({ id: h.id, name: h.name })), ...citsNotHubs().map(c => ({ id: +c.id, name: c.name, cit: true }))].filter(m => by.has(m.id)).map((m, i) => {
     const L = by.get(m.id), s = L.filter(o => !o.b), b = L.filter(o => o.b), ls = s.length ? Math.min(...s.map(o => o.p)) : null, hb = b.length ? Math.max(...b.map(o => o.p)) : null;
     return { ...m, i, ls, hb, sq: s.reduce((a, o) => a + o.q, 0), bq: b.reduce((a, o) => a + o.q, 0), sp: ls != null && hb != null ? ls - hb : null }; });
   if (!rows.length) return `<p class="muted" style="margin:0">No orders for it at the trade hubs or your citadels${mbCfg().reg ? ` (looking at ${esc(mbWhereName())})` : ""}.</p>`;
@@ -3126,6 +3128,8 @@ function mbFitBooks() {
   if (a) a.style.maxHeight = Math.round(ha) + "px"; if (b) b.style.maxHeight = Math.round(hb) + "px";
 }
 window.addEventListener("resize", () => { if (!$("page-trading").hidden) mbFitBooks(); });
+// Show a row of the market tree by scrolling the tree only (scrollIntoView scrolls the page too, hiding the top of the board)
+function mbTreeTo(n, top) { const T = $("mb-tree"), r = n.getBoundingClientRect(), b = T.getBoundingClientRect(); if (top || r.top < b.top) T.scrollTop += r.top - b.top; else if (r.bottom > b.bottom) T.scrollTop += r.bottom - b.bottom; }
 
 async function mbHistory(r, t) {
   const k = r + "|" + t, c = mbHistC.get(k); if (c && Date.now() - c.at < 3600e3) return c.rows;
@@ -3171,7 +3175,7 @@ async function mbOpen(t, force) {
   mbItem = { id: t, busy: true, data: same ? mbItem.data : null, err: "" };
   if (C.last !== t || mbPath(t).some(g => !C.open.includes(g))) { C.last = t; C.open = [...new Set([...C.open, ...mbPath(t)])]; saveMisc(); }   // its market groups open in the tree
   if ($("page-trading").hidden) return;
-  mbTree(); mbRenderItem(); const cur = document.querySelector("#mb-tree [aria-current]"); if (cur) cur.scrollIntoView({ block: "nearest" });
+  mbTree(); mbRenderItem(); const cur = document.querySelector("#mb-tree [aria-current]"); if (cur) mbTreeTo(cur);
   try { const d = await mbLoad(t, force); if (seq !== mbOpen.n) return; await mbResolve(d.orders); if (seq !== mbOpen.n) return; mbItem.data = d; } catch (e) { if (seq !== mbOpen.n) return; mbItem.err = netMsg(e); }
   mbItem.busy = false; mbFilters(); mbRenderItem(); mbApplyView();
 }
@@ -3229,7 +3233,7 @@ document.addEventListener("click", (e) => {
   if (b.dataset.mbOpen) { const t = +b.dataset.mbOpen; if ($("page-trading").hidden) { C.last = t; mbItem = null; showPage("trading"); window.scrollTo(0, 0); } else mbOpen(t); return; }
   if (b.dataset.mbG || b.dataset.mbReveal) { const g = +(b.dataset.mbG || b.dataset.mbReveal), on = C.open.includes(g); $("mb-find").value = "";
     if (b.dataset.mbG) C.open = on ? C.open.filter(x => x !== g) : [...C.open, g]; else { let p = g; const up = []; while (p != null && mbIdx.M.mgs[p]) { up.push(p); p = mbIdx.M.mgs[p].up; } C.open = [...new Set([...C.open, ...up])]; }
-    saveMisc(); mbTree(); if (b.dataset.mbReveal) { const n = document.querySelector(`#mb-tree [data-mb-g="${g}"]`); if (n) n.scrollIntoView({ block: "start" }); } return; }
+    saveMisc(); mbTree(); if (b.dataset.mbReveal) { const n = document.querySelector(`#mb-tree [data-mb-g="${g}"]`); if (n) mbTreeTo(n, true); } return; }
   if (b.dataset.mbMore) { mbLim[b.dataset.mbMore] += 200; mbRenderBooks(); return; }
   if (b.dataset.mbRefresh) { mbOpen(+b.dataset.mbRefresh, true); return; }
   if (b.dataset.mbIdb) { showPage("itemdb"); idbShow(+b.dataset.mbIdb); return; }
@@ -3366,7 +3370,7 @@ const rxD = () => state.misc.rxnData;
 // What the table offers, by kind (intermediates are only made for the chains)
 const RX_CATS = [["comp", "Composites"], ["cfo", "Carbon fiber & oxidizer composites"], ["neuro", "Neurolink enhancers & stabilizers"], ["neo", "Isotropic neofullerenes"], ["mol", "Other molecular-forged materials"]];
 function rxCat(P) { const D = rxD(), n = rxName(P), g = (D.grp || {})[P]; if (g === 428) return null; if (/Neurolink/i.test(n)) return "neuro"; if (/Isotropic Neofullerene/i.test(n)) return "neo"; if (g === 429) return /Carbon Fiber|Oxidizer/i.test(n) ? "cfo" : "comp"; return "mol"; }
-const iconBp = (t, size = 24) => `<img src="https://images.evetech.net/types/${t}/bp?size=32" alt="" width="${size}" height="${size}" loading="lazy" style="vertical-align:middle;border-radius:3px" onerror="this.onerror=null;this.src='https://images.evetech.net/types/${t}/icon?size=32'">`;
+const iconBp = (t, size = 24, copy) => `<img src="https://images.evetech.net/types/${t}/${copy ? "bpc" : "bp"}?size=32" alt="" width="${size}" height="${size}" loading="lazy" style="vertical-align:middle;border-radius:3px" onerror="this.onerror=null;this.src='https://images.evetech.net/types/${t}/icon?size=32'">`;
 const rxByProd = () => { const D = rxD(); if (!D._by) Object.defineProperty(D, "_by", { value: new Map(D.f.map(x => [x.p, x])), enumerable: false }); return D._by; };
 const rxName = (t) => (rxD().names || {})[t] || state.typeNames[t] || "Item " + t;
 const rxKind = (t) => { const g = (rxD().grp || {})[t]; return g === FUEL_GRP ? "fuel" : g === GOO_GRP ? "goo" : "other"; };
@@ -3870,17 +3874,23 @@ document.addEventListener("change", (e) => {
 // Settings: the trade hubs (built in, and the stations you add)
 function renderHubs() {
   const tb = $("hub-table"); if (!tb) return; tb.dataset.sorted = "";
-  tb.innerHTML = `<thead><tr><th scope="col">Station</th><th scope="col">System</th><th scope="col">Region</th><th scope="col"></th></tr></thead><tbody>${tradeHubs().map(h => `<tr><th scope="row">${esc(h.name)}</th><td>${esc(h.sysName || "")}</td><td>${esc(h.regionName || regionName(h.region))}</td><td>${HUBS_DEFAULT.some(d => d.id === h.id) ? `<span class="muted">built in</span>` : `<button type="button" class="link" data-hub-del="${h.id}">Remove</button>`}</td></tr>`).join("")}</tbody>`;
+  tb.innerHTML = `<thead><tr><th scope="col">Station or citadel</th><th scope="col">System</th><th scope="col">Region</th><th scope="col"></th></tr></thead><tbody>${tradeHubs().map(h => `<tr><th scope="row">${esc(h.name)}${h.cit ? ` <span class="tag">Citadel</span>` : ""}</th><td>${esc(h.sysName || "")}</td><td>${esc(h.regionName || regionName(h.region))}</td><td>${HUBS_DEFAULT.some(d => d.id === h.id) ? `<span class="muted">built in</span>` : `<button type="button" class="link" data-hub-del="${h.id}">Remove</button>`}</td></tr>`).join("")}</tbody>`;
 }
 $("hub-form").addEventListener("submit", async (e) => {
   e.preventDefault(); const v = $("hub-name").value.trim(), msg = $("hub-msg"); if (!v) return; msg.textContent = "Looking it up…";
   try {
     let id = /^\d+$/.test(v) ? +v : null;
+    if (!id) id = +(citadelMarkets().find(c => c.name.toLowerCase() === v.toLowerCase()) || {}).id || null;   // a citadel you know (assets, jobs, structures): ESI can't find one by name
     if (!id) { const r = await fetchRetry("https://esi.evetech.net/latest/universe/ids/?datasource=tranquility&language=en", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([v]) }, 3); id = r.ok ? (((await r.json()).stations || [])[0] || {}).id : null; }
-    if (!id || id < 60000000 || id >= 64000000) throw new Error("no NPC station by that name: type its full name as in the game (e.g. Jita IV - Moon 4 - Caldari Navy Assembly Plant), or its ID");
+    const cit = id > 1e12;
+    if (!id || !cit && (id < 60000000 || id >= 64000000)) throw new Error("no station or citadel by that name: type a station's full name as in the game (e.g. Jita IV - Moon 4 - Caldari Navy Assembly Plant), a citadel's name as on Assets or Industry structures, or its ID");
     if (tradeHubs().some(h => h.id === id)) throw new Error("it's already in the list");
-    const st = await esiGet(`/universe/stations/${id}/`), sy = await esiGet(`/universe/systems/${st.system_id}/`), co = await esiGet(`/universe/constellations/${sy.constellation_id}/`), nm = await esiNames([co.region_id]).catch(() => ({}));
-    (state.misc.hubs = state.misc.hubs || []).push({ id, name: st.name, sys: st.system_id, sysName: sy.name || "", region: co.region_id, regionName: nm[co.region_id] || "" });
+    let st;
+    if (cit) { const who = state.chars.find(c => c.esiId && esiTokens()[c.esiId] && (c.scopes || "").includes(STRUCTURES_SCOPE)); if (!who) throw new Error("a citadel is read with a pilot who allows Structures (esi-universe.read_structures.v1)");
+      const s = await esiAuthGet(`/universe/structures/${id}/`, (await freshAccess(who)).access); st = { name: s.name, system_id: s.solar_system_id }; }
+    else st = await esiGet(`/universe/stations/${id}/`);
+    const sy = await esiGet(`/universe/systems/${st.system_id}/`), co = await esiGet(`/universe/constellations/${sy.constellation_id}/`), nm = await esiNames([co.region_id]).catch(() => ({}));
+    (state.misc.hubs = state.misc.hubs || []).push({ id, name: st.name, sys: st.system_id, sysName: sy.name || "", region: co.region_id, regionName: nm[co.region_id] || "", ...(cit ? { cit: 1 } : {}) });
     saveMisc(); $("hub-name").value = ""; msg.textContent = `Added ${st.name}.`; renderSettingsPage();
   } catch (err) { msg.textContent = netMsg(err); }
 });
@@ -4211,6 +4221,7 @@ async function applyToken(tok) {
   state.misc.ownedBps = state.misc.ownedBps || {};
   if (scopes.includes(BPS_SCOPE)) { try { state.misc.ownedBps["char:" + charId] = { at: Date.now(), name, list: slimBps(await esiAuthGetAll(`/characters/${charId}/blueprints/`, tok.access_token)) }; } catch (e) {} }
   if (corpId && scopes.includes(CORP_BPS_SCOPE)) { try { state.misc.ownedBps["corp:" + corpId] = { at: Date.now(), name: state.corpNames[corpId] || "Corporation", list: slimBps(await esiAuthGetAll(`/corporations/${corpId}/blueprints/`, tok.access_token)) }; } catch (e) {} }
+  try { await locationNames([state.misc.ownedBps["char:" + charId], state.misc.ownedBps["corp:" + corpId]].flatMap(s => s ? s.list.map(b => b[6]).filter(Boolean) : []), tok.access_token, scopes); } catch (e) {}
   if (scopes.includes(STANDINGS_SCOPE)) { try { const st = await esiAuthGet(`/characters/${charId}/standings/`, tok.access_token); c.standings = { at: Date.now(), list: st.map(x => [x.from_type, x.from_id, x.standing]) }; } catch (e) {} }
   if (scopes.includes(FATIGUE_SCOPE)) { try { await readFatigue(c, tok.access_token); } catch (e) {} }
   // Jump clones and the home station, placed on the map
@@ -4415,7 +4426,7 @@ function renderChars() {
   const t = $("chars-table"); if (!t) return;
   const tokens = esiTokens();
   $("chars-sync-all").hidden = !state.chars.some(c => c.esiId && tokens[c.esiId]);
-  if (!state.chars.length) { t.innerHTML = `<tbody><tr><td class="empty">No characters yet. Use "Link EVE character" to import one from ESI, or "Add pilot" to enter one by hand.</td></tr></tbody>`; return; }
+  if (!state.chars.length) { t.innerHTML = `<tbody><tr><td class="empty">No characters yet. Use "Link EVE character" to import one from ESI, or "Add custom pilot" (Settings) to enter one by hand.</td></tr></tbody>`; return; }
   t.innerHTML = `<thead><tr><th scope="col">Character</th><th scope="col">Skills come from</th><th scope="col">ESI link</th><th scope="col">Last synced</th><th scope="col">Last change</th><th scope="col"><span class="label">Actions</span></th></tr></thead><tbody>${state.chars.map(c => {
     const linked = c.esiId && tokens[c.esiId], ss = syncState(c);
     const anySkill = Object.values(c.skills || {}).some(v => v > 0);
@@ -6245,12 +6256,14 @@ async function refreshPrices(force) {
 }
 async function syncAssets(key, owner, kind, list, corp, access, scopes, divisions, via) {
   const more = new Map(), rows = aggregateAssets(list, corp, more), other = [...more.values()];
+  const byId = new Map(list.map(a => [a.item_id, a])), places = {};   // every container, ship and office → the station or structure it's in (for blueprints, bpWhere)
+  for (const a of list) if (byId.has(a.location_id) && !(a.location_id in places)) { let loc = a.location_id, n = 0; while (byId.has(loc) && n++ < 8) loc = byId.get(loc).location_id; places[a.location_id] = loc; }
   await locationNames([...rows, ...other].map(r => r.loc), access, scopes);
   const types = [...new Set([...rows.map(r => r.t), ...other.flatMap(r => [r.t, r.in])])].filter(t => t && !state.typeNames[t]);
   if (types.length) Object.assign(state.typeNames, await esiNames(types));
   await refreshPrices(false);
   setTimeout(loadTypeMeta, 0);
-  state.assets[key] = { owner, kind, at: Date.now(), rows, other, divisions: divisions || (state.assets[key] && state.assets[key].divisions) || null, via: via || owner };
+  state.assets[key] = { owner, kind, at: Date.now(), rows, other, places, divisions: divisions || (state.assets[key] && state.assets[key].divisions) || null, via: via || owner };
   saveAssets();
 }
 // Jita 4-4 market: lowest sell order (JSV) and highest buy order (JBV) at the station, read live from ESI, kept in this browser
@@ -8164,7 +8177,9 @@ function ownedBps() {
   return out;
 }
 const ownedLabel = (o) => !o ? "" : [o.bpo ? `BPO owned${o.bpo > 1 ? " ×" + o.bpo : ""} · ME ${o.me} TE ${o.te}` : "", o.bpc ? `${o.bpo ? "" : "No BPO · "}BPC ×${o.bpc}, ${o.runs} runs` : ""].filter(Boolean).join(" · ");
-function slimBps(list) { return list.map(b => [b.type_id, b.material_efficiency || 0, b.time_efficiency || 0, b.runs, b.quantity === -2 ? 1 : 0, Math.max(1, b.quantity || 1)]); }   // last: how many (a stack of unresearched originals is one entry)
+function slimBps(list) { return list.map(b => [b.type_id, b.material_efficiency || 0, b.time_efficiency || 0, b.runs, b.quantity === -2 ? 1 : 0, Math.max(1, b.quantity || 1), bpWhere(b.location_id)]); }   // how many (a stack of unresearched originals is one entry), then the station or structure it's in
+// A blueprint in a container, ship or corporation office: the station or structure that holds it, from the hangars read (Assets)
+const bpWhere = (id) => { for (const a of Object.values(state.assets || {})) if (a.places && a.places[id]) return a.places[id]; return id; };
 // The blueprint search lists, owned ones first, each with what you own in brackets
 let bpListKey = "";
 function fillBpLists() {
@@ -11273,15 +11288,15 @@ document.addEventListener("click", (e) => { if (!(e.target.closest && e.target.c
 const BPL_JOB = { 4: "ME research", 3: "TE research", 5: "Copying" };
 function bplData() {
   const O = state.misc.ownedBps || {}, bpo = [], bpc = new Map();
-  for (const [k, s] of Object.entries(O)) for (const [t, me, te, runs, copy, n = 1] of s.list) {
-    if (!copy) { bpo.push({ t, me, te, n, k, who: s.name }); continue; }
-    const key = [t, me, te, runs, k].join(":"), e = bpc.get(key) || { t, me, te, runs, who: s.name, n: 0 }; e.n++; bpc.set(key, e);
+  for (const [k, s] of Object.entries(O)) for (const [t, me, te, runs, copy, n = 1, loc] of s.list) {
+    if (!copy) { bpo.push({ t, me, te, n, k, who: s.name, loc }); continue; }
+    const key = [t, me, te, runs, k, loc].join(":"), e = bpc.get(key) || { t, me, te, runs, who: s.name, n: 0, loc }; e.n++; bpc.set(key, e);
   }
   for (const c of state.chars) for (const j of jobsOf(c)) {
     if (!BPL_JOB[j.activity]) continue;
     const k = j.corp ? "corp:" + c.corpId : "char:" + c.esiId; let b = bpo.find(x => x.t === j.bp && x.k === k && !x.job);
     if (b && b.n > 1) { b.n--; b = { ...b, n: 1 }; bpo.push(b); }   // one of a stack of unresearched originals
-    if (!b) { b = { t: j.bp, me: null, te: null, n: 1, k, who: (O[k] || {}).name || c.name }; bpo.push(b); }
+    if (!b) { b = { t: j.bp, me: null, te: null, n: 1, k, who: (O[k] || {}).name || c.name, loc: j.facility || undefined }; bpo.push(b); }
     b.job = j; b.by = c.name;
   }
   return { bpo, bpc: [...bpc.values()] };
@@ -11292,10 +11307,15 @@ function renderBpLib() {
   const O = state.misc.ownedBps || {}, srcs = Object.values(O);
   $("bpl-status").textContent = srcs.length ? `Read ${ago(Math.max(...srcs.map(s => s.at || 0)))}` : "";
   if (!srcs.length) { const msg = `<tbody><tr><td class="empty">Link pilots to ESI with the Blueprints permission to see your blueprints.</td></tr></tbody>`; box.innerHTML = cbox.innerHTML = msg; sum.innerHTML = ""; return; }
-  const { bpo, bpc } = bplData(), nm = (t) => (bp.names && bp.names[t]) || state.typeNames[t] || "";
+  let { bpo, bpc } = bplData(); const nm = (t) => (bp.names && bp.names[t]) || state.typeNames[t] || "";
   const unnamed = [...new Set([...bpo, ...bpc].map(x => x.t).filter(t => !nm(t)))];
   if (unnamed.length && !bplNaming) { bplNaming = true; esiNames(unnamed).then(n => Object.assign(state.typeNames, n)).catch(() => null).then(() => { if (!$("page-tests").hidden) renderBpLib(); }); }
   const q = $("bpl-find").value.trim().toLowerCase(), name = (t) => nm(t) || "Blueprint " + t, hit = (x) => !q || name(x.t).toLowerCase().includes(q);
+  // The location filter: the station or structure each one is in (saves from before it was read show as unknown until the next ESI refresh)
+  const where = (x) => x.loc ? String(x.loc) : "?", ln = (k) => k === "?" ? "Unknown: refresh from ESI" : locName(+k), locs = new Map(), ls = $("bpl-loc");
+  for (const x of [...bpo, ...bpc]) locs.set(where(x), (locs.get(where(x)) || 0) + x.n);
+  if (document.activeElement !== ls) { const cur = ls.value; ls.innerHTML = `<option value="">Every location</option>` + [...locs].sort((a, b) => ln(a[0]).localeCompare(ln(b[0]))).map(([k, n]) => `<option value="${esc(k)}"${k === cur ? " selected" : ""}>${esc(ln(k))} (${n.toLocaleString()})</option>`).join(""); }
+  if (ls.value) { bpo = bpo.filter(x => where(x) === ls.value); bpc = bpc.filter(x => where(x) === ls.value); }
   const now = Date.now(), res = bpo.filter(b => b.job && b.job.activity !== 5), cp = bpo.filter(b => b.job && b.job.activity === 5), idle = bpo.filter(b => !b.job);
   const tile = (l, v, m) => `<div class="slot-tile"><div class="label">${l}</div><span class="big-num">${v.toLocaleString()}</span><div class="muted">${m}</div></div>`;
   sum.innerHTML = tile("Originals", bpo.reduce((a, b) => a + b.n, 0), `${new Set(bpo.map(b => b.t)).size.toLocaleString()} different`) + tile("In research", res.length, res.length ? `next done ${left(Math.min(...res.map(b => b.job.end)) - now)}` : "none")
@@ -11314,9 +11334,10 @@ function renderBpLib() {
     + `<tbody>${groups.length ? groups.map(([g, L]) => `<tr class="group"><th colspan="6" scope="colgroup">${g} <span class="muted num">${L.length}</span></th></tr>` + L.map(row).join("")).join("") : `<tr><td class="empty" colspan="6">${q ? "No original matches." : "You own no original."}</td></tr>`}</tbody>`;
   const cps = byName(bpc);
   cbox.innerHTML = `<thead><tr><th scope="col">Blueprint</th><th scope="col" class="num">ME</th><th scope="col" class="num">TE</th><th scope="col" class="num">Runs</th><th scope="col" class="num">Copies</th><th scope="col">Owner</th></tr></thead>`
-    + `<tbody>${cps.length ? cps.map(c => `<tr><th scope="row" data-v="${esc(name(c.t))}">${iconBp(c.t, 20)} <button type="button" class="copyname" data-copy="${esc(name(c.t))}" data-copy-msg="${esc(name(c.t))} copied">${esc(name(c.t))}</button></th><td class="num" data-v="${c.me}">${c.me}</td><td class="num" data-v="${c.te}">${c.te}</td><td class="num" data-v="${c.runs}">${c.runs.toLocaleString()}</td><td class="num" data-v="${c.n}">${c.n.toLocaleString()}</td><td>${esc(c.who)}</td></tr>`).join("") : `<tr><td class="empty" colspan="6">${q ? "No copy matches." : "You own no copy."}</td></tr>`}</tbody>`;
+    + `<tbody>${cps.length ? cps.map(c => `<tr><th scope="row" data-v="${esc(name(c.t))}">${iconBp(c.t, 20, true)} <button type="button" class="copyname" data-copy="${esc(name(c.t))}" data-copy-msg="${esc(name(c.t))} copied">${esc(name(c.t))}</button></th><td class="num" data-v="${c.me}">${c.me}</td><td class="num" data-v="${c.te}">${c.te}</td><td class="num" data-v="${c.runs}">${c.runs.toLocaleString()}</td><td class="num" data-v="${c.n}">${c.n.toLocaleString()}</td><td>${esc(c.who)}</td></tr>`).join("") : `<tr><td class="empty" colspan="6">${q ? "No copy matches." : "You own no copy."}</td></tr>`}</tbody>`;
 }
 $("bpl-find").addEventListener("input", () => renderBpLib());
+$("bpl-loc").addEventListener("change", () => renderBpLib());
 
 /* ---------- roles ---------- */
 function saveRoles() { ls.set("eve-industry-roles", state.roles); }

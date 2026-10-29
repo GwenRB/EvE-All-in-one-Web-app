@@ -1,6 +1,6 @@
 <!-- tracks: Trading board, market browser, By market, 5% sell, orders in every region, PLEX, global market -->
 
-**Trading board**, its own tab between **Market** and **Stock**. A market browser like the game's, using the whole width of the window. Scroll past the header and the board fills the screen: the market groups and the order lists scroll inside it. No permission needed for public orders; your citadels' orders need a pilot with **Citadel markets**.
+**Trading board**, its own tab between **Market** and **Stock**. A market browser like the game's, using the whole width of the window. Scroll past the header and the board fills the screen: the market groups and the order lists scroll inside it. Reaching the end of a list doesn't scroll the page, and opening an item keeps the board where it is. No permission needed for public orders; your citadels' orders need a pilot with **Citadel markets**.
 
 [Market watch and Arbitrage](Prices#market-watch) moved to the **Prices** page.
 

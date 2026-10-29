@@ -1564,6 +1564,8 @@ async def market_browser(t):
     # one screen: the board fits the window (the tree and the order lists scroll inside)
     fit = t.show("fit", await t.js("(()=>{const m=document.querySelector('.mb'), r=m.getBoundingClientRect(); return [Math.round(r.height), innerHeight, ...['.mb-left','.mb-main','#mb-books'].map(s=>{const e=document.querySelector(s); return e.scrollHeight<=e.clientHeight+1})]})()"))
     t.ok(fit[0] <= fit[1] and fit[0] >= fit[1] - 40 and all(fit[2:]), "the board is one screen tall and nothing spills out", fit)
+    t.ok(await t.js("(()=>{scrollTo(0,0); const T=$('mb-tree'); T.style.maxHeight='40px'; const n=T.querySelector('[aria-current]'); T.scrollTop=0; mbTreeTo(n, true); const r=[scrollY, T.scrollTop>0 || n.offsetTop<40]; T.style.maxHeight=''; return r[0]===0 && r[1]})()"), "showing a market tree row scrolls the tree, never the page")
+    t.eq(await t.js("['#mb-tree','#mb-sells .scroller'].map(s=>getComputedStyle(document.querySelector(s)).overscrollBehaviorY)"), ["contain", "contain"], "reaching a list's end doesn't scroll the page")
     t.ok(await t.js("document.querySelector('.mb-left .mb-views [data-mb-view=hist]')!=null"), "Show history and Show markets comparison sit on the left, under the Market panel")
     # a clicked row stays highlighted; another click on it lets go
     await t.pg.click("#mb-sells tbody tr:nth-child(2) td:first-child"); await asyncio.sleep(0.1)
@@ -1711,6 +1713,16 @@ async def bp_library(t):
     t.ok([x.lower()[:13] for x in tiles] == ["originals 5 3", "in research 2", "copying 1 nex", "copies 3 25 r"], "tiles: originals, in research, copying, copies and their runs", tiles)
     cps = t.show("copies", await t.js("[...document.querySelectorAll('#bpc-table tbody tr')].map(r=>[...r.cells].slice(1).map(c=>c.innerText.trim()))"))
     t.eq(sorted(cps), [["10", "20", "5", "1", "Ender Alpha"], ["8", "16", "10", "2", "Ender Alpha"]], "copies: one line per ME, TE and runs, with how many")
+    t.ok(await t.js("()=>{renderBpLib(); return $('bpc-table').innerHTML.split('/bpc?').length === 3 && !$('bpl-table').innerHTML.includes('/bpc?');}"), "copies show the copy icon, originals the original's")
+    # Location: each blueprint's station or structure (one in a container counts where the container is); saves from before show as unknown
+    t.eq(await t.js("""()=>{state.assets={'char:9001':{rows:[],other:[],places:{1030000000001:60008494}}}; return slimBps([{type_id:1,location_id:1030000000001,quantity:-2,runs:5},{type_id:2,location_id:60003760,quantity:-1,runs:-1}]).map(b=>b[6]);}"""), [60008494, 60003760], "a blueprint in a container is placed where the container is")
+    await t.js("""()=>{Object.assign(state.locNames,{60003760:'Jita hub',60008494:'Amarr hub'}); const L=state.misc.ownedBps['char:9001'].list; L[0][5]=1; L[0][6]=60003760; L[1][6]=60003760; L[2][5]=1; L[2][6]=60008494; L[3][5]=1; L[3][6]=60008494; renderBpLib();}""")
+    opts = t.show("locations", await t.js("[...$('bpl-loc').options].map(o=>o.textContent)"))
+    t.eq(opts, ["Every location", "Amarr hub (2)", "Jita hub (4)", "Unknown: refresh from ESI (2)"], "Location lists each place with how many blueprints, unknown for old saves")
+    await t.pg.select_option("#bpl-loc", "60008494"); await asyncio.sleep(0.1)
+    cps = t.show("copies at Amarr", await t.js("[...document.querySelectorAll('#bpc-table tbody tr')].map(r=>r.cells[3].innerText.trim())"))
+    t.ok(cps == ["10"] and "no original" in (await t.text("#bpl-table tbody")).lower() and await t.js("$('bpl-summary').innerText.includes('2')"), "Location filters both tables and the tiles", cps)
+    await t.pg.select_option("#bpl-loc", ""); await asyncio.sleep(0.1)
     await t.pg.screenshot(path=SP + "bp_library.png", full_page=True)
 
 @scenario
@@ -1723,6 +1735,7 @@ async def shared_ui(t):
     t.ok(desc == sorted(before, reverse=True) and asc == sorted(before), "a table sorts both ways from its column title", [before, desc, asc])
     t.ok(await t.js("[...document.querySelectorAll('#set-nav a')].length") >= 5, "Settings has its left rail")
     t.ok("Time zones" in await t.js("[...document.querySelectorAll('#set-nav a')].map(a=>a.textContent)"), "the rail lists the Time zones panel")
+    t.eq(await t.js("[...$('btn-add').parentElement.querySelectorAll('button')].map(b=>b.textContent)"), ["Add custom pilot", "Import backup", "Export backup"], "Pilots and backup: Add custom pilot, then Import before Export")
     await t.pg.click("#pricing-title"); await asyncio.sleep(0.1); folded = await t.js("$('pricing-panel').classList.contains('folded') && !$('pricing-table').offsetHeight")
     await t.pg.click("#pricing-title"); await asyncio.sleep(0.1); t.ok(folded and await t.js("!$('pricing-panel').classList.contains('folded')"), "a panel folds and unfolds from its title")
     await t.tab("overview", 0.5)

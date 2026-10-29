@@ -29,9 +29,10 @@ Just a few examples: [Assets](Assets) values, [Build planning](Build-planning) "
 The Import calculator and Arbitrage (Market pages) keep their own freight fields.
 
 ## Trade hubs
-**Settings → Pricings and HUBs**, under the pricings. The stations every market menu offers: the Trading board's **Where**, the Import calculator, Market watch, Arbitrage, Build planning's public contracts and the broker fee in Settings.
+**Settings → Pricings and HUBs**, under the pricings. The stations and citadels every market menu offers: the Trading board's **Where**, the Import calculator, Market watch, Arbitrage, Build planning's public contracts and the broker fee in Settings.
 - Jita, Amarr, Dodixie, Rens and Hek are built in.
-- To add one: type the NPC station's full name as in the game (for example *Jita IV - Moon 4 - Caldari Navy Assembly Plant*) or its ID, then **Add hub**. Its system and region are read from ESI.
-- **Remove** takes out a station you added.
+- To add a station: type the NPC station's full name as in the game (for example *Jita IV - Moon 4 - Caldari Navy Assembly Plant*) or its ID, then **Add hub**. Its system and region are read from ESI.
+- To add a player citadel: type its name (one the tool already knows from your assets, jobs or industry structures) or its ID, then **Add hub**. It needs a pilot with the **Structures** permission who can see it. It's marked **Citadel** in the list.
+- **Remove** takes out a station or citadel you added.
 
-Player structures aren't trade hubs here: add a citadel as a [pricing](Pricings) or through your citadels instead.
+A citadel hub shows the orders it shares with its region, so only a citadel with a public market has any. For a private market (or one only your pilots can dock at), add it as a [citadel pricing](Pricings) instead. A citadel that is a hub isn't listed a second time under **Citadels** in the market menus.
