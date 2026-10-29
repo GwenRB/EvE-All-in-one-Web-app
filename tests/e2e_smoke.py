@@ -594,7 +594,7 @@ async def upcoming_fleets(t):
 @scenario
 async def lp_store(t):
     corps = await t.js("lpCorps()")
-    t.eq(corps, [[1000035, "Caldari Navy"], [1000125, "CONCORD"]], "the NPC corporations are read with their names, A to Z")
+    t.eq(corps, [[1000035, "Caldari Navy"], [1000125, "CONCORD"], [1000130, "Sisters of EVE"], [1000180, "State Protectorate"]], "the NPC corporations are read with their names, A to Z")
     t.ok(await t.js("[LOYALTY_SCOPE, CALENDAR_SCOPE].every(s=>ESI_SCOPE.includes(s) && SCOPE_USE[s] && !requestedScopes().includes(s))"), "the Loyalty points and Calendar permissions are listed and start unticked")
     await t.js("async()=>{state.chars[0].lp={at:Date.now(),list:(await esiAuthGet('/characters/9001/loyalty/points/','tok')).map(x=>[x.corporation_id,x.loyalty_points])}; saveLocal();}")
     t.ok(await t.js("!!document.querySelector('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab=lp]')"), "LP store is in the Market menu")
@@ -621,7 +621,23 @@ async def lp_store(t):
     v2 = await t.js("lpRows('1000035').find(o=>o.t===32880).perLp")
     t.ok(abs(v2 - (330000 * (1 - tax) - 104000) / 1000) < 1e-6 and await t.js("lpCfg().sell") == "jbv", "changing the sell pricing reprices the offers", v2)
     # A corporation without a store
-    await t.pg.select_option("#lp-corp", "1000125"); t.ok(await t.until("!lpBusy && /couldn't be read/.test(document.getElementById('lp-offers').innerText)", 10), "a corporation whose store can't be read says so", await t.text("#lp-offers"))
+    await t.pg.select_option("#lp-corp", "1000130"); t.ok(await t.until("!lpBusy && /couldn't be read/.test(document.getElementById('lp-offers').innerText)", 10), "a corporation whose store can't be read says so", await t.text("#lp-offers"))
+    # CONCORD: the stores its LP converts to, their offers at their price in CONCORD LP
+    await t.pg.select_option("#lp-corp", "1000125")
+    t.ok(await t.until("!!lpConv && !!lpOffers['1000125'] && !lpBusy", 20), "CONCORD's store and the stores its LP converts to are read", await t.text("#lp-conv"))
+    t.eq(await t.js("lpConv"), [[1000035, 0.8], [1000130, 0.4]], "CONCORD LP converts to empire (0.8) and other factions' (0.4) stores with a store in CCP's game data, not to a militia or CONCORD's own")
+    await t.js("()=>{delete lpOffers['1000035']; delete lpErr['1000130']; renderLp();}")
+    t.ok((await t.text("#lp-conv-table")).count("not read") == 2, "a store not read yet says so", await t.text("#lp-conv-table"))
+    await t.pg.click("[data-lp-conv]"); t.ok(await t.until("!lpConvBusy && !!lpOffers['1000035'] && !!lpErr['1000130']", 20), "Read every store reads them one after the other", await t.text("#lp-conv"))
+    cv = t.show("converted", await t.js("lpConvRows('1000125').filter(o=>o.t===32880).map(o=>[o.store, o.rate, o.lp, o.slp, o.perLp])"))
+    own = [x for x in cv if x[0] == [1000125]]; cn = [x for x in cv if x[0] == [1000035]]
+    t.ok(own and own[0][2] == 2000 and abs(own[0][4] - 330000 * (1 - tax) / 2000) < 1e-6, "CONCORD's own offer at its own LP", own)
+    t.ok(cn and cn[0][1:4] == [0.8, 1250, 1000] and abs(cn[0][4] - (330000 * (1 - tax) - 104000) / 1250) < 1e-6, "Caldari Navy's offer costs its LP ÷ 0.8 in CONCORD LP, ISK per CONCORD LP from that", cn)
+    ct = t.show("conv table", await t.js("[...document.querySelectorAll('#lp-conv-table tbody tr:not(.group)')].map(r=>r.innerText.replace(/\\s+/g,' '))"))
+    t.ok(any(x.startswith("Caldari Navy") and "800" in sq(x) for x in ct) and any(x.startswith("Sisters of EVE") and "couldn't be read" in x for x in ct), "each store: what your CONCORD LP gives there, a store that can't be read", ct)
+    tb = t.show("offers", await t.js("[...document.querySelectorAll('#lp-offers tbody tr:not(.group)')].map(r=>r.innerText.replace(/\\s+/g,' '))"))
+    t.ok("Store" in await t.text("#lp-offers thead") and tb[0].strip().startswith("Venture") and "Caldari Navy · 0.8" in tb[0] and any("CONCORD" in x for x in tb), "the offers of both stores in one list with their store, the best per CONCORD LP first", tb)
+    await t.pg.screenshot(path=SP + "lp_concord.png", full_page=True)
 
 @scenario
 async def server_status(t):
@@ -1371,8 +1387,8 @@ async def item_database(t):
 
 @scenario
 async def boosters(t):
-    """Tests page: attribute boosters from CCP's game data, ISK and extra SP a month with their duration and Biology, the best per attribute, expiry warnings, pricings and markets."""
-    await t.tab("tests", 0.5); await t.js("()=>{boostCfg().bio=0; renderBoost();}")
+    """Misc page: attribute boosters from CCP's game data, ISK and extra SP a month with their duration and Biology, the best per attribute, expiry warnings, pricings and markets."""
+    await t.tab("misc", 0.5); await t.js("()=>{boostCfg().bio=0; renderBoost();}")
     t.ok(await t.until("boostList && boostPrice['pr:jsv'] && !boostPrice['pr:jsv'].busy", 25), "boosters and their prices are read", await t.text("#boost-status"))
     await asyncio.sleep(0.3)
     rows = t.show("rows", await t.js("Object.fromEntries([...document.querySelectorAll('#boost-table tbody tr:not(.group)')].map(r=>[r.cells[0].textContent.trim(), [...r.cells].slice(1).map(c=>c.textContent.trim())]))"))
@@ -1394,6 +1410,27 @@ async def boosters(t):
     await t.pg.select_option("#boost-at", "st:60008494"); t.ok(await t.until("boostPrice['st:60008494'] && !boostPrice['st:60008494'].busy", 15), "prices read at Amarr")
     t.eq(await t.js("boostRows().find(r=>r.t===9501).p"), 10000000, "the cheapest sell order at the market")
     await t.pg.screenshot(path=SP + "boosters.png", full_page=True)
+
+@scenario
+async def bp_library(t):
+    """Tests page: the Blueprint library (originals with their levels, research and copying jobs matched to them, the others, every copy)."""
+    await t.js("""()=>{const now=Date.now(); state.misc.ownedBps={'char:9001':{at:now,name:'Ender Alpha',list:[[32881,5,10,-1,0],[601,0,0,-1,0,3],[501,8,16,10,1],[501,8,16,10,1],[501,10,20,5,1]]}};
+      state.chars[0].jobs=[{id:1,activity:4,bp:32881,runs:3,start:now-3600e3,end:now+7200e3,product:'x'},{id:2,activity:5,bp:601,runs:4,lr:10,start:now,end:now+864e5,product:'x'},{id:3,activity:3,bp:701,runs:2,start:now-7200e3,end:now-3600e3,product:'x'},{id:4,activity:1,bp:32881,runs:1,start:now,end:now+3600e3,product:'x'}];
+      saveMisc(); saveLocal();}""")
+    await t.tab("tests", 0.5)
+    t.ok(await t.js("!document.getElementById('page-tests').querySelector('#boost-table') && !!document.getElementById('page-misc').querySelector('#boost-table')"), "the attribute boosters are on the Misc page, not on Tests")
+    grp = t.show("groups", await t.js("[...document.querySelectorAll('#bpl-table tr.group th')].map(h=>h.textContent.replace(/[▾▸]/g,'').replace(/·.*$/,'').trim())"))
+    t.eq(grp, ["In research 2", "Copying 1", "Not in a job 1"], "originals grouped: in research, copying, the others")
+    rows = t.show("rows", await t.js("[...document.querySelectorAll('#bpl-table tbody tr:not(.group)')].map(r=>[...r.cells].map(c=>c.innerText.replace(/\\s+/g,' ').trim()))"))
+    t.ok(rows[1][1:3] == ["5", "10"] and "ME research · 5 → 8" in rows[1][4] and "h" in rows[1][5], "ME research adds its runs to the original's ME, with when it ends", rows[1])
+    t.ok(rows[0][1] == "—" and "TE research · +4" in rows[0][4] and "Ready" in rows[0][5], "a job whose blueprint isn't in the list still shows, without levels; past its end it's ready", rows[0])
+    t.ok("4 copies × 10 runs" in rows[2][4] and "× 2" in rows[3][0], "a copying job takes one original from a stack, the others stay idle", rows[2:])
+    t.ok(not any("Manufacturing" in r[4] for r in rows), "manufacturing jobs aren't listed", rows)
+    tiles = t.show("tiles", await t.js("[...document.querySelectorAll('#bpl-summary .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' '))"))
+    t.ok([x.lower()[:13] for x in tiles] == ["originals 5 3", "in research 2", "copying 1 nex", "copies 3 25 r"], "tiles: originals, in research, copying, copies and their runs", tiles)
+    cps = t.show("copies", await t.js("[...document.querySelectorAll('#bpc-table tbody tr')].map(r=>[...r.cells].slice(1).map(c=>c.innerText.trim()))"))
+    t.eq(sorted(cps), [["10", "20", "5", "1", "Ender Alpha"], ["8", "16", "10", "2", "Ender Alpha"]], "copies: one line per ME, TE and runs, with how many")
+    await t.pg.screenshot(path=SP + "bp_library.png", full_page=True)
 
 @scenario
 async def shared_ui(t):

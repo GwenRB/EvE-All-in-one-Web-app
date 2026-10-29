@@ -33,7 +33,7 @@ BPS[32881]["invention"]={"materials":{"20410":{"type_id":20410,"quantity":2},"20
 BPS[7001]={"manufacturing":{"materials":{"32880":{"type_id":32880,"quantity":1},"500":{"type_id":500,"quantity":5},"34":{"type_id":34,"quantity":1000}},"products":{"7000":{"type_id":7000,"quantity":1}},"time":7200,"required_skills":{"3380":5}}}
 TYPES[7000]={"group_id":543,"category_id":6,"produced_by_blueprints":{"7001":{"blueprint_type_id":7001,"blueprint_activity":"manufacturing"}},"packaged_volume":3750}
 TYPES[7001]={"group_id":105,"category_id":9,"produced_by_blueprints":{"32881":{"blueprint_type_id":32881,"blueprint_activity":"invention"}}}
-NAMES.update({1000035:"Caldari Navy",1000125:"CONCORD",777001:"Bob Client",777002:"Bob Alt"})
+NAMES.update({1000035:"Caldari Navy",1000125:"CONCORD",1000130:"Sisters of EVE",1000180:"State Protectorate",777001:"Bob Client",777002:"Bob Alt"})
 NAMES.update({7100:"Fake Subsystem",7101:"Fake Subsystem Blueprint",7201:"Intact Fake Relic",7202:"Wrecked Fake Relic"})
 TYPES[7100]={"group_id":954,"category_id":32,"produced_by_blueprints":{"7101":{"blueprint_type_id":7101,"blueprint_activity":"manufacturing"}},"volume":40}
 TYPES[7101]={"group_id":973,"category_id":9,"produced_by_blueprints":{"7201":{"blueprint_type_id":7201,"blueprint_activity":"invention"},"7202":{"blueprint_type_id":7202,"blueprint_activity":"invention"}}}
@@ -120,6 +120,9 @@ def build_sde():
         if "type_materials" in T: add("typeMaterials.jsonl", t, {"materials": [{"materialTypeID": int(m["material_type_id"]), "quantity": m["quantity"]} for m in T["type_materials"].values()]})
     for g, c in groups.items(): add("groups.jsonl", g, {"name": {"en": f"Group {g}"}, "published": True, **({"categoryID": c} if c is not None else {})})
     for c in cats: add("categories.jsonl", c, {"name": {"en": f"Category {c}"}, "published": True})
+    # NPC corporations (faction, loyalty store) and the Caldari militia: CONCORD LP converts to Caldari Navy (0.8) and Sisters of EVE (0.4), not to the militia
+    for k, f in ((1000035, 500001), (1000125, 500006), (1000130, 500016), (1000180, 500001)): add("npcCorporations.jsonl", k, {"name": {"en": NAMES[k]}, "factionID": f, "lpOfferTables": [1]})
+    add("factions.jsonl", 500001, {"name": {"en": "Caldari State"}, "corporationID": 1000035, "militiaCorporationID": 1000180})
     files.setdefault("marketGroups.jsonl", {}); files.setdefault("typeMaterials.jsonl", {}); files.setdefault("npcStations.jsonl", {})
     for sid, (n, x, y, z, sec, c) in SYS.items():
         add("mapSolarSystems.jsonl", sid, {"name": {"en": n}, "position": {"x": x*LYm, "y": y*LYm, "z": z*LYm}, "position2D": {"x": x*LYm, "y": z*LYm}, "securityStatus": sec, "constellationID": c, "regionID": CON[c]})
@@ -238,9 +241,10 @@ async def handle(route):
         c=lambda i,ty,pr,v,ti="": {"contract_id":i,"type":ty,"price":pr,"volume":v,"title":ti,"start_location_id":60003760,"date_expired":exp}
         return await j([c(7001,"item_exchange",500000,5000),c(7002,"item_exchange",100000,2500,"cheap"),c(7004,"courier",0,2500)] if pg==1 else [c(7003,"item_exchange",900000,2500),c(7005,"item_exchange",50000,2500)], pages=2)
     # loyalty: pilot 9001's LP, the NPC corporations, one store (a priced offer with another item, an item with no price, a stack)
-    if path.startswith("/characters/9001/loyalty/points"): return await j([{"corporation_id":1000035,"loyalty_points":2500}])
-    if path.rstrip("/")=="/corporations/npccorps": return await j([1000035,1000125])
+    if path.startswith("/characters/9001/loyalty/points"): return await j([{"corporation_id":1000035,"loyalty_points":2500},{"corporation_id":1000125,"loyalty_points":1000}])
+    if path.rstrip("/")=="/corporations/npccorps": return await j([1000035,1000125,1000130,1000180])
     if path.startswith("/loyalty/stores/1000035/offers"): return await j([{"offer_id":1,"type_id":32880,"quantity":1,"lp_cost":1000,"isk_cost":100000,"required_items":[{"type_id":34,"quantity":1000}]},{"offer_id":2,"type_id":999001,"quantity":1,"lp_cost":500,"isk_cost":0,"required_items":[]},{"offer_id":3,"type_id":35,"quantity":1000,"lp_cost":100,"isk_cost":0,"required_items":[]}])
+    if path.startswith("/loyalty/stores/1000125/offers"): return await j([{"offer_id":9,"type_id":32880,"quantity":1,"lp_cost":2000,"isk_cost":0,"required_items":[]}])
     if path.startswith("/loyalty/stores/"): return await j({"error":"Not found"},404)
     if "/corporations/98000001/wallets/" in path: return await j({"error":"forbidden"},403)
     # customs offices of corporation 98000001 (alliance 99000001): two in Delta (5% and 8% for members, 10% for the alliance), one in Echo (3%, no alliance access); 98000002 refuses (no Director)

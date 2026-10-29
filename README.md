@@ -4,7 +4,7 @@ A personal web tool for running EVE Online industry across several characters, i
 
 It is a single HTML page that runs in your browser. A small launcher serves it on your own computer; nothing is hosted anywhere and your data never leaves your browser.
 
-> **README last updated:** 2026-10-26 · what changed and when: [CHANGELOG.md](CHANGELOG.md) · how to use each page, step by step: [the wiki](https://github.com/GwenRB/EvE-All-in-one-Web-app/wiki)
+> **README last updated:** 2026-10-29 · what changed and when: [CHANGELOG.md](CHANGELOG.md) · how to use each page, step by step: [the wiki](https://github.com/GwenRB/EvE-All-in-one-Web-app/wiki)
 
 ---
 
@@ -60,70 +60,9 @@ Everything is stored in your browser (localStorage and IndexedDB). **Settings �
 
 ## Pages
 
-Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Stock ▾ · Pilots ▾ · Other ▾ · Settings · Notes**
+Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Stock ▾ · Pilots ▾ · Other ▾ · Settings · Notes · Tests**
 
-### Overview
-- **Forecast:** where your ISK is heading. Manual weekly activities, plus plans linked from Reactions and PI (kept up to date), planned builds from Orders management dated by their timeline, and your actual profit from Profit and loss. Omega costs are counted; click a legend line to hide it and take it out of the totals.
-- **Calendar** of jobs (manufacturing, reactions, copying, invention, research) and fleets.
-- **Upcoming events:** every pilot's in-game calendar, each event once with every pilot's answer.
-- **EvE News:** the EVE launcher's news, patch notes, forums, Reddit r/Eve's 5 top posts of the day, or any RSS/Atom/JSON feed you add.
-- **Time zones:** EVE time and your own list of cities.
-
-### To-Do
-Everything waiting on you, in one list: Omega to renew, structures to refuel, skill queues to fill (pilots idle for more than 7 days only when ticked), empty job slots per pilot (a table; tick to count them on the tab), ongoing contracts, trips for a freight service, and what to buy for reactions, PI and builds.
-
-### Map
-3D/2D map with security and sovereignty colours, your pilots' last location, your citadels (gold diamonds), planets, capital ships (the game's overview brackets), clones and incursions, drawn the same way in the legend, the system panel and the hover box; **kills in the last hour** with a danger level you set; a **jump planner** that waits out fatigue in the best places; and the **Supply chain** (below).
-
-#### Supply chain (on the Map)
-Plans every jump freighter / Rorqual trip needed by your orders, reaction cycles and PI pickups, up to a horizon (3 days to 8 weeks):
-- Each ship flies every leg: a trip starts where its last one ended (flying back empty if needed). A pilot flies one ship at a time and carries their fatigue; they change ships by shuttle or jump clone.
-- The whole plan is optimised at once (lowest fuel, or fastest delivery), never one trip at a time, and shows how much it saves.
-- Moves are marked done from your assets as goods arrive (with Undo); trips no ship can do go to a freight-service list on To-Do; legs through dangerous systems are flagged, by gate or jumping into them.
-
-### Industry
-- **PI Management:** P4 planner from CCP's planet schematics: profit per week, hauling, your real customs office taxes, shopping for N days of stock (with how long current stock lasts). Profit goes to the Forecast.
-- **Reactions management:** composite and other reactions from CCP's formulas, balanced chains, rigs, hauling, shopping after your assets, a build-up / full-chain step-by-step view. Profit goes to the Forecast.
-- **Build planning:** the full build tree for any item, each job in your cheapest structure (role bonus + rigs), invention for T2/T3 (decryptors, relics, chance to succeed), your stock used first, where to buy each material, hauling, a timeline over your pilots' slots, and whether buying on public contracts beats building. Optionally buys **ore instead of minerals** (cheapest ore mix over several reprocessing places, ore hauled compressed, left-overs reused, your own ore reprocessed where it's needed). Sends a build to Orders management.
-- **Orders management:** builds you've committed to (planned / in progress / done), their materials and costs, the exact plan to reopen; their stock is reserved in later plans.
-- **Jobs:** industry jobs per pilot and a 30-day calendar.
-
-### Planets
-Every pilot's colonies, ordered by when they stop, with the customs tax paid at your corporation's offices.
-
-### Market
-- **Prices:** import calculator and price comparison between markets.
-- **Trading board:** market watch tables, in your own order, with 24 h / 7 day changes, sold per day and ISK per day (from ESI market history), and **Arbitrage** from citadel sell orders.
-- **Suppliers:** a supplier's stock from a Google Sheet, a link or a paste, priced as listed or as a % of a pricing.
-- **Contract management:** client orders, what's been sent and what's missing; in-game deliveries are found and can be recorded in one click; "Open in Janice".
-- **Contracts browser:** every contract of your pilots and corporations, active or ended, with what each gives and asks for and what its items are worth.
-- **Shortages:** doctrine fittings checked against a citadel's market: what's missing, what's low, what to seed.
-- **Profit and loss:** Real ISK in and out of every linked wallet (pilots and corporation divisions), sorted by activity (Manufacturing, Reactions, PI, Science, Trading, Hauling…, or your own). Nothing is counted twice, transfers between your own wallets are left out, contracts are split by what they held. You can move any item, client, kind of entry or single entry to another activity. History is kept beyond ESI's 30 days.
-- **LP store:** Your loyalty points per corporation and pilot, and any NPC corporation's store in one list ranked by ISK per LP in your pricings (whatever the items are), with how fast each item sells.
-
-### Stock
-- **Assets:** personal and corporation hangars with filters and value in a chosen pricing. The search also finds items in your open contracts and outside the hangars (ship cargo, deliveries, containers…), shown but never counted as stock.
-- **Stock management:** not built yet.
-
-### Pilots
-- **Characters:** implants and pilot cards (slots, ranges, reactions level, reprocessing, skill queue end…), roles.
-- **Skills:** who can build or invent a blueprint (saved blueprints can be removed), skill queues (pilots training; the others when ticked), key skills, skill matrix.
-- **Omega:** Omega end dates.
-- **Fittings:** EFT paste or in-game fittings; who can fly it now, and when the others will (from their queue or the training time left). Mark fits as doctrines.
-
-### Other
-- **Misc:** Blueprint calculator (ME research and breakeven), jump freighters and Rorqual, jump fuel cost, mining fleet, ships and structures you can build, Quotation, Wallets.
-- **Corporation:** Structure fuel (blocks per day from the online services, ISK per month, refuel warning on To-Do), moon extractions, and who mined what (moon drills and your own pilots) with its value.
-- **Intel:** your pilots' in-game notifications in plain lines (attacks, reinforcements, low fuel, moon chunks, wars…), grouped by kind, with a "needs attention" list counted on the tab and the Other menu.
-- **Item database:** every item in the game from CCP's own data: what it is, its prices, how many you own, what makes it, what it's used in, what it reprocesses into.
-
-### Settings
-Pilots and backup, page visibility, **Pricings** (Jita buy / split / sell, a % of another pricing, or a citadel's own market), reprocessing yield, market taxes, jump drive skills, EvE News channels, time zones, citadel and structure imports.
-
-### Notes
-Free notes, kept with your data.
-
-Each page that computes numbers explains how in **How this page works**, folded at its bottom.
+What each page is for, and how to use it step by step, is in [the wiki](https://github.com/GwenRB/EvE-All-in-one-Web-app/wiki) (its home page lists every page of the tool). Each page that computes numbers also explains how in **How this page works**, folded at its bottom.
 
 ---
 

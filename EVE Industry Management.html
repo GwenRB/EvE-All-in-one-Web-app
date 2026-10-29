@@ -820,6 +820,12 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div id="w-note"></div>
       <div class="scroller"><table id="w-table" class="bp-table"></table></div>
     </section>
+    <section class="panel" aria-labelledby="boost-title"><div class="bp-head"><div><h2 id="boost-title">Attribute boosters</h2><p class="muted" style="margin:4px 0 0">Every booster that adds to your attributes (cerebral accelerators): what it costs for each hour it runs and per extra skill point, and the best one for each attribute.</p></div></div>
+      <div class="toolbar" id="boost-bar"></div>
+      <div class="toolbar"><span class="muted" id="boost-status" style="font-size:.85rem"></span></div>
+      <div id="boost-summary" class="slot-tiles"></div>
+      <div id="boost-note"></div>
+      <div class="scroller"><table id="boost-table" class="bp-table" data-sorted="6:1"></table></div></section>
    </div></div>
   </div>
 
@@ -893,12 +899,12 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
   </div>
 
   <div id="page-tests" class="page" hidden>
-    <section class="panel" aria-labelledby="boost-title"><div class="bp-head"><div><h2 id="boost-title">Attribute boosters</h2><p class="muted" style="margin:4px 0 0">Every booster that adds to your attributes (cerebral accelerators): what it costs for each hour it runs and per extra skill point, and the best one for each attribute.</p></div></div>
-      <div class="toolbar" id="boost-bar"></div>
-      <div class="toolbar"><span class="muted" id="boost-status" style="font-size:.85rem"></span></div>
-      <div id="boost-summary" class="slot-tiles"></div>
-      <div id="boost-note"></div>
-      <div class="scroller"><table id="boost-table" class="bp-table" data-sorted="6:1"></table></div></section>
+    <section class="panel" aria-labelledby="bpl-title"><div class="bp-head"><div><h2 id="bpl-title">Blueprint library</h2><p class="muted" style="margin:4px 0 0">The originals your pilots and corporations own, with their research levels: those in research or copying and when they finish, then the others.</p></div></div>
+      <div class="toolbar"><input type="search" id="bpl-find" placeholder="Find a blueprint" style="width:240px" aria-label="Find a blueprint"><span class="muted" id="bpl-status" style="font-size:.85rem"></span></div>
+      <div id="bpl-summary" class="slot-tiles"></div>
+      <div class="scroller"><table id="bpl-table" class="bp-table" data-sorted=""></table></div></section>
+    <section class="panel" aria-labelledby="bpc-title"><div class="bp-head"><div><h2 id="bpc-title">Blueprint copies</h2><p class="muted" style="margin:4px 0 0">Every copy your pilots and corporations own.</p></div></div>
+      <div class="scroller"><table id="bpc-table" class="bp-table"></table></div></section>
   </div>
 
   <div id="page-lp" class="page" hidden>
@@ -909,6 +915,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="toolbar"><input type="search" id="lp-find" placeholder="Find an item" style="width:240px" aria-label="Find an item"><span class="muted" id="lp-status" style="font-size:.85rem"></span></div>
       <div id="lp-summary" class="slot-tiles"></div>
       <div id="lp-note"></div>
+      <div id="lp-conv"></div>
       <div class="scroller"><table id="lp-offers" class="bp-table" data-sorted="7:-1"></table></div></section>
   </div>
 
@@ -1457,7 +1464,7 @@ function render() {
   $("btn-add").hidden = !state.canWrite;
   $("custom-form").hidden = !state.canWrite;
   $("btn-sync-all").hidden = !state.chars.some(c => c.esiId && esiTokens()[c.esiId]);
-  renderPilots(); if (!$("page-overview").hidden) renderMatrix(); renderBp(); renderKeys(); renderQueues(); renderFleets(); renderChars(); renderShips(); renderJobs(); renderPlanets(); renderWallets(); renderFits(); renderOmega(); if (!$("page-forecast").hidden) renderForecast(); renderStock(); renderMisc(); fillBpLists(); renderRoles(); renderMap(); renderImplants(); if (!$("page-plan").hidden) renderBuild("plan"); if (!$("page-misc").hidden) renderBuild("quote");
+  renderPilots(); if (!$("page-overview").hidden) renderMatrix(); renderBp(); renderKeys(); renderQueues(); renderFleets(); renderChars(); renderShips(); renderJobs(); renderPlanets(); renderWallets(); renderFits(); renderOmega(); if (!$("page-forecast").hidden) renderForecast(); renderStock(); renderMisc(); fillBpLists(); renderRoles(); renderMap(); renderImplants(); if (!$("page-plan").hidden) renderBuild("plan"); if (!$("page-misc").hidden) renderBuild("quote"); if (!$("page-tests").hidden) renderBpLib();
 }
 
 /* ---------- paste parser ---------- */
@@ -1669,7 +1676,7 @@ function getJSON(url) {
 /* ---------- CCP game data ---------- */
 // CCP's static data (the game's own files), read once per game build into this browser's database: items with their attributes, bonuses and
 // reprocessing, blueprints, groups, categories, market groups and planet schematics. Items and blueprints are kept in 64 parts, so a lookup reads one part
-const CCP_V = 1, CCP_PARTS = 64;
+const CCP_V = 2, CCP_PARTS = 64;
 let ccpMeta = null, ccpP = null, ccpOff = 0; const ccpParts = new Map();
 const ccpStatus = (msg) => { const el = $("ccp-status"); if (el) { el.hidden = !msg; el.textContent = msg || ""; } };
 // The index, checked against CCP's current game build once a day; when CCP's site can't be reached, the copy you have (or EVE Ref) for 10 minutes
@@ -1692,7 +1699,7 @@ async function ccpIndex(build) {
   for (const n of ["types.jsonl", "groups.jsonl", "categories.jsonl", "blueprints.jsonl", "typeDogma.jsonl"]) if (!find(n)) throw new Error("the static data has no " + n);
   const each = async (n, label, fn) => { const e = find(n); if (!e) return; ccpStatus(`Reading CCP's game data: ${label}…`); await zipLines(e, (l) => { let o; try { o = JSON.parse(l); } catch (er) { return; } fn(o); }); };
   const parts = Array.from({ length: CCP_PARTS }, () => ({ t: {}, b: {} })), T = (id) => parts[id % CCP_PARTS].t[id];
-  const groups = {}, cats = {}, mgs = {}, bpNames = {}, sch = {}, bon = (l) => (l || []).map(y => [y.bonus ?? null, plain(y.bonusText)]);
+  const groups = {}, cats = {}, mgs = {}, bpNames = {}, sch = {}, corps = {}, militia = [], bon = (l) => (l || []).map(y => [y.bonus ?? null, plain(y.bonusText)]);
   await each("categories.jsonl", "categories", (o) => { cats[o._key] = { n: plain(o.name), p: o.published !== false, g: [] }; });
   await each("groups.jsonl", "groups", (o) => { groups[o._key] = { n: plain(o.name), c: o.categoryID, p: o.published !== false, t: [] }; if (cats[o.categoryID]) cats[o.categoryID].g.push(o._key); });
   await each("marketGroups.jsonl", "market groups", (o) => { mgs[o._key] = { n: plain(o.name), up: o.parentGroupID ?? null, t: [] }; });
@@ -1704,8 +1711,10 @@ async function ccpIndex(build) {
   await each("blueprints.jsonl", "blueprints", (o) => { const id = o._key; parts[id % CCP_PARTS].b[id] = { a: o.activities || {}, lim: o.maxProductionLimit }; bpNames[id] = (T(id) || {}).n || "";
     for (const [act, a] of Object.entries(o.activities || {})) for (const p of a.products || []) { const x = T(p.typeID); if (x) (x.pb = x.pb || []).push([id, act]); } });
   await each("planetSchematics.jsonl", "planet schematics", (o) => { sch[o._key] = { n: plain(o.name), c: o.cycleTime, t: (o.types || []).map(x => [x._key, x.quantity, x.isInput ? 1 : 0]) }; });
+  await each("npcCorporations.jsonl", "NPC corporations", (o) => { corps[o._key] = [o.factionID || 0, (o.lpOfferTables || []).length ? 1 : 0]; });   // faction, has a loyalty store
+  await each("factions.jsonl", "factions", (o) => { if (o.militiaCorporationID) militia.push(o.militiaCorporationID); });
   ccpStatus("Saving CCP's game data in this browser…");
-  const meta = { v: CCP_V, build, at: Date.now(), checked: Date.now(), groups, cats, mgs, bpNames, sch };
+  const meta = { v: CCP_V, build, at: Date.now(), checked: Date.now(), groups, cats, mgs, bpNames, sch, corps, militia };
   let saved = true; for (let k = 0; k < CCP_PARTS && saved; k++) saved = await idb.set("ccp:p" + k, parts[k]);
   if (saved) saved = await idb.set("ccp:meta", meta);
   // Parts are read back from the database when needed; kept in memory only if this browser couldn't store them
@@ -2083,7 +2092,7 @@ function showPage(tab) {
   const t = PAGES[tab] ? tab : "overview";
   for (const k of Object.keys(PAGES)) $("page-" + k).hidden = k !== t;
   if (t === "overview") renderMatrix();
-  if (t === "misc") { renderMisc(); renderBpCalc(); renderBuild("quote"); }
+  if (t === "misc") { renderMisc(); renderBpCalc(); renderBuild("quote"); renderBoost(); }
   if (t === "map") { renderMap(); renderSupply(); }
   if (t === "plan") renderBuild(t);
   if (t === "settings") renderSettingsPage();
@@ -2103,7 +2112,7 @@ function showPage(tab) {
   if (t === "intel") renderIntel();
   if (t === "cbrowse") renderCbrowse();
   if (t === "itemdb") renderItemDb();
-  if (t === "tests") renderBoost();
+  if (t === "tests") renderBpLib();
   if (t === "trading") { renderImportCalc(); renderBoards(); if (!(state.misc.catList || []).length) categoryList().then(() => renderBoards()).catch(() => null); }
   document.querySelectorAll(".tabs button[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   tabGroupsSync(); uiQueue(); renderHowto(t);
@@ -2122,13 +2131,13 @@ const HOWTO = {
   stock: "Values use the pricing chosen at the top: Jita prices are read live from ESI's orders and kept 6 hours; a citadel pricing only uses that citadel's own orders. An item without a price is shown empty and left out of the totals; blueprint copies count as zero. The search and the filters look in every hangar, ticked or not, and also find what sits in ship cargo, Deliveries and your open contracts (marked not counted); a filter's conditions test each stack (one item in one hangar or container), so Value more than 1b means a stack worth that much. " + CF_NOTE,
   cbrowse: "Contracts come from ESI at each sync (Contracts permission on each pilot, Corporation contracts for your corporation's): ESI gives the active ones and those of the last 30 days; ended ones are kept here for 90 days. A contract several of your pilots see shows once. What each one gives and asks for is read once per contract. Your side: You sell (you put items up for a price), You buy (you pay for someone's items, or ask for items and pay a reward), You give / You receive (no ISK), You ship (your courier contract), You haul (a courier you accepted), Between your pilots. Items worth = what it gives less what it asks for, in the pricing chosen above (blueprint copies count as zero; an item without a price there leaves the worth unknown, never 0). Against worth = how much better than that worth the price is for you: selling, price less worth; buying, worth less price. A contract still waiting after its expiry date is Expired. " + CF_NOTE,
   itemdb: "Items come from CCP's own game data (the static data export of the current game build, read once and kept in this browser; the same data every page uses). Attribute names and units come from ESI's dogma attributes, read once each when you open an item. Prices: the pricing chosen on the item, Jita sell and buy (ESI's live orders), ESI's average price and its adjusted price (what job costs are worked out from). CCP base price is the game's own reference value, not a market price. You own counts everything in the hangars read from ESI, ship cargo and containers included. Used in lists every blueprint and planet factory that takes the item as a material. " + CF_NOTE,
-  tests: "Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price.",
+  tests: "Blueprint library: the blueprints read from ESI at each sync (each pilot's Blueprints permission, and your corporation's with the Director role), with the industry jobs read at the same time. A research or copying job is matched to an original of the same blueprint owned by the pilot (or the corporation) that runs it; when none is found the job still shows, without levels. ME research adds the job's runs to the ME (at most 10), TE research two per run (at most 20). A job past its end date is ready to deliver. Copies are listed one line per blueprint, ME, TE, runs and owner.",
   lp: "Loyalty points come from ESI at each sync (Loyalty points permission). The store's offers are ESI's public list for that corporation, read when you open it (Refresh reads it again). Sells for = the item's price in the \"Sell items at\" pricing × the quantity, less your sales tax (Settings: your best Accounting level, or your own rate); broker fees aren't counted. Costs = the offer's ISK plus each other item it asks for at its price in the \"Buy other items at\" pricing. ISK per LP = (sells for − costs) ÷ LP. An item with no price in its pricing (blueprint copies usually have none) leaves its offer's profit and ISK per LP unknown: never 0, never another market's price. Analysis Kredits (AK) are shown but not valued. You can buy = your pilots' LP with that corporation, added up, ÷ the offer's LP.",
   fittings: `Can fly it counts every skill the hull, modules, rigs, drones and fighters need. Skill levels are the last ESI sync's, plus the levels the pilot's skill queue has finished since (needs the Skill queues permission). For a pilot who can't fly it yet: when every missing level is in their queue, the date the last of them finishes (the queue's own order and dates); otherwise the time to train only what's missing, prerequisites included, from their attributes and implants (~ when attributes weren't read yet), whatever else is queued. ${SYNC_NOTE}`,
   jobs: `Corporation jobs need one linked pilot with the Factory Manager role; they then count against the slots of whichever of your pilots installed them. Job slots in use come from ESI and include jobs that are finished but not yet delivered. ${SLOTS_NOTE}`,
   overview: `${JOBTIME_NOTE} Invention chance uses base chance × (1 + science levels ÷ 30 + encryption level ÷ 40); structures, rigs, implants and decryptors aren't counted here (Build planning counts them). The skill check reads CCP's game data, so it needs an internet connection the first time you check each blueprint; after that it works offline. Skill queues are read at each ESI sync (Skill queues permission) and age with the clock: a level whose finish date has passed counts as done, and a queue whose last level has finished shows as empty until the next sync. A paused queue has no dates. ${SYNC_NOTE} ${CF_NOTE}`,
   characters: `${JOBTIME_NOTE} ${SLOTS_NOTE} Remote range is one jump per level of Supply Chain Management, Scientific Networking and Remote Reactions. The reprocessing figure is the multiplier from Reprocessing and Reprocessing Efficiency only, before ore-specific skills, structure rigs and implants. Pasting a skill list accepts lines like Industry 5, Industry V or tab-separated columns. ${SYNC_NOTE}`,
-  misc: "Wallets need one pilot with the Accountant role to read corporation divisions. The ship scan reads every published ship with a manufacturing blueprint (a few thousand requests the first time, sent slowly so the service doesn't block them) and is kept in this browser; use Rescan after a game patch. " + CF_NOTE,
+  misc: "Wallets need one pilot with the Accountant role to read corporation divisions. The ship scan reads every published ship with a manufacturing blueprint (a few thousand requests the first time, sent slowly so the service doesn't block them) and is kept in this browser; use Rescan after a game patch.  Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price. " + CF_NOTE,
   pnl: "Money comes from ESI: each pilot's wallet journal and market transactions, and the 7 wallet divisions of your corporation (one linked pilot with the Accountant role). ESI only gives the last 30 days, so every entry read is kept in this browser and in backups: the history grows from your first read, and a month without a refresh leaves a gap. Purchases and sales are counted from the market transactions (item, quantity, price); the journal's market lines and buy order escrow are left out so nothing counts twice. Money between your own pilots and corporation divisions (transfers, contracts, market trades between them) is left out. Deposits (courier collateral, contract deposits, bids) count when paid and again when refunded. An entry's activity is the first that applies: what you picked for that entry; its item's activity (purchases, sales, sales tax); the activity of who you dealt with (contracts, transfers, donations); its kind of entry's activity; then automatic. A contract with nothing chosen goes by what it held (ESI's contract items, read once per contract with the Contracts permission): each item by your choice for it or by what it is, bought or sold; when its items go to several activities, its price is shared between them by the items' value in the pricing chosen on the page, and its fees and deposits are shared the same way. A contract with an item that has no price in that pricing isn't shared (no price is invented): it stays whole and Not assigned. ESI only shows a contract's items for about 30 days, so older contracts read before this existed stay whole. Automatic: industry job fees by the job's activity (ESI's job list, 90 days), planet taxes to Planets, courier contracts and travel fees to Hauling, a contract's fees and deposits with its price, and items by what they are: PI commodities to Planets; moon materials, intermediates and reaction products you sell to Reactions; minerals, ore, salvage, components and reaction products you buy to Manufacturing; items made from a blueprint that you sell to Manufacturing; datacores, decryptors and blueprint copies you sell to Science; ice products you buy (jump fuel) to Hauling. Anything else is Not assigned: counted, waiting for you to pick. Broker fees only follow an item when ESI ties them to a transaction; otherwise give Broker fees an activity in Kinds of entry. Left out entries aren't counted anywhere. Periods and months use EVE time (UTC). " + CF_NOTE,
   settings: `Backups include everything the tool keeps (pilots, jobs, planets, wallets and their history, hangars, contracts, forecast, fittings, the ship scan, the map, citadels, settings and your Client ID) except login tokens, so importing one on another computer skips every long scan; you only log in again. Linking with ESI uses EVE's official login: the login token stays in this browser and is never included in backups. Your roster is saved in this browser; use Export backup to move it to another computer or browser, then Import backup there. ${SYNC_NOTE}`
 };
@@ -3626,7 +3635,7 @@ async function esiAuthGetAll(path, access) {
 }
 async function mapJobs(d, corp) {
   const names = await skillNames([...new Set(d.flatMap(j => [j.product_type_id, j.blueprint_type_id]).filter(Boolean))]);
-  return d.map(j => ({ id: j.job_id, installer: j.installer_id, corp, activity: j.activity_id, productId: j.product_type_id || j.blueprint_type_id, facility: j.facility_id || j.location_id || j.station_id || null, product: names[j.product_type_id] || names[j.blueprint_type_id] || "Unknown item", bp: j.blueprint_type_id, runs: j.runs, start: Date.parse(j.start_date), end: Date.parse(j.end_date), status: j.status }));
+  return d.map(j => ({ id: j.job_id, installer: j.installer_id, corp, activity: j.activity_id, productId: j.product_type_id || j.blueprint_type_id, facility: j.facility_id || j.location_id || j.station_id || null, product: names[j.product_type_id] || names[j.blueprint_type_id] || "Unknown item", bp: j.blueprint_type_id, runs: j.runs, lr: j.licensed_runs, start: Date.parse(j.start_date), end: Date.parse(j.end_date), status: j.status }));
 }
 async function fetchJobs(charId, access) { return mapJobs(await esiAuthGet(`/characters/${charId}/industry/jobs/`, access), false); }
 async function fetchCorpJobs(corpId, access) { return mapJobs(await esiAuthGetAll(`/corporations/${corpId}/industry/jobs/`, access), true); }
@@ -9897,7 +9906,7 @@ function lpHeld() {
   return out;
 }
 // The store's offers, their item names and categories, then their prices in both pricings
-async function lpLoad(corp, force) {
+async function lpLoad(corp, force, bulk) {
   if (!corp || lpBusy || (lpOffers[corp] && !force)) return;
   lpBusy = String(corp); lpErr[corp] = ""; renderLp();
   try {
@@ -9911,7 +9920,7 @@ async function lpLoad(corp, force) {
     const C = lpCfg(); await ensurePrices(ids, C.sell); if (C.buy !== C.sell) await ensurePrices(ids, C.buy);
     // How much of each item sells: market history of the region where you sell
     const reg = await pricingRegion(C.sell); lpOffers[corp].region = reg;
-    await mktHistory(reg, list.map(o => o.t), (d, n) => { lpProg = `Reading market history… ${d} of ${n}`; renderLpStatus(); });
+    if (!bulk) await mktHistory(reg, list.map(o => o.t), (d, n) => { lpProg = `Reading market history… ${d} of ${n}`; renderLpStatus(); });
   } catch (e) { lpErr[corp] = netMsg(e); }
   lpBusy = ""; lpProg = ""; renderLp();
 }
@@ -9926,6 +9935,44 @@ function lpRows(corp) {
     const H = MH && MH[o.t] ? mhStats(MH[o.t]) : null;
     return { ...o, value, cost, profit, perLp: profit == null || !o.lp ? null : profit / o.lp, reqC, noSell: p == null, sold: H ? H.perDay : MH && MH[o.t] ? 0 : null };
   });
+}
+// CONCORD LP converts to other corporations' LP (in game, docked at an NPC station): 10 CONCORD LP give 8 LP of an empire faction's corporation, 4 of another non-pirate faction's.
+// Rates from EVE University's wiki (neither ESI nor CCP's game data gives them); no rate for militias, pirates, Mordu's Legion, the Triglavian Invasion's factions, EverMore, The Sanctuary and Food Relief
+const LP_CONCORD = 1000125, LP_RATE = { 500001: 0.8, 500002: 0.8, 500003: 0.8, 500004: 0.8, 500007: 0.8, 500008: 0.8, 500009: 0.4, 500014: 0.4, 500015: 0.4, 500016: 0.4, 500017: 0.4 }, LP_NO = [1000139, 1000159];
+let lpConv = null, lpConvErr = "", lpConvBusy = false, lpConvProg = "", lpLimit = 300;
+// The stores CONCORD LP converts to, [[corporation, rate]]: corporations with a loyalty store in CCP's game data, by faction
+async function lpConvList() {
+  const M = await ccpReady(); if (!M || !M.corps) throw new Error("CCP's game data can't be read right now");
+  return (lpConv = Object.entries(M.corps).filter(([id, [fac, st]]) => st && LP_RATE[fac] && !LP_NO.includes(+id) && !(M.militia || []).includes(+id)).map(([id, [fac]]) => [+id, LP_RATE[fac]]));
+}
+async function lpConvRead() {
+  if (lpConvBusy || !lpConv) return; lpConvBusy = true; let i = 0;
+  for (const [id] of lpConv) { i++; if (lpOffers[id] || lpErr[id]) continue; lpConvProg = `${i} of ${lpConv.length}`; while (lpBusy) await new Promise(r => setTimeout(r, 200)); await lpLoad(String(id), false, true); }
+  lpConvBusy = false; lpConvProg = ""; renderLp();
+}
+// CONCORD's own offers, then every read store's at its LP price turned into CONCORD LP (rounded up); the same offer in several stores at the same rate shows once
+function lpConvRows(corp) {
+  const out = lpRows(corp).map(o => ({ ...o, store: [+corp], rate: 1, slp: o.lp })), seen = new Map();
+  for (const [id, rate] of lpConv || []) for (const o of lpRows(id)) {
+    const lp = Math.ceil(o.lp / rate), key = [o.t, o.q, o.lp, o.isk, o.ak, JSON.stringify(o.req), rate].join("|"), e = seen.get(key);
+    if (e) { e.store.push(id); continue; }
+    seen.set(key, { ...o, store: [id], rate, slp: o.lp, lp, perLp: o.profit == null || !lp ? null : o.profit / lp });
+  }
+  return out.concat([...seen.values()]);
+}
+function renderLpConv(corp, held) {
+  const el = $("lp-conv"); if (!el) return;
+  if (+corp !== LP_CONCORD) { el.innerHTML = ""; return; }
+  if (!lpConv) { if (!lpConvErr) lpConvList().then(() => renderLp(), (e) => { lpConvErr = netMsg(e); renderLp(); });
+    el.innerHTML = `<div class="notice">${lpConvErr ? `The stores CONCORD LP converts to couldn't be found: ${esc(lpConvErr)}` : "Finding the stores CONCORD LP converts to…"}</div>`; return; }
+  const have = (held.get(LP_CONCORD) || { total: 0 }).total, read = lpConv.filter(([id]) => lpOffers[id]).length;
+  const best = (id, rate) => lpRows(id).reduce((b, o) => { const lp = Math.ceil(o.lp / rate), v = o.profit == null || !lp ? null : o.profit / lp; return v != null && (b == null || v > b) ? v : b; }, null);
+  const L = lpConv.map(([id, rate]) => ({ id, rate, n: lpCorpName(id), b: lpOffers[id] ? best(id, rate) : null }));
+  const row = (x) => `<tr><th scope="row" data-v="${esc(x.n)}"><button type="button" class="link" data-lp-open="${x.id}">${esc(x.n)}</button></th><td class="num" data-v="${Math.floor(have * x.rate)}">${Math.floor(have * x.rate).toLocaleString()}</td><td class="num" data-v="${x.b ?? ""}">${x.b != null ? isk(x.b) : lpErr[x.id] ? `<span class="muted" title="${esc(lpErr[x.id])}">couldn't be read</span>` : lpOffers[x.id] ? `<span class="muted">no price</span>` : `<span class="muted">not read</span>`}</td></tr>`;
+  el.innerHTML = `<div class="notice" style="margin-top:6px">CONCORD LP converts to the LP of ${lpConv.length} other corporations' stores (in game, docked at an NPC station): 10 CONCORD LP give 8 LP of an empire faction's corporation, or 4 of another faction's. Their offers are listed below, their LP price turned into CONCORD LP, once their store is read (${read} of ${lpConv.length}).
+      <button type="button" data-lp-conv="1"${lpConvBusy || read === lpConv.length ? " disabled" : ""}>${lpConvBusy ? `Reading the stores… ${esc(lpConvProg)}` : "Read every store"}</button></div>
+    <div class="scroller" style="max-height:360px"><table id="lp-conv-table" class="bp-table" data-sorted="2:-1"><thead><tr><th scope="col">Store</th><th scope="col" class="num" title="Your CONCORD LP, converted">Your CONCORD LP gives</th><th scope="col" class="num" title="The store's best offer, per CONCORD LP spent">Best ISK per CONCORD LP</th></tr></thead>
+    <tbody>${[[0.8, "Empire factions · 10 → 8"], [0.4, "Other factions · 10 → 4"]].map(([r, g]) => { const G = L.filter(x => x.rate === r).sort((a, b) => (b.b ?? -Infinity) - (a.b ?? -Infinity) || a.n.localeCompare(b.n)); return G.length ? `<tr class="group"><th colspan="3" scope="colgroup">${g} <span class="muted num">${G.length}</span></th></tr>` + G.map(row).join("") : ""; }).join("")}</tbody></table></div>`;
 }
 function renderLpStatus() { const s = $("lp-status"); if (s) s.textContent = lpProg || (lpBusy ? "Reading the store…" : ""); }
 function renderLp() {
@@ -9948,30 +9995,35 @@ function renderLp() {
   renderLpStatus();
   const box = $("lp-offers"), sum = $("lp-summary"), note = $("lp-note"); if (!box) return;
   const clear = (msg) => { box.innerHTML = msg ? `<tbody><tr><td class="empty">${msg}</td></tr></tbody>` : ""; sum.innerHTML = ""; note.innerHTML = ""; };
+  renderLpConv(corp, held);
   if (!corp) return clear("Pick a corporation to see its store.");
   if (lpErr[corp]) return clear(`${esc(lpCorpName(corp))}'s store couldn't be read (${esc(lpErr[corp])}).`);
   if (!lpOffers[corp]) { if (!lpBusy) setTimeout(() => lpLoad(corp), 0); return clear(`Reading ${esc(lpCorpName(corp))}'s store…`); }
-  const all = lpRows(corp); if (!all.length) return clear(`${esc(lpCorpName(corp))} has no loyalty store offers.`);
+  const conv = +corp === LP_CONCORD, all = conv ? lpConvRows(corp) : lpRows(corp); if (!all.length) return clear(`${esc(lpCorpName(corp))} has no loyalty store offers.`);
   const q = $("lp-find").value.trim().toLowerCase(), nm = (t) => state.typeNames[t] || "Item " + t;
-  const rows = q ? all.filter(o => nm(o.t).toLowerCase().includes(q) || o.req.some(([t]) => nm(t).toLowerCase().includes(q))) : all;
+  const sn = (o) => o.store.map(lpCorpName).sort((a, b) => a.localeCompare(b)), store = (o) => { const n = sn(o); return n.length > 1 ? `${n[0]} and ${n.length - 1} more` : n[0]; };
+  const rows = q ? all.filter(o => nm(o.t).toLowerCase().includes(q) || o.req.some(([t]) => nm(t).toLowerCase().includes(q)) || (conv && sn(o).some(n => n.toLowerCase().includes(q)))) : all;
   const have = (held.get(+corp) || { total: 0, per: [] }), priced = all.filter(o => o.perLp != null), best = priced.reduce((b, o) => !b || o.perLp > b.perLp ? o : b, null), bestOk = priced.filter(o => o.lp <= have.total).reduce((b, o) => !b || o.perLp > b.perLp ? o : b, null);
   sum.innerHTML = `<div class="slot-tile"><div class="label">Your LP here</div><span class="big-num">${have.total.toLocaleString()}</span><div class="muted">${have.per.length ? esc(have.per.map(([c, p]) => `${c.name} ${p.toLocaleString()}`).join(", ")) : "none"}</div></div>
-    <div class="slot-tile"><div class="label">Best ISK per LP</div><span class="big-num">${best ? isk(best.perLp) : "—"}</span><div class="muted">${best ? esc(nm(best.t)) : "no offer with a price"}</div></div>
+    <div class="slot-tile"><div class="label">Best ISK per LP</div><span class="big-num">${best ? isk(best.perLp) : "—"}</span><div class="muted">${best ? esc(nm(best.t)) + (conv && best.rate < 1 ? ` · ${esc(store(best))}` : "") : "no offer with a price"}</div></div>
     <div class="slot-tile"><div class="label">Best you can afford</div><span class="big-num">${bestOk ? isk(bestOk.perLp) : "—"}</span><div class="muted">${bestOk ? `${esc(nm(bestOk.t))} · ${Math.floor(have.total / bestOk.lp).toLocaleString()} ×, ${isk(Math.floor(have.total / bestOk.lp) * bestOk.profit)}` : have.total ? "nothing priced within your LP" : "you hold no LP here"}</div></div>`;
   const noSell = [...new Set(all.filter(o => o.noSell).map(o => o.t))], noBuy = [...new Set(all.flatMap(o => o.reqC.filter(r => r.v == null).map(r => r.t)))];
   note.innerHTML = noPriceNote(C.sell, noSell, "their offers show no ISK per LP") + noPriceNote(C.buy, noBuy, "offers that ask for them show no ISK per LP");
   // One list whatever the items are (user's request), the best ISK per LP first
   const v = (x) => x == null ? `<td class="num" data-v=""><span class="muted">no price</span></td>` : `<td class="num" data-v="${x}"${x < 0 ? ` style="color:var(--bad)"` : ""}>${isk(x)}</td>`;
-  box.innerHTML = `<thead><tr><th scope="col">Item</th><th scope="col" class="num">LP</th><th scope="col" class="num">ISK</th><th scope="col">Other items</th><th scope="col" class="num" title="What the items sell for in your pricing, after sales tax">Sells for</th><th scope="col" class="num" title="The ISK plus the other items, in your pricing">Costs</th><th scope="col" class="num">Profit</th><th scope="col" class="num">ISK per LP</th><th scope="col" class="num" title="Units sold per day over the last 7 days in ${esc(lpOffers[corp].region ? regionName(lpOffers[corp].region) : "the region where you sell")} (market history): offers for more than that take days to sell">Sold per day</th><th scope="col" class="num" title="How many times your pilots' LP here pays for it">You can buy</th></tr></thead>`
-    + `<tbody>${[...rows].sort((a, b) => (b.perLp ?? -Infinity) - (a.perLp ?? -Infinity)).map(o => `<tr><th scope="row" data-v="${esc(nm(o.t))}">${(state.typeMeta[o.t] || [])[1] === 9 ? iconBp(o.t, 20) : icon(o.t, 20)} <button type="button" class="copyname" data-copy="${esc(nm(o.t))}" data-copy-msg="${esc(nm(o.t))} copied">${esc(nm(o.t))}</button>${o.q > 1 ? ` <span class="muted">× ${o.q.toLocaleString()}</span>` : ""}</th>
-      <td class="num" data-v="${o.lp}">${o.lp.toLocaleString()}</td><td class="num" data-v="${o.isk}">${o.isk ? isk(o.isk) : "—"}</td><td style="white-space:normal;font-size:.85rem" data-v="${o.req.length}">${o.reqC.length ? o.reqC.map(r => `<span${r.v == null ? ` style="color:var(--bad)" title="No price"` : ""}>${esc(nm(r.t))} × ${r.q.toLocaleString()}</span>`).join(", ") : `<span class="muted">—</span>`}${o.ak ? ` <span class="muted">+ ${o.ak.toLocaleString()} AK</span>` : ""}</td>
-      ${v(o.value)}${v(o.cost)}${v(o.profit)}${v(o.perLp)}<td class="num" data-v="${o.sold ?? ""}"${o.sold != null && o.sold < o.q ? ` style="color:var(--bad)" title="Less than one offer's worth sells per day"` : ""}>${o.sold == null ? "—" : o.sold < 10 ? o.sold.toFixed(1) : Math.round(o.sold).toLocaleString()}</td><td class="num" data-v="${o.lp ? Math.floor(have.total / o.lp) : 0}">${o.lp ? Math.floor(have.total / o.lp).toLocaleString() : "—"}</td></tr>`).join("")}</tbody>`;
+  box.innerHTML = `<thead><tr><th scope="col">Item</th><th scope="col" class="num">LP</th><th scope="col" class="num">ISK</th><th scope="col">Other items</th><th scope="col" class="num" title="What the items sell for in your pricing, after sales tax">Sells for</th><th scope="col" class="num" title="The ISK plus the other items, in your pricing">Costs</th><th scope="col" class="num">Profit</th><th scope="col" class="num">ISK per LP</th><th scope="col" class="num" title="Units sold per day over the last 7 days in ${esc(lpOffers[corp].region ? regionName(lpOffers[corp].region) : "the region where you sell")} (market history): offers for more than that take days to sell">Sold per day</th><th scope="col" class="num" title="How many times your pilots' LP here pays for it">You can buy</th>${conv ? `<th scope="col">Store</th>` : ""}</tr></thead>`
+    + `<tbody>${[...rows].sort((a, b) => (b.perLp ?? -Infinity) - (a.perLp ?? -Infinity)).slice(0, lpLimit).map(o => `<tr><th scope="row" data-v="${esc(nm(o.t))}">${(state.typeMeta[o.t] || [])[1] === 9 ? iconBp(o.t, 20) : icon(o.t, 20)} <button type="button" class="copyname" data-copy="${esc(nm(o.t))}" data-copy-msg="${esc(nm(o.t))} copied">${esc(nm(o.t))}</button>${o.q > 1 ? ` <span class="muted">× ${o.q.toLocaleString()}</span>` : ""}</th>
+      <td class="num" data-v="${o.lp}"${conv && o.rate < 1 ? ` title="${o.slp.toLocaleString()} LP of the store, from ${o.lp.toLocaleString()} CONCORD LP"` : ""}>${o.lp.toLocaleString()}</td><td class="num" data-v="${o.isk}">${o.isk ? isk(o.isk) : "—"}</td><td style="white-space:normal;font-size:.85rem" data-v="${o.req.length}">${o.reqC.length ? o.reqC.map(r => `<span${r.v == null ? ` style="color:var(--bad)" title="No price"` : ""}>${esc(nm(r.t))} × ${r.q.toLocaleString()}</span>`).join(", ") : `<span class="muted">—</span>`}${o.ak ? ` <span class="muted">+ ${o.ak.toLocaleString()} AK</span>` : ""}</td>
+      ${v(o.value)}${v(o.cost)}${v(o.profit)}${v(o.perLp)}<td class="num" data-v="${o.sold ?? ""}"${o.sold != null && o.sold < o.q ? ` style="color:var(--bad)" title="Less than one offer's worth sells per day"` : ""}>${o.sold == null ? "—" : o.sold < 10 ? o.sold.toFixed(1) : Math.round(o.sold).toLocaleString()}</td><td class="num" data-v="${o.lp ? Math.floor(have.total / o.lp) : 0}">${o.lp ? Math.floor(have.total / o.lp).toLocaleString() : "—"}</td>${conv ? `<td data-v="${esc(store(o))}" title="${esc(sn(o).join(", "))}">${esc(store(o))}${o.rate < 1 ? ` <span class="muted">· ${o.rate}</span>` : ""}</td>` : ""}</tr>`).join("")}</tbody>`
+    + (rows.length > lpLimit ? `<tbody><tr><td colspan="${conv ? 11 : 10}"><button type="button" class="link" data-lp-more="1">Show ${Math.min(300, rows.length - lpLimit).toLocaleString()} more (${(rows.length - lpLimit).toLocaleString()} not shown)</button></td></tr></tbody>` : "");
 }
 document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.lp; if (!k) return; const C = lpCfg(); C[k] = e.target.value; saveMisc(); e.target.blur();
   if (k === "corp") { lpLoad(C.corp); renderLp(); return; }
-  const O = lpOffers[C.corp]; renderLp(); if (O) { lpProg = "Reading prices…"; renderLpStatus(); ensurePrices([...new Set(O.list.flatMap(o => [o.t, ...o.req.map(r => r[0])]))], C[k]).catch(() => null)
+  const O = lpOffers[C.corp], all = +C.corp === LP_CONCORD ? Object.values(lpOffers) : [O]; renderLp(); if (O) { lpProg = "Reading prices…"; renderLpStatus(); ensurePrices([...new Set(all.flatMap(S => S.list.flatMap(o => [o.t, ...o.req.map(r => r[0])])))], C[k]).catch(() => null)
     .then(async () => { if (k === "sell") { O.region = await pricingRegion(C.sell); await mktHistory(O.region, O.list.map(o => o.t)).catch(() => null); } }).then(() => { lpProg = ""; renderLp(); }); } });
-document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-lp-open],[data-lp-refresh]"); if (!b) return; const C = lpCfg();
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-lp-open],[data-lp-refresh],[data-lp-conv],[data-lp-more]"); if (!b) return; const C = lpCfg();
+  if (b.dataset.lpConv) { lpConvRead(); renderLp(); return; }
+  if (b.dataset.lpMore) { lpLimit += 300; renderLp(); return; }
   if (b.dataset.lpOpen) { C.corp = b.dataset.lpOpen; saveMisc(); lpLoad(C.corp); renderLp(); $("lp-title").scrollIntoView({ block: "start", behavior: "smooth" }); return; }
   lpLoad(C.corp || String([...lpHeld()].sort((a, b) => b[1].total - a[1].total).map(x => x[0])[0] || ""), true); });
 $("lp-find").addEventListener("input", () => renderLp());
@@ -10473,7 +10525,7 @@ document.addEventListener("click", (e) => {
   idbShow(+b.dataset.idbOpen);
 });
 
-/* ---------- tests page ---------- */
+/* ---------- attribute boosters (misc page) ---------- */
 // Attribute boosters (cerebral accelerators) from CCP's game data: published group 303 items with attribute bonuses (175–179), their duration (330, ms,
 // +20% per Biology level) and expiry (2422, days since 1970). Priced in a pricing ("pr:<id>") or at a market's cheapest sell order ("st:<id>" / "cit:<id>")
 const BOOST_MONTH = 720;   // hours in a month (30 days)
@@ -10541,6 +10593,56 @@ function renderBoost() {
 }
 document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.boost; if (!k) return; const C = boostCfg(); C[k] = k === "bio" ? (e.target.value === "" ? null : +e.target.value) : e.target.value; saveMisc(); e.target.blur(); renderBoost(); });
 document.addEventListener("click", (e) => { if (!(e.target.closest && e.target.closest("[data-boost-refresh]"))) return; delete boostPrice[boostAt()]; renderBoost(); });
+
+/* ---------- tests page: blueprint library ---------- */
+// Originals and copies read from ESI (state.misc.ownedBps, per pilot and corporation); research and copying jobs matched to an original of the same blueprint and owner
+const BPL_JOB = { 4: "ME research", 3: "TE research", 5: "Copying" };
+function bplData() {
+  const O = state.misc.ownedBps || {}, bpo = [], bpc = new Map();
+  for (const [k, s] of Object.entries(O)) for (const [t, me, te, runs, copy, n = 1] of s.list) {
+    if (!copy) { bpo.push({ t, me, te, n, k, who: s.name }); continue; }
+    const key = [t, me, te, runs, k].join(":"), e = bpc.get(key) || { t, me, te, runs, who: s.name, n: 0 }; e.n++; bpc.set(key, e);
+  }
+  for (const c of state.chars) for (const j of jobsOf(c)) {
+    if (!BPL_JOB[j.activity]) continue;
+    const k = j.corp ? "corp:" + c.corpId : "char:" + c.esiId; let b = bpo.find(x => x.t === j.bp && x.k === k && !x.job);
+    if (b && b.n > 1) { b.n--; b = { ...b, n: 1 }; bpo.push(b); }   // one of a stack of unresearched originals
+    if (!b) { b = { t: j.bp, me: null, te: null, n: 1, k, who: (O[k] || {}).name || c.name }; bpo.push(b); }
+    b.job = j; b.by = c.name;
+  }
+  return { bpo, bpc: [...bpc.values()] };
+}
+let bplNaming = false;
+function renderBpLib() {
+  const box = $("bpl-table"), cbox = $("bpc-table"), sum = $("bpl-summary"); if (!box) return;
+  const O = state.misc.ownedBps || {}, srcs = Object.values(O);
+  $("bpl-status").textContent = srcs.length ? `Read ${ago(Math.max(...srcs.map(s => s.at || 0)))}` : "";
+  if (!srcs.length) { const msg = `<tbody><tr><td class="empty">Link pilots to ESI with the Blueprints permission to see your blueprints.</td></tr></tbody>`; box.innerHTML = cbox.innerHTML = msg; sum.innerHTML = ""; return; }
+  const { bpo, bpc } = bplData(), nm = (t) => (bp.names && bp.names[t]) || state.typeNames[t] || "";
+  const unnamed = [...new Set([...bpo, ...bpc].map(x => x.t).filter(t => !nm(t)))];
+  if (unnamed.length && !bplNaming) { bplNaming = true; esiNames(unnamed).then(n => Object.assign(state.typeNames, n)).catch(() => null).then(() => { if (!$("page-tests").hidden) renderBpLib(); }); }
+  const q = $("bpl-find").value.trim().toLowerCase(), name = (t) => nm(t) || "Blueprint " + t, hit = (x) => !q || name(x.t).toLowerCase().includes(q);
+  const now = Date.now(), res = bpo.filter(b => b.job && b.job.activity !== 5), cp = bpo.filter(b => b.job && b.job.activity === 5), idle = bpo.filter(b => !b.job);
+  const tile = (l, v, m) => `<div class="slot-tile"><div class="label">${l}</div><span class="big-num">${v.toLocaleString()}</span><div class="muted">${m}</div></div>`;
+  sum.innerHTML = tile("Originals", bpo.reduce((a, b) => a + b.n, 0), `${new Set(bpo.map(b => b.t)).size.toLocaleString()} different`) + tile("In research", res.length, res.length ? `next done ${left(Math.min(...res.map(b => b.job.end)) - now)}` : "none")
+    + tile("Copying", cp.length, cp.length ? `next done ${left(Math.min(...cp.map(b => b.job.end)) - now)}` : "none") + tile("Copies", bpc.reduce((a, c) => a + c.n, 0), `${bpc.reduce((a, c) => a + c.n * Math.max(0, c.runs), 0).toLocaleString()} runs`);
+  const lvl = (x) => x == null ? `<td class="num" data-v="">—</td>` : `<td class="num" data-v="${x}">${x}</td>`;
+  const what = (b) => { const j = b.job;
+    if (j.activity === 4) return `ME research · ${b.me == null ? `+${j.runs}` : `${b.me} → ${Math.min(10, b.me + j.runs)}`}`;
+    if (j.activity === 3) return `TE research · ${b.te == null ? `+${2 * j.runs}` : `${b.te} → ${Math.min(20, b.te + 2 * j.runs)}`}`;
+    return `${j.runs.toLocaleString()} cop${j.runs === 1 ? "y" : "ies"}${j.lr ? ` × ${j.lr.toLocaleString()} runs` : ""}`; };
+  const ends = (j) => `<td class="num" data-v="${j.end}">${j.end <= now ? `<span class="pill good">Ready</span>` : `${esc(fmtDate(j.end))} · <b>${left(j.end - now)}</b>`}</td>`;
+  const row = (b) => `<tr><th scope="row" data-v="${esc(name(b.t))}">${iconBp(b.t, 20)} <button type="button" class="copyname" data-copy="${esc(name(b.t))}" data-copy-msg="${esc(name(b.t))} copied">${esc(name(b.t))}</button>${b.n > 1 ? ` <span class="muted">× ${b.n}</span>` : ""}</th>${lvl(b.me)}${lvl(b.te)}<td>${esc(b.who)}</td>`
+    + (b.job ? `<td>${what(b)}${b.by !== b.who ? ` <span class="muted">· ${esc(b.by)}</span>` : ""}</td>${ends(b.job)}` : `<td class="muted">—</td><td class="num" data-v="">—</td>`) + `</tr>`;
+  const byEnd = (L) => L.filter(hit).sort((a, b) => a.job.end - b.job.end), byName = (L) => L.filter(hit).sort((a, b) => name(a.t).localeCompare(name(b.t)) || (b.me ?? -1) - (a.me ?? -1));
+  const groups = [["In research", byEnd(res)], ["Copying", byEnd(cp)], ["Not in a job", byName(idle)]].filter(g => g[1].length);
+  box.innerHTML = `<thead><tr><th scope="col">Blueprint</th><th scope="col" class="num">ME</th><th scope="col" class="num">TE</th><th scope="col">Owner</th><th scope="col">Job</th><th scope="col" class="num">Ends</th></tr></thead>`
+    + `<tbody>${groups.length ? groups.map(([g, L]) => `<tr class="group"><th colspan="6" scope="colgroup">${g} <span class="muted num">${L.length}</span></th></tr>` + L.map(row).join("")).join("") : `<tr><td class="empty" colspan="6">${q ? "No original matches." : "You own no original."}</td></tr>`}</tbody>`;
+  const cps = byName(bpc);
+  cbox.innerHTML = `<thead><tr><th scope="col">Blueprint</th><th scope="col" class="num">ME</th><th scope="col" class="num">TE</th><th scope="col" class="num">Runs</th><th scope="col" class="num">Copies</th><th scope="col">Owner</th></tr></thead>`
+    + `<tbody>${cps.length ? cps.map(c => `<tr><th scope="row" data-v="${esc(name(c.t))}">${iconBp(c.t, 20)} <button type="button" class="copyname" data-copy="${esc(name(c.t))}" data-copy-msg="${esc(name(c.t))} copied">${esc(name(c.t))}</button></th><td class="num" data-v="${c.me}">${c.me}</td><td class="num" data-v="${c.te}">${c.te}</td><td class="num" data-v="${c.runs}">${c.runs.toLocaleString()}</td><td class="num" data-v="${c.n}">${c.n.toLocaleString()}</td><td>${esc(c.who)}</td></tr>`).join("") : `<tr><td class="empty" colspan="6">${q ? "No copy matches." : "You own no copy."}</td></tr>`}</tbody>`;
+}
+$("bpl-find").addEventListener("input", () => renderBpLib());
 
 /* ---------- roles ---------- */
 function saveRoles() { ls.set("eve-industry-roles", state.roles); }

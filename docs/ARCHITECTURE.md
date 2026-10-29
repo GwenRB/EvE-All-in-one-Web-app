@@ -48,7 +48,8 @@ Line numbers drift; grep the section markers (`/* ---------- … */` or `// ----
 | `intel page` | notifications: `intelLoad` / `intelSave` (IndexedDB `intel`), `intelSync` (called from `applyToken`), `intelFields` (YAML lines), `ftMs` (file time), `INTEL_CATS`, `INTEL_ALERT`, `intelAlerts`, `intelBadge` (Intel tab count), `intelLine`, `intelNames`, `intelRefresh`, `renderIntel` |
 | `contracts browser page` | `cbCfg` (v1), `cbAll` (every contract once, with `mine`/`toUs`/`byUs`, status `st`, `side`), `cbSide`, `cbWorth`, `cbVs`, `renderCbrowse` |
 | `item database page` | `idbCfg` (v1), `idbLoad` (light list of every item + `used`), `idbOwned`, `renderItemDb`, `idbShow` / `renderIdbItem`, `idbAttrNames` (ESI dogma attributes → `state.misc.dogmaAttrs`), `idbUnit` (a value in its dogma unit) |
-| `tests page` | Attribute boosters: `boostCfg` (v1: `at` = `pr:<pricing>` / `st:<hub>` / `cit:<id>`, `bio` = Biology level or null for the best pilot's), `boostLoad` (group 303 items from `idbLoad`, then `getJSON` each), `boostPrices` (per place, `boostPrice`), `boostRows`, `renderBoost` |
+| `tests page: blueprint library` | `bplData` (originals, copies grouped by ME/TE/runs/owner, research and copying jobs matched to originals), `renderBpLib` |
+| `attribute boosters (misc page)` | Attribute boosters: `boostCfg` (v1: `at` = `pr:<pricing>` / `st:<hub>` / `cit:<id>`, `bio` = Biology level or null for the best pilot's), `boostLoad` (group 303 items from `idbLoad`, then `getJSON` each), `boostPrices` (per place, `boostPrice`), `boostRows`, `renderBoost` |
 | `roles` | roles (ships/fittings/skills) and who can fill them |
 | `boot` | first render, tab visibility, initial page from the URL hash |
 

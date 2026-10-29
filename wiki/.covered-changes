@@ -1,4 +1,8 @@
-# commit 06d308d 2026-10-29 (lines below are covered by the wiki; written by scripts/wiki.sh mark)
+# commit 50cc4ec 2026-10-29 (lines below are covered by the wiki; written by scripts/wiki.sh mark)
+- Tests: a **Blueprint library**: every original your pilots and corporations own with its ME and TE, in three groups: in research (the levels it will reach and when it's done), copying (how many copies, their runs, when it's done) and the others. Below it, every copy with its ME, TE and runs. Refresh from ESI once so copying jobs show the runs of each copy.
+- LP store: picking **CONCORD** shows the stores CONCORD LP converts to (10 CONCORD LP give 8 LP of an empire faction's corporation, 4 of another faction's; militias, pirates and a few others can't be converted to), what your CONCORD LP gives in each and each store's best ISK per CONCORD LP. **Read every store** adds their offers to the list, their LP price turned into CONCORD LP, with the store each comes from. CCP's game data is read again once, to learn which faction each corporation belongs to.
+- LP store: a list longer than 300 offers shows the best 300 first, with a "Show more" line.
+- The **Attribute boosters** panel moved from Tests to Misc.
 - Planets: a **Who makes what** panel: each pilot's highest tier output (P4, P3… or what they extract), summed over their colonies, grouped by tier.
 - Build planning → Materials needed: raw materials and components are each split into the items' groups (Mineral, Moon materials, Composite…), A→Z.
 - Settings → Jump drive economizers: an economizer fitted on a ship (or in its cargo) now counts as one you own; only hangars were looked at.

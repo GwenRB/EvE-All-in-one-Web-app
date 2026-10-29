@@ -1,20 +1,22 @@
-<!-- tracks: Tests page, attribute boosters, cerebral accelerators, Biology -->
+<!-- tracks: Tests page, Blueprint library, blueprint copies -->
 
-**Tests** (the last tab).
+**Tests** (the last tab). New tools are tried here first.
 
-## Attribute boosters
-Every booster that adds to your attributes (cerebral accelerators), from CCP's own game data, and what each costs for the training it gives.
-1. Pick **Buy at**: one of your [pricings](Pricings), or a trade hub or citadel market (the cheapest sell order there).
-2. Pick **Biology**: each level makes boosters last 20% longer. By default, your best pilot's level; the list shows who has each level.
-3. **Refresh prices** reads the prices again.
+The **Attribute boosters** that used to be here are now on the [Misc](Misc#attribute-boosters) page.
 
-The tiles show the **best for each attribute**: the booster with the least ISK a month for each point it adds to that attribute.
+## Blueprint library
+Every original your pilots and corporations own, with its research levels. It needs the **Blueprints** permission (and **Corporation blueprints**, with the Director role, for your corporation's): see [ESI permissions](ESI-permissions). It follows each ESI sync.
 
-Per booster:
-- **Attributes:** what it adds (+N to all, or per attribute).
-- **Lasts:** its duration with your Biology level.
-- **ISK a month:** what keeping one running for 30 days costs (a new one injected each time one runs out).
-- **Extra SP a month:** what a skill gains over those 30 days when its two attributes are the ones the booster adds most to.
-- **ISK per SP:** what each extra skill point costs. The cheapest come first.
+The tiles count your originals, those in research, those copying (and when the next one is done) and your copies (and their runs).
 
-A **⚠ Expires** tag means it can't be injected after that date. Expired boosters are listed apart, without a price. Boosters with no market group can only be traded by contract, so they have no price. A booster with no price shows no figures (never 0).
+Originals come in three groups:
+- **In research:** the ME or TE research job, the level it will reach (ME 5 → 8) and when it ends. **Ready** means the job is done and waits to be delivered.
+- **Copying:** how many copies and their runs (4 copies × 10 runs), and when it ends.
+- **Not in a job:** the others, A→Z.
+
+When the pilot running a job isn't the owner (a corporation blueprint), their name shows after the job. A job whose blueprint isn't in the list still shows, without its levels. Copying jobs show the runs of each copy after the next sync.
+
+Type in **Find a blueprint** to filter both tables.
+
+## Blueprint copies
+Every copy you own: one line per blueprint, ME, TE, runs and owner, with how many copies.
