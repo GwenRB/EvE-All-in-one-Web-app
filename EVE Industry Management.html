@@ -72,6 +72,42 @@ body:has(#page-plan:not([hidden])) #to-top { right: max(12px, calc(50vw - 640px 
 
 /* Pilot cards */
 .page { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) }
+/* Trading board: a market browser over the whole width of the window (the header, tabs and page notes keep their width) */
+body:has(#page-trading:not([hidden])) .wrap { max-width: none }
+body:has(#page-trading:not([hidden])) .wrap > :is(header.top, #status, #esi-panel, nav.tabs, #howto) { width: 100%; max-width: 1248px; justify-self: center }
+.mb { display: grid; gap: 16px; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); align-items: start }
+.mb-side { position: sticky; top: 12px; max-height: calc(100vh - 24px); grid-template-rows: auto auto auto minmax(0, 1fr); overflow: hidden }
+.mb-tree { overflow: auto; min-height: 120px; font-size: .88rem }
+.mb-tree ul { list-style: none; margin: 0; padding-left: 14px } .mb-tree > ul { padding-left: 0 }
+.mb-tree button { display: flex; gap: 6px; align-items: center; width: 100%; border: 0; background: none; padding: 2px 4px; text-align: left; color: inherit; font: inherit; border-radius: 3px }
+.mb-tree button:hover, .mb-tree button[aria-current] { background: var(--panel-2) } .mb-tree button[aria-current] { color: var(--accent) }
+.mb-tree .mb-g { font-weight: 600 } .mb-tree .ind { width: 1em; flex: none; font-size: .7rem; opacity: .7 } .mb-tree img { flex: none }
+.mb-filters { display: grid; gap: 6px; margin-top: 6px; font-size: .88rem } .mb-filters input[type=text] { width: 90px }
+.mb-main, #mb-body:not([hidden]) { display: grid; gap: 16px; min-width: 0 }
+.mb-books { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) } .mb-books[hidden] { display: none }
+.mb-book .scroller { overflow: auto } .mb-book thead th { position: sticky; top: 0; z-index: 1; background: var(--panel) }
+.mb-book tbody tr { cursor: pointer } .mb-book tbody tr.sel > * { background: color-mix(in srgb, var(--accent) 22%, transparent) }
+.mb-views { gap: 8px } .mb-views button { width: 100% }
+.mb-pop { width: min(760px, 94vw); max-height: 92vh; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); padding: 14px } .mb-pop::backdrop { background: rgba(0,0,0,.55) }
+.mb-book .bp-table { font-size: .84rem } .mb-book .bp-table :is(td, th) { padding-top: 2px; padding-bottom: 2px } .mb-book .pill { font-size: .72rem; padding-block: 0 }
+.mb-left { display: grid; gap: 16px; align-content: start; min-width: 0 }
+@media (min-width: 900px) {
+  .mb { height: calc(100vh - 16px); align-items: stretch }
+  .mb-left, .mb-main { display: flex; flex-direction: column; gap: 12px; min-height: 0 }
+  .mb-side { flex: 1 1 0; min-height: 0; position: static; max-height: none }
+  #mb-body:not([hidden]) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 12px }
+  .mb-books:not([hidden]) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden } .mb-books > .panel { flex: none }
+  #mb-hist-panel:not([hidden]), #mb-hubs-panel:not([hidden]) { flex: 1 1 0; min-height: 0; overflow: auto }
+}
+.mb-hist { position: relative } .mb-tip { position: absolute; top: 6px; z-index: 2; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: .82rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); white-space: nowrap }
+.mb-tip b { font-weight: 600 } .mb-tip div { display: flex; justify-content: space-between; gap: 14px }
+@media (max-width: 899px) { .mb { grid-template-columns: minmax(0, 1fr) } .mb-side { position: static; max-height: 60vh } }
+.mb-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap } .mb-top h2 { margin: 0 } .mb-top h2 button { text-transform: inherit; letter-spacing: inherit } .mb-id { flex: 1 1 260px; min-width: 0 } .mb-tools { display: grid; gap: 4px; justify-items: end; margin-left: auto }
+.mb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px 18px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line) }
+.mb-stat b { font-size: 1rem; margin-left: 6px } .mb-stat .muted { font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.mb-path { font-size: .85rem } .mb-path button { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); cursor: pointer } .mb-path button:hover { text-decoration: underline }
+#mb-hist svg { width: 100%; height: auto; display: block }
+.mb-go { flex: none; display: inline-flex; align-items: center; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); border-radius: 4px; padding: 1px 4px; line-height: 1 } .mb-go:hover { color: var(--accent); border-color: var(--accent) }
 .page > *, .panel > * { min-width: 0 }
 .tabs { display: flex; flex-wrap: wrap; gap: 0 2px; border-bottom: 1px solid var(--line) }
 .tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 8px 9px; font: 600 .9rem var(--f-display); letter-spacing: .03em; color: var(--muted); white-space: nowrap }
@@ -477,7 +513,8 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="tabmenu" role="menu" aria-label="Industry"><button type="button" data-tab="pimgmt">PI Management</button><button type="button" data-tab="reactions">Reactions management</button><button type="button" data-tab="plan">Build planning</button><button type="button" data-tab="orders">Orders management</button><button type="button" data-tab="jobs">Jobs</button></div></div>
     <button type="button" data-tab="planets">Planets</button>
     <div class="tabgrp"><button type="button" class="tabgrp-btn" aria-haspopup="true" aria-expanded="false">Market<span class="tabcur" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
-      <div class="tabmenu" role="menu" aria-label="Market"><button type="button" data-tab="prices">Prices</button><button type="button" data-tab="trading">Trading board</button><button type="button" data-tab="suppliers">Suppliers</button><button type="button" data-tab="contracts">Contract management</button><button type="button" data-tab="cbrowse">Contracts browser</button><button type="button" data-tab="shortages">Shortages</button><button type="button" data-tab="pnl">Profit and loss</button><button type="button" data-tab="lp">LP store</button></div></div>
+      <div class="tabmenu" role="menu" aria-label="Market"><button type="button" data-tab="prices">Prices</button><button type="button" data-tab="suppliers">Suppliers</button><button type="button" data-tab="contracts">Contract management</button><button type="button" data-tab="cbrowse">Contracts browser</button><button type="button" data-tab="shortages">Shortages</button><button type="button" data-tab="pnl">Profit and loss</button><button type="button" data-tab="lp">LP store</button></div></div>
+    <button type="button" data-tab="trading">Trading board</button>
     <div class="tabgrp"><button type="button" class="tabgrp-btn" aria-haspopup="true" aria-expanded="false">Stock<span class="tabcur" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
       <div class="tabmenu" role="menu" aria-label="Stock"><button type="button" data-tab="stock">Assets</button><button type="button" data-tab="stockmgmt">Stock management</button></div></div>
     <div class="tabgrp"><button type="button" class="tabgrp-btn" aria-haspopup="true" aria-expanded="false">Pilots<span class="tabcur" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
@@ -977,20 +1014,27 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
   </div>
 
   <div id="page-trading" class="page" hidden>
-    <section class="panel" aria-labelledby="trading-title"><div class="bp-head"><div><h2 id="trading-title">Market watch</h2><p class="muted" style="margin:4px 0 0">Tables that follow prices in a market for the categories, groups and items you pick. Each refresh is kept (one point per half hour, 60 days), so you see how prices moved since last time, over a day and over a week. Past prices aren't fetched: the 24 h and 7 days columns fill in as you refresh over time. Make one table per market, or several for one market.</p></div></div>
-      <div class="toolbar"><input type="text" id="tb-name" placeholder="Table name, e.g. Jita PI" maxlength="40" style="width:200px" aria-label="Table name"><select id="tb-mkt" style="max-width:280px" aria-label="Market"></select><button type="button" class="primary" id="tb-add">New table</button></div>
-      <div id="tb-list"></div></section>
-    <section class="panel" aria-labelledby="arb-title"><div class="bp-head"><div><h2 id="arb-title">Arbitrage</h2><p class="muted" style="margin:4px 0 0">Items you could buy from the sell orders of a citadel, ship with a freight service, and sell instantly to the buy orders of another market at a profit, after hauling (ISK per m³ + collateral on what you paid) and sales tax. It walks both order books, so the units and profit are what the orders there can take right now.</p></div></div>
-      <div class="toolbar"><label class="label" for="arb-src">From citadel</label><select id="arb-src" style="max-width:280px"></select>
-        <label class="label" for="arb-dst">To</label><select id="arb-dst" style="max-width:280px"></select></div>
-      <div class="toolbar" style="margin-top:6px"><span class="label">Hauling</span><input type="text" id="arb-rate" inputmode="decimal" style="width:80px" aria-label="ISK per m³"><span class="muted" style="font-size:.85rem">ISK per m³</span><input type="text" id="arb-coll" inputmode="decimal" style="width:50px" aria-label="Collateral %"><span class="muted" style="font-size:.85rem">% collateral</span>
-        <label class="label" for="arb-how">Sell</label><select id="arb-how"><option value="instant">Instantly to buy orders</option><option value="orders">With sell orders (broker fee)</option></select>
-        <label class="label" for="arb-tax">Sales tax %</label><input type="text" id="arb-tax" inputmode="decimal" style="width:60px">
-        <label class="label" for="arb-maxv">Item volume up to</label><input type="text" id="arb-maxv" inputmode="decimal" style="width:80px" placeholder="any"><span class="muted" style="font-size:.85rem">m³</span>
-        <label class="label" for="arb-minp">Profit at least</label><input type="text" id="arb-minp" inputmode="decimal" style="width:100px"><span class="muted" style="font-size:.85rem">ISK per item</span>
-        <button type="button" class="primary" id="arb-go">Find</button><span class="muted" id="arb-status" style="font-size:.85rem"></span></div>
-      <div id="arb-out"></div>
-    </section>
+    <div class="mb">
+      <div class="mb-left">
+      <section class="panel mb-side nofold" aria-labelledby="mb-side-title"><div class="bp-head"><div><h2 id="mb-side-title">Market</h2></div></div>
+        <input type="search" id="mb-find" placeholder="Find an item, e.g. Tritanium" aria-label="Find an item">
+        <details id="mb-filt"><summary>Filters <span class="muted" id="mb-fn"></span></summary><div id="mb-filters" class="mb-filters"></div></details>
+        <div id="mb-tree" class="mb-tree" role="tree" aria-label="Market groups"></div></section>
+      <section class="panel nofold mb-views" aria-label="Other views"><button type="button" data-mb-view="hist">Show history</button><button type="button" data-mb-view="hubs">Show markets comparison</button></section>
+      </div>
+      <div class="mb-main">
+        <section class="panel nofold" id="mb-head" aria-labelledby="mb-title"><div id="mb-top"></div></section>
+        <div id="mb-body" hidden>
+          <div class="mb-books" id="mb-books">
+            <section class="panel mb-book" aria-labelledby="mb-sell-title"><div class="bp-head"><div><h2 id="mb-sell-title">Sellers <span class="muted num" id="mb-sn" style="font:400 .85rem var(--f-body)"></span></h2></div></div><div id="mb-sells"></div></section>
+            <section class="panel mb-book" aria-labelledby="mb-buy-title"><div class="bp-head"><div><h2 id="mb-buy-title">Buyers <span class="muted num" id="mb-bn" style="font:400 .85rem var(--f-body)"></span></h2></div></div><div id="mb-buys"></div></section>
+          </div>
+          <section class="panel" id="mb-hist-panel" aria-labelledby="mb-hist-title" hidden><div class="bp-head"><div><h2 id="mb-hist-title">History</h2></div><div class="toolbar"><select id="mb-hreg" aria-label="Region" style="max-width:220px"></select><select id="mb-span" aria-label="Span"><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option><option value="90">3 months</option><option value="180">6 months</option><option value="365">1 year</option><option value="10000">Everything</option></select><button type="button" data-mb-pop="hist">Open in a window</button></div></div><div id="mb-hist" class="mb-hist"></div></section>
+          <section class="panel" id="mb-hubs-panel" aria-labelledby="mb-hubs-title" hidden><div class="bp-head"><div><h2 id="mb-hubs-title">Markets comparison</h2><p class="muted" style="margin:4px 0 0">The trade hubs and your citadels that have orders for it, side by side (not filtered).</p></div><div class="toolbar"><button type="button" data-mb-pop="hubs">Open in a window</button></div></div><div id="mb-hubs"></div></section>
+        </div>
+        <dialog id="mb-howto" class="mb-pop" aria-labelledby="mb-howto-title"><h2 id="mb-howto-title" style="margin:0 0 8px">How this page works</h2><p id="mb-howto-text" style="margin:0;white-space:pre-line"></p><div class="toolbar" style="justify-content:flex-end;margin-top:10px"><button type="button" id="mb-howto-close">Close</button></div></dialog>
+      </div>
+    </div>
   </div>
 
   <div id="page-suppliers" class="page" hidden>
@@ -1042,6 +1086,20 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="toolbar" style="margin-top:6px"><button type="button" class="primary" id="cmp-go">Compare</button><span class="muted" id="cmp-status" style="font-size:.85rem"></span></div>
       <div id="cmp-out"></div>
     </section>
+    <section class="panel" aria-labelledby="trading-title"><div class="bp-head"><div><h2 id="trading-title">Market watch</h2><p class="muted" style="margin:4px 0 0">Tables that follow prices in a market for the categories, groups and items you pick. Each refresh is kept (one point per half hour, 60 days), so you see how prices moved since last time, over a day and over a week. Past prices aren't fetched: the 24 h and 7 days columns fill in as you refresh over time. Make one table per market, or several for one market.</p></div></div>
+      <div class="toolbar"><input type="text" id="tb-name" placeholder="Table name, e.g. Jita PI" maxlength="40" style="width:200px" aria-label="Table name"><select id="tb-mkt" style="max-width:280px" aria-label="Market"></select><button type="button" class="primary" id="tb-add">New table</button></div>
+      <div id="tb-list"></div></section>
+    <section class="panel" aria-labelledby="arb-title"><div class="bp-head"><div><h2 id="arb-title">Arbitrage</h2><p class="muted" style="margin:4px 0 0">Items you could buy from the sell orders of a citadel, ship with a freight service, and sell instantly to the buy orders of another market at a profit, after hauling (ISK per m³ + collateral on what you paid) and sales tax. It walks both order books, so the units and profit are what the orders there can take right now.</p></div></div>
+      <div class="toolbar"><label class="label" for="arb-src">From citadel</label><select id="arb-src" style="max-width:280px"></select>
+        <label class="label" for="arb-dst">To</label><select id="arb-dst" style="max-width:280px"></select></div>
+      <div class="toolbar" style="margin-top:6px"><span class="label">Hauling</span><input type="text" id="arb-rate" inputmode="decimal" style="width:80px" aria-label="ISK per m³"><span class="muted" style="font-size:.85rem">ISK per m³</span><input type="text" id="arb-coll" inputmode="decimal" style="width:50px" aria-label="Collateral %"><span class="muted" style="font-size:.85rem">% collateral</span>
+        <label class="label" for="arb-how">Sell</label><select id="arb-how"><option value="instant">Instantly to buy orders</option><option value="orders">With sell orders (broker fee)</option></select>
+        <label class="label" for="arb-tax">Sales tax %</label><input type="text" id="arb-tax" inputmode="decimal" style="width:60px">
+        <label class="label" for="arb-maxv">Item volume up to</label><input type="text" id="arb-maxv" inputmode="decimal" style="width:80px" placeholder="any"><span class="muted" style="font-size:.85rem">m³</span>
+        <label class="label" for="arb-minp">Profit at least</label><input type="text" id="arb-minp" inputmode="decimal" style="width:100px"><span class="muted" style="font-size:.85rem">ISK per item</span>
+        <button type="button" class="primary" id="arb-go">Find</button><span class="muted" id="arb-status" style="font-size:.85rem"></span></div>
+      <div id="arb-out"></div>
+    </section>
   </div>
 
   <div id="page-settings" class="page" hidden>
@@ -1061,7 +1119,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="chips" id="tab-toggles" style="margin-top:8px"></div>
     </section>
     <section class="panel" aria-labelledby="pricing-title" id="pricing-panel">
-      <div class="bp-head"><div><h2 id="pricing-title">Pricings</h2><p class="muted" style="margin:4px 0 0">Jita buy (JBV), Jita split and Jita sell (JSV) are always there. Add your own: a percentage of another pricing (for example 90% of JBV for a buyback), or a citadel's market (its lowest sell order, highest buy order, or halfway between; Jita is used for what it doesn't trade). Every price list in the tool offers them.</p></div></div>
+      <div class="bp-head"><div><h2 id="pricing-title">Pricings and HUBs</h2><p class="muted" style="margin:4px 0 0">Jita buy (JBV), Jita split and Jita sell (JSV) are always there. Add your own: a percentage of another pricing (for example 90% of JBV for a buyback), or a citadel's market (its lowest sell order, highest buy order, or halfway between; Jita is used for what it doesn't trade). Every price list in the tool offers them.</p></div></div>
       <div class="scroller"><table id="pricing-table" class="bp-table"></table></div>
       <form id="pricing-form" class="toolbar" style="margin-top:8px">
         <input type="text" id="pr-name" placeholder="Name, e.g. Buyback 90%" aria-label="Pricing name" maxlength="40" style="width:200px" required>
@@ -1071,6 +1129,9 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <button type="submit" class="primary">Add pricing</button>
       </form>
       <p class="muted" id="pr-note" style="margin:6px 0 0;font-size:.8rem"></p>
+      <h3 style="margin:14px 0 4px">Trade hubs</h3><p class="muted" style="margin:0 0 6px">The stations every market menu offers (Trading board, Import calculator, Market watch, Arbitrage, public contracts, broker fees…). The five main hubs are built in; add any other NPC station.</p>
+      <div class="scroller"><table id="hub-table" class="bp-table"></table></div>
+      <form id="hub-form" class="toolbar" style="margin-top:8px"><input type="text" id="hub-name" placeholder="Station name as in the game, or its ID" aria-label="Station" style="width:380px" required><button type="submit">Add hub</button><span class="muted" id="hub-msg" style="font-size:.85rem"></span></form>
     </section>
     <section class="panel" aria-labelledby="reproc-title">
       <div class="bp-head"><div><h2 id="reproc-title">Ore reprocessing</h2><p class="muted" style="margin:4px 0 0">The share of an ore's minerals you get when you reprocess it. Assets values ore and ice at the best possible yield, about 90.6% (Tatara with tech II rigs in null-sec, all skills at V, a 4% implant). Build planning reprocesses your own ore at your best refinery in the system where its minerals are used, by your best pilot for that ore.</p></div></div>
@@ -2097,7 +2158,7 @@ function showPage(tab) {
   if (t === "plan") renderBuild(t);
   if (t === "settings") renderSettingsPage();
   if (t === "stock") renderStock();
-  if (t === "prices") renderImportCalc();
+  if (t === "prices") { renderImportCalc(); renderBoards(); if (!(state.misc.catList || []).length) categoryList().then(() => renderBoards()).catch(() => null); }
   if (t === "contracts") renderContracts();
   if (t === "suppliers") renderSuppliers();
   if (t === "reactions") renderRx();
@@ -2113,7 +2174,7 @@ function showPage(tab) {
   if (t === "cbrowse") renderCbrowse();
   if (t === "itemdb") renderItemDb();
   if (t === "tests") renderBpLib();
-  if (t === "trading") { renderImportCalc(); renderBoards(); if (!(state.misc.catList || []).length) categoryList().then(() => renderBoards()).catch(() => null); }
+  if (t === "trading") renderMb();
   document.querySelectorAll(".tabs button[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   tabGroupsSync(); uiQueue(); renderHowto(t);
   try { history.replaceState(null, "", "#" + PAGES[t]); } catch (e) {}
@@ -2130,6 +2191,7 @@ const HOWTO = {
   intel: "Notifications come from ESI at each sync and with Refresh (Notifications permission on each pilot; ESI keeps a pilot's recent notifications, so read often). One that several pilots received shows once, with who got it. They're kept in this browser for 90 days (not in backups). Needs attention lists the last 3 days' structure attacks, lost shields or armour, low fuel, low power or services offline, wars declared and moon chunks ready, until you mark them seen; the Intel tab shows how many. Names come from ESI (characters, corporations, systems, moons); a structure's name only when it's one of the structures known to the tool. " + CF_NOTE,
   stock: "Values use the pricing chosen at the top: Jita prices are read live from ESI's orders and kept 6 hours; a citadel pricing only uses that citadel's own orders. An item without a price is shown empty and left out of the totals; blueprint copies count as zero. The search and the filters look in every hangar, ticked or not, and also find what sits in ship cargo, Deliveries and your open contracts (marked not counted); a filter's conditions test each stack (one item in one hangar or container), so Value more than 1b means a stack worth that much. " + CF_NOTE,
   cbrowse: "Contracts come from ESI at each sync (Contracts permission on each pilot, Corporation contracts for your corporation's): ESI gives the active ones and those of the last 30 days; ended ones are kept here for 90 days. A contract several of your pilots see shows once. What each one gives and asks for is read once per contract. Your side: You sell (you put items up for a price), You buy (you pay for someone's items, or ask for items and pay a reward), You give / You receive (no ISK), You ship (your courier contract), You haul (a courier you accepted), Between your pilots. Items worth = what it gives less what it asks for, in the pricing chosen above (blueprint copies count as zero; an item without a price there leaves the worth unknown, never 0). Against worth = how much better than that worth the price is for you: selling, price less worth; buying, worth less price. A contract still waiting after its expiry date is Expired. " + CF_NOTE,
+  trading: "Market groups and items come from CCP's own game data (the same data as the Item database). Orders come from ESI's public market orders of every region (or only the region, trade hub or citadel picked under Where), read when you open an item and kept 5 minutes (ESI refreshes them every 5 minutes; Refresh reads them again); they share the tool's market budget with every other page, so an item read across every region takes about 70 requests. Your citadels' orders are read with a pilot's login (Citadel markets permission). PLEX trades in one market for the whole game, which ESI keeps as its own region (shown as Global PLEX market): it's always read, its orders sit at stations everywhere (a region or a hub keeps those placed there), and PLEX's history is that market's. Sell (5%) and Buy (5%) average the cheapest 5% of the units for sale and the highest-priced 5% of the units wanted, over the orders the filters keep; Margin is their difference. Markets comparison isn't filtered: each trade hub (Settings → Pricings and HUBs) and citadel that has orders for the item, with its lowest sell, highest buy and their spread. A citadel whose market can't be read (most have no market module) is left out. Sellers and buyers share what the board leaves them; a short list gives the other its room. History and Markets comparison can open in a window of their own (allow pop-ups for the page), which follows the item you open. History is ESI's daily market history of the region picked (about 13 months; spans from 7 days to everything), read when you show it, with ISK on the left and volume on the right: the line is the day's average price, the band the day's lowest to highest trade, the bars the units traded (point at a day for its numbers); the scale follows the averages, so a single odd trade far off the average is cut at the edge. Security and jumps need the map (open the Map page once); jumps count stargates from the system picked under Jumps from. Station names come from ESI; a structure's name is read once with a pilot's login (Structure names permission) and only when that pilot may dock there, otherwise it shows as a structure in its system. Clicking a price copies it.",
   itemdb: "Items come from CCP's own game data (the static data export of the current game build, read once and kept in this browser; the same data every page uses). Attribute names and units come from ESI's dogma attributes, read once each when you open an item. Prices: the pricing chosen on the item, Jita sell and buy (ESI's live orders), ESI's average price and its adjusted price (what job costs are worked out from). CCP base price is the game's own reference value, not a market price. You own counts everything in the hangars read from ESI, ship cargo and containers included. Used in lists every blueprint and planet factory that takes the item as a material. " + CF_NOTE,
   tests: "Blueprint library: the blueprints read from ESI at each sync (each pilot's Blueprints permission, and your corporation's with the Director role), with the industry jobs read at the same time. A research or copying job is matched to an original of the same blueprint owned by the pilot (or the corporation) that runs it; when none is found the job still shows, without levels. ME research adds the job's runs to the ME (at most 10), TE research two per run (at most 20). A job past its end date is ready to deliver. Copies are listed one line per blueprint, ME, TE, runs and owner.",
   lp: "Loyalty points come from ESI at each sync (Loyalty points permission). The store's offers are ESI's public list for that corporation, read when you open it (Refresh reads it again). Sells for = the item's price in the \"Sell items at\" pricing × the quantity, less your sales tax (Settings: your best Accounting level, or your own rate); broker fees aren't counted. Costs = the offer's ISK plus each other item it asks for at its price in the \"Buy other items at\" pricing. ISK per LP = (sells for − costs) ÷ LP. An item with no price in its pricing (blueprint copies usually have none) leaves its offer's profit and ISK per LP unknown: never 0, never another market's price. Analysis Kredits (AK) are shown but not valued. You can buy = your pilots' LP with that corporation, added up, ÷ the offer's LP.",
@@ -2141,7 +2203,7 @@ const HOWTO = {
   pnl: "Money comes from ESI: each pilot's wallet journal and market transactions, and the 7 wallet divisions of your corporation (one linked pilot with the Accountant role). ESI only gives the last 30 days, so every entry read is kept in this browser and in backups: the history grows from your first read, and a month without a refresh leaves a gap. Purchases and sales are counted from the market transactions (item, quantity, price); the journal's market lines and buy order escrow are left out so nothing counts twice. Money between your own pilots and corporation divisions (transfers, contracts, market trades between them) is left out. Deposits (courier collateral, contract deposits, bids) count when paid and again when refunded. An entry's activity is the first that applies: what you picked for that entry; its item's activity (purchases, sales, sales tax); the activity of who you dealt with (contracts, transfers, donations); its kind of entry's activity; then automatic. A contract with nothing chosen goes by what it held (ESI's contract items, read once per contract with the Contracts permission): each item by your choice for it or by what it is, bought or sold; when its items go to several activities, its price is shared between them by the items' value in the pricing chosen on the page, and its fees and deposits are shared the same way. A contract with an item that has no price in that pricing isn't shared (no price is invented): it stays whole and Not assigned. ESI only shows a contract's items for about 30 days, so older contracts read before this existed stay whole. Automatic: industry job fees by the job's activity (ESI's job list, 90 days), planet taxes to Planets, courier contracts and travel fees to Hauling, a contract's fees and deposits with its price, and items by what they are: PI commodities to Planets; moon materials, intermediates and reaction products you sell to Reactions; minerals, ore, salvage, components and reaction products you buy to Manufacturing; items made from a blueprint that you sell to Manufacturing; datacores, decryptors and blueprint copies you sell to Science; ice products you buy (jump fuel) to Hauling. Anything else is Not assigned: counted, waiting for you to pick. Broker fees only follow an item when ESI ties them to a transaction; otherwise give Broker fees an activity in Kinds of entry. Left out entries aren't counted anywhere. Periods and months use EVE time (UTC). " + CF_NOTE,
   settings: `Backups include everything the tool keeps (pilots, jobs, planets, wallets and their history, hangars, contracts, forecast, fittings, the ship scan, the map, citadels, settings and your Client ID) except login tokens, so importing one on another computer skips every long scan; you only log in again. Linking with ESI uses EVE's official login: the login token stays in this browser and is never included in backups. Your roster is saved in this browser; use Export backup to move it to another computer or browser, then Import backup there. ${SYNC_NOTE}`
 };
-function renderHowto(t) { const f = $("howto"), txt = HOWTO[t]; f.hidden = !txt; if (txt) $("howto-text").textContent = txt; }
+function renderHowto(t) { const f = $("howto"), txt = HOWTO[t]; f.hidden = !txt || t === "trading"; if (txt) $("howto-text").textContent = txt; }   // the Trading board fills the screen: its notes open from its item panel
 // Pages are grouped in menus: the group shows which page is open; menus open on hover or click
 function tabGroupsSync() { document.querySelectorAll(".tabs .tabgrp").forEach(g => { const items = [...g.querySelectorAll("button[data-tab]")], cur = items.find(b => b.getAttribute("aria-current") === "page"), c = g.querySelector(".tabcur"); g.classList.toggle("cur", !!cur); g.hidden = items.every(b => b.hidden); c.textContent = cur ? cur.textContent : ""; c.hidden = !cur; }); }
 function tabMenusClose(except) { document.querySelectorAll(".tabs .tabgrp.open").forEach(g => { if (g !== except) { g.classList.remove("open"); g.querySelector(".tabgrp-btn").setAttribute("aria-expanded", "false"); } }); }
@@ -2157,9 +2219,11 @@ const hiddenTabs = () => new Set(state.misc.hiddenTabs || []);
 function fitLogos() { const nav = document.querySelector(".tabs"); if (!nav) return; const b = nav.getBoundingClientRect().bottom + window.scrollY; document.documentElement.style.setProperty("--lgmax", Math.max(48, Math.floor(b - 20 - 6)) + "px"); }
 window.addEventListener("resize", fitLogos); window.addEventListener("load", fitLogos);
 // ---------- Import calculator (Prices page)
-const TRADE_HUBS = [{ id: 60003760, name: "Jita 4-4 (Caldari Navy Assembly Plant)", region: 10000002 }, { id: 60008494, name: "Amarr VIII (Emperor Family Academy)", region: 10000043 }, { id: 60011866, name: "Dodixie IX - Moon 20 (Federation Navy)", region: 10000032 }, { id: 60004588, name: "Rens VI - Moon 8 (Brutor Tribe Treasury)", region: 10000030 }, { id: 60005686, name: "Hek VIII - Moon 12 (Boundless Creation)", region: 10000042 }];
-function marketOptions(cur) { return `<optgroup label="Trade hubs">${TRADE_HUBS.map(h => `<option value="st:${h.id}"${cur === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join("")}</optgroup>${citadelMarkets().length ? `<optgroup label="Citadels">${citadelMarkets().map(c => `<option value="cit:${c.id}"${cur === "cit:" + c.id ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</optgroup>` : ""}`; }
-const marketName = (v) => { const [k, id] = String(v).split(":"); return k === "st" ? (TRADE_HUBS.find(h => String(h.id) === id) || {}).name || "Station " + id : citName(id); };
+// The trade hubs every market menu offers (Settings → Pricings and HUBs): these five, plus the NPC stations you add (state.misc.hubs)
+const HUBS_DEFAULT = [{ id: 60003760, name: "Jita 4-4 (Caldari Navy Assembly Plant)", region: 10000002, sys: 30000142, sysName: "Jita" }, { id: 60008494, name: "Amarr VIII (Emperor Family Academy)", region: 10000043, sys: 30002187, sysName: "Amarr" }, { id: 60011866, name: "Dodixie IX - Moon 20 (Federation Navy)", region: 10000032, sys: 30002659, sysName: "Dodixie" }, { id: 60004588, name: "Rens VI - Moon 8 (Brutor Tribe Treasury)", region: 10000030, sys: 30002510, sysName: "Rens" }, { id: 60005686, name: "Hek VIII - Moon 12 (Boundless Creation)", region: 10000042, sys: 30002053, sysName: "Hek" }];
+const tradeHubs = () => [...HUBS_DEFAULT, ...(state.misc.hubs || []).filter(h => !HUBS_DEFAULT.some(d => d.id === h.id))];
+function marketOptions(cur) { return `<optgroup label="Trade hubs">${tradeHubs().map(h => `<option value="st:${h.id}"${cur === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join("")}</optgroup>${citadelMarkets().length ? `<optgroup label="Citadels">${citadelMarkets().map(c => `<option value="cit:${c.id}"${cur === "cit:" + c.id ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</optgroup>` : ""}`; }
+const marketName = (v) => { const [k, id] = String(v).split(":"); return k === "st" ? (tradeHubs().find(h => String(h.id) === id) || {}).name || "Station " + id : citName(id); };
 // Order book of a market for some items: sell orders (cheapest first) and the best buy order
 const bookCache = {};
 async function marketBooks(v, ids, onProg, sides = ["sell", "buy"]) {
@@ -2169,7 +2233,7 @@ async function marketBooks(v, ids, onProg, sides = ["sell", "buy"]) {
     for (const t of ids) out.set(t, { sells: (m && m.sells.get(t)) || [], buy: (m && m.buys.get(t)) || 0, buys: (m && m.buyB && m.buyB.get(t)) || [] });
     return out;
   }
-  const hub = TRADE_HUBS.find(h => String(h.id) === id); let done = 0;
+  const hub = tradeHubs().find(h => String(h.id) === id); let done = 0;
   await pool(ids, 6, async (t) => {
     const key = id + "|" + t + "|" + sides.join(","), c = bookCache[key] || bookCache[id + "|" + t + "|sell,buy"];
     if (c && Date.now() - c.at < 1800e3) { out.set(t, c); return; }
@@ -2771,7 +2835,7 @@ function mhStats(h) {
 async function pricingRegion(id, depth = 0) { const p = customPricing(id); if (!p) return 10000002; if (p.kind === "pct") return depth > 6 ? 10000002 : pricingRegion(p.base, depth + 1); return (await marketRegion("cit:" + p.sid)) || 10000002; }
 // The region a market's history comes from (a trade hub's region, a citadel's system's region)
 async function marketRegion(v) {
-  const [k, id] = String(v).split(":"); if (k === "st") return (TRADE_HUBS.find(h => String(h.id) === id) || {}).region || null;
+  const [k, id] = String(v).split(":"); if (k === "st") return (tradeHubs().find(h => String(h.id) === id) || {}).region || null;
   const sys = ((state.misc.structs || {})[id] || {}).system; if (!sys) return null;
   const m = mapIndex(), s = m && m.byId.get(sys); if (s && s.r) return s.r;
   try { const so = await esiGet(`/universe/systems/${sys}/`); return (await esiGet(`/universe/constellations/${so.constellation_id}/`)).region_id || null; } catch (e) { return null; }
@@ -2843,6 +2907,324 @@ document.addEventListener("click", async (e) => {
     saveMisc(); renderBoards(); return; }
   if (t.dataset.tbAdditem) { const inp = document.querySelector(`[data-tb-item="${id}"]`), n = inp.value.trim(); if (!n) return; try { const ids = await resolveIds([n]), tid = ids[n.toLowerCase()]; if (!tid) { toast("No item by that name"); return; } if (!b.sel.some(x => x.k === "item" && x.id === tid)) b.sel.push({ k: "item", id: tid, name: n }); saveMisc(); renderBoards(); } catch (err) { toast(netMsg(err)); } }
 });
+// ---------- Trading board: a market browser like the game's. Pick an item in CCP's market groups or find it by name; every order for it in
+// every region (ESI's public orders, through the shared market budget) and your citadels' (a pilot's login), its price history, the trade hubs side by side
+// reg = where to look: "" every region, "r:<region>", "st:<trade hub station>" or "cit:<citadel>" (v1 kept a region id alone)
+const mbCfg = () => { const C = state.misc.mb = state.misc.mb || {}; if (!C.v) Object.assign(C, { v: 3, reg: "", hist: "10000002", span: 90, from: "", open: [], last: null, f: {} });
+  if (C.v === 1) { if (C.reg) C.reg = "r:" + C.reg; C.v = 2; }
+  if (C.v === 2) { if (C.span === 400) C.span = 10000; C.v = 3; } return C; };
+// PLEX trades in one market for the whole game: ESI keeps its orders (at stations everywhere) and history in this region
+const MB_GLOBAL = 19000001;
+const mbWhere = () => { const [k, id] = String(mbCfg().reg || "").split(":"); return { k: k || "", id: id || "", hub: k === "st" ? tradeHubs().find(h => String(h.id) === id) : null }; };
+const mbWhereName = () => { const W = mbWhere(); return W.k === "r" ? mbRegName(+W.id) : W.hub ? W.hub.name : W.k === "cit" ? citName(W.id) : "Every region"; };
+let mbItem = null, mbIdx = null, mbLim = { s: 100, b: 100 }, mbSel = { s: null, b: null }, mbView = "orders", mbGeo = null;
+const mbCache = new Map(), mbHistC = new Map(), mbNames = new Map();
+// CCP's market groups as a tree (groups without an item in the game anywhere under them left out) and every item's market group
+async function mbIndex() {
+  if (mbIdx) return mbIdx;
+  const D = await idbLoad(); if (!D || !D.M.mgs) return null;
+  const M = D.M, kids = new Map(), typeMg = new Map(), live = new Map(), pub = (t) => (D.byId.get(t) || {}).p;
+  for (const [id, g] of Object.entries(M.mgs)) { const up = g.up ?? 0; (kids.get(up) || kids.set(up, []).get(up)).push(+id); for (const t of g.t) typeMg.set(t, +id); }
+  const has = (g) => { if (!live.has(g)) { live.set(g, false); live.set(g, M.mgs[g].t.some(pub) || (kids.get(g) || []).some(has)); } return live.get(g); };
+  return (mbIdx = { M, D, kids, typeMg, has, pub });
+}
+const mbPath = (t) => { const out = []; if (!mbIdx) return out; for (let g = mbIdx.typeMg.get(t), n = 0; g != null && mbIdx.M.mgs[g] && n < 10; g = mbIdx.M.mgs[g].up, n++) out.unshift(g); return out; };
+// Every region with a market (known space, and the global PLEX market): from the map when it was loaded once, else from ESI
+async function mbRegions() {
+  if (mbRegions.list) return mbRegions.list;
+  if (!mapData) { const d = await idb.get("map").catch(() => null); if (d && d.systems) { mapData = d; mapIdx = null; } }
+  const ids = (mapData ? Object.keys(mapData.regions).map(Number) : await esiGet("/universe/regions/").catch(() => [])).filter(r => r < 11000000);
+  const nm = mapData ? {} : await esiNames(ids).catch(() => ({}));
+  const list = ids.map(r => [r, mapData ? regionName(r) : nm[r] || "Region " + r]).sort((a, b) => a[1].localeCompare(b[1])); if (list.length) list.push([MB_GLOBAL, "Global PLEX market"]);
+  if (list.length) { mbRegions.list = list; mbRegions.names = new Map(list); }
+  return list;
+}
+const mbRegName = (r) => (mbRegions.names && mbRegions.names.get(r)) || (r ? regionName(r) : "");
+const mbSys = (s) => { const m = mapIndex(); return m && m.byId.get(s); };
+const mbSysName = (s) => (mbSys(s) || {}).n || mbNames.get(s) || "System " + s;
+const mbLocName = (o) => o.loc < 1e12 ? mbNames.get(o.loc) || state.locNames[o.loc] || "Station " + o.loc : ((state.misc.structs || {})[o.loc] || {}).name || state.locNames[o.loc] || (state.misc.mbLoc || {})[o.loc] || `Structure in ${mbSysName(o.sys)}`;
+const mbSay = (txt) => { const el = $("mb-status"); if (el) el.textContent = txt; };
+// The item's orders where you look (every region, a region, a trade hub, a citadel) plus your citadels', kept 5 minutes (ESI's own cache).
+// The global market is always read too (one request): its orders sit at stations anywhere, so a region or a hub keeps those there
+async function mbLoad(t, force) {
+  const C = mbCfg(), W = mbWhere(), key = t + "|" + (C.reg || "all"), c = mbCache.get(key);
+  if (!force && c && Date.now() - c.at < 300e3) return c;
+  if (esiDown()) throw new Error("the server is in its daily downtime: market reads wait until it's back");
+  const regs = W.k === "cit" ? [] : [...new Set(W.k === "r" ? [+W.id, MB_GLOBAL] : W.hub ? [W.hub.region, MB_GLOBAL] : (await mbRegions()).map(r => r[0]))];
+  if (!regs.length && W.k !== "cit") throw new Error("the list of regions couldn't be read");
+  const seen = new Set(), orders = [], fail = [], cits = []; let done = 0;
+  const add = (o, reg, sys) => { if (seen.has(o.order_id)) return; seen.add(o.order_id); orders.push({ id: o.order_id, b: !!o.is_buy_order, p: o.price, q: o.volume_remain, loc: o.location_id, sys: o.system_id || sys, reg, rng: o.range, min: o.min_volume || 1, iss: Date.parse(o.issued), dur: o.duration || 0 }); };
+  await pool(regs, 6, async (r) => { let page = 1, pages = 1;
+    do { const res = await esiMarket(`https://esi.evetech.net/latest/markets/${r}/orders/?datasource=tranquility&order_type=all&type_id=${t}&page=${page}`, undefined, 3);
+      if (!res.ok) { if (res.status !== 404) fail.push(r); break; } pages = +res.headers.get("X-Pages") || 1;
+      for (const o of await res.json()) add(o, r);
+    } while (++page <= pages);
+    mbSay(`Reading orders… ${++done} of ${regs.length} region${regs.length === 1 ? "" : "s"}`); });
+  // your citadels' markets need a pilot's login (ESI's public orders only have public structures); those of the region or the citadel picked
+  for (const s of citadelMarkets()) { const reg = (mbSys(s.sys) || {}).r || null; if (W.k === "cit" ? s.id !== W.id : W.hub || W.k === "r" && reg !== +W.id) continue;
+    try { await structOrders(s.id); for (const o of (structBooks[s.id].raw || new Map()).get(t) || []) add(o, reg, s.sys); } catch (e) { cits.push(s.name); } }
+  if (regs.length && fail.length === regs.length) throw new Error("ESI's market didn't answer: try again in a minute");
+  const kept = W.hub ? orders.filter(o => o.loc === W.hub.id) : W.k === "r" ? orders.filter(o => o.reg === +W.id || (mbSys(o.sys) || {}).r === +W.id) : orders;
+  const d = { at: Date.now(), orders: kept, fail, cits }; mbCache.set(key, d); return d;
+}
+// Names of stations (and systems when the map isn't loaded) from ESI; structures by their name when known, else asked once with a pilot's login
+// (ESI only answers for structures that pilot can dock in; a refusal is remembered), at most 10 at a time so refusals stay under ESI's error limit
+async function mbResolve(orders) {
+  const need = [...new Set(orders.flatMap(o => [o.loc < 1e12 && o.loc, !mbSys(o.sys) && o.sys]).filter(id => id && !mbNames.has(id)))];
+  if (need.length) { const nm = await esiNames(need).catch(() => ({})); for (const id of need) if (nm[id]) mbNames.set(id, nm[id]); }
+  const L = state.misc.mbLoc = state.misc.mbLoc || {}, S = state.misc.structs || {};
+  const todo = [...new Set(orders.map(o => o.loc).filter(l => l >= 1e12 && !(l in L) && !(S[l] || {}).name && !state.locNames[l]))].slice(0, 10);
+  const who = state.chars.find(c => c.esiId && esiTokens()[c.esiId] && (c.scopes || "").includes(STRUCTURES_SCOPE)); if (!todo.length || !who) return;
+  try { const { access } = await freshAccess(who); await pool(todo, 3, async (id) => { try { L[id] = (await esiAuthGet(`/universe/structures/${id}/`, access)).name || null; } catch (e) { if (e.status === 403 || e.status === 404) L[id] = null; } }); saveMisc(); } catch (e) {}
+}
+// Gate jumps from the system picked in Filters (needs the map): every system's distance through the stargates, worked out once per origin
+function mbHops() {
+  const C = mbCfg(), m = mapIndex(), a = C.from && m && m.byId.get(+C.from); if (!a) return null; if (mbHops.k === C.from + "|" + m.edges.length) return mbHops.d;
+  const adj = new Map(), d = new Map([[a.id, 0]]), q = [a.id]; for (const [x, y] of m.edges) { (adj.get(x.id) || adj.set(x.id, []).get(x.id)).push(y.id); (adj.get(y.id) || adj.set(y.id, []).get(y.id)).push(x.id); }
+  for (let i = 0; i < q.length; i++) for (const n of adj.get(q[i]) || []) if (!d.has(n)) { d.set(n, d.get(q[i]) + 1); q.push(n); }
+  mbHops.k = C.from + "|" + m.edges.length; return (mbHops.d = d);
+}
+const MB_RANGE = { station: "Station", solarsystem: "System", region: "Region" };
+const mbRange = (r) => MB_RANGE[r] || (/^\d+$/.test(String(r)) ? `${r} jump${+r === 1 ? "" : "s"}` : String(r || ""));
+const mbHubIds = () => new Set([...tradeHubs().map(h => h.id), ...citadelMarkets().map(c => +c.id)]);
+const mbMine = () => new Map(mktOrders().map(o => [o.id, o.owner]));
+// The filters (Filters under the search): price, quantity, jumps, security, kind of place, trade hubs, your orders, location
+function mbFilter(orders) {
+  const C = mbCfg(), f = C.f, num = (k) => { const v = parseIsk(f[k] ?? ""); return isFinite(v) ? v : null; }, pa = num("pa"), pb = num("pb"), qa = num("qa"), qb = num("qb"), jb = num("jb");
+  const hops = mbHops(), hubs = f.hubs ? mbHubIds() : null, mine = f.mine ? mbMine() : null, txt = String(f.loc || "").trim().toLowerCase();
+  return orders.filter(o => { if (pa != null && o.p < pa || pb != null && o.p > pb || qa != null && o.q < qa || qb != null && o.q > qb) return false;
+    if (jb != null && hops && !(hops.get(o.sys) <= jb)) return false;
+    const s = mbSys(o.sys), sec = s ? secRound(s.s) : null; if (sec != null && (f.hs && sec >= 0.5 || f.ls && sec > 0 && sec < 0.5 || f.ns && sec <= 0)) return false;
+    if (f.npc && o.loc < 1e12 || f.cit && o.loc >= 1e12 || hubs && !hubs.has(o.loc) || mine && !mine.has(o.id)) return false;
+    return !txt || `${mbLocName(o)} ${mbSysName(o.sys)} ${mbRegName(o.reg)}`.toLowerCase().includes(txt); });
+}
+const mbFiltersOn = () => { const f = mbCfg().f; return ["pa", "pb", "qa", "qb", "jb", "loc"].filter(k => String(f[k] ?? "").trim()).length + ["hs", "ls", "ns", "npc", "cit", "hubs", "mine"].filter(k => f[k]).length; };
+// Average price of the best 5% of the units on offer (cheapest sells, highest buys): what EVE Tycoon and appraisal sites call the 5% price
+function mbPct5(L) { const tot = L.reduce((a, o) => a + o.q, 0); let left = Math.max(1, tot * 0.05), v = 0, n = 0; for (const o of L) { const k = Math.min(o.q, left); v += k * o.p; n += k; left -= k; if (left <= 0) break; } return n ? v / n : null; }
+function renderMb() {
+  SORT_RENDER.mbs = SORT_RENDER.mbb = () => mbRenderBooks(); SORT_RENDER.mbh = () => mbRenderHubs();   // (SORT_RENDER is declared further down the file)
+  if (!mbIdx) {
+    $("mb-tree").innerHTML = `<p class="muted" style="margin:0">Reading CCP's game data… (the first time, the tool downloads it from CCP's site and keeps it in this browser)</p>`;
+    mbIndex().then(x => { if (x) renderMb(); else $("mb-tree").innerHTML = `<div class="notice" style="color:var(--bad);border-color:var(--bad)">CCP's game data can't be read right now (no connection to developers.eveonline.com, or the launcher's proxy isn't running). Try again later.</div>`; }, (e) => { $("mb-tree").innerHTML = `<div class="notice" style="color:var(--bad);border-color:var(--bad)">CCP's game data couldn't be read: ${esc(netMsg(e))}</div>`; });
+    return;
+  }
+  mbTree(); mbFilters(); if (!mbRegions.list) mbRegions().then(() => mbFilters()).catch(() => null);
+  const C = mbCfg(); if (!mbItem && C.last) { mbOpen(C.last); return; }
+  mbRenderItem(); mbApplyView();
+}
+// The left side: market groups (▸ opens one, its items under its subgroups), or the items found by name
+function mbTree() {
+  const box = $("mb-tree"); if (!box || !mbIdx) return;
+  const X = mbIdx, C = mbCfg(), open = new Set(C.open), cur = mbItem && mbItem.id, q = $("mb-find").value.trim().toLowerCase(), words = q.split(/\s+/).filter(Boolean);
+  const byName = (a, b) => idbName(a).localeCompare(idbName(b)), item = (t) => `<li role="treeitem"><button type="button" data-mb-open="${t}"${t === cur ? ` aria-current="true"` : ""}>${icon(t, 20)}<span>${esc(idbName(t))}</span></button></li>`;
+  if (words.length) {
+    const hits = X.D.L.filter(x => x.p && X.typeMg.has(x.id) && words.every(w => x.n.toLowerCase().includes(w))).sort((a, b) => a.n.localeCompare(b.n));
+    box.innerHTML = hits.length ? `<ul role="group">${hits.slice(0, 300).map(x => item(x.id)).join("")}</ul>${hits.length > 300 ? `<p class="muted" style="margin:4px">${(hits.length - 300).toLocaleString()} more: type more of the name.</p>` : ""}` : `<p class="muted" style="margin:4px">No item on the market matches.</p>`;
+    return;
+  }
+  const gname = (a, b) => X.M.mgs[a].n.localeCompare(X.M.mgs[b].n);
+  const node = (g) => { const o = open.has(g), sub = o ? (X.kids.get(g) || []).filter(X.has).sort(gname) : [], items = o ? X.M.mgs[g].t.filter(X.pub).sort(byName) : [];
+    return `<li role="treeitem" aria-expanded="${o}"><button type="button" class="mb-g" data-mb-g="${g}"><span class="ind" aria-hidden="true">${o ? "▾" : "▸"}</span><span>${esc(X.M.mgs[g].n)}</span></button>${o ? `<ul role="group">${sub.map(node).join("")}${items.map(item).join("")}</ul>` : ""}</li>`; };
+  box.innerHTML = `<ul role="group">${(X.kids.get(0) || []).filter(X.has).sort(gname).map(node).join("")}</ul>`;
+}
+function mbFilters() {
+  const box = $("mb-filters"); if (!box) return;
+  const C = mbCfg(), f = C.f, n = mbFiltersOn(); $("mb-fn").textContent = n ? `· ${n} on` : ""; if ($("mb-fclear")) $("mb-fclear").disabled = !n;
+  if (box.contains(document.activeElement)) return;
+  const inp = (k, ph, lbl) => `<input type="text" inputmode="decimal" data-mb-f="${k}" value="${esc(f[k] ?? "")}" placeholder="${ph}" aria-label="${lbl}">`, chk = (k, l) => `<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-mb-f="${k}"${f[k] ? " checked" : ""}> ${l}</label>`;
+  const froms = [...state.chars.filter(c => c.loc && c.loc.sys).map(c => [c.loc.sys, `${c.name} (${mbSysName(c.loc.sys)})`]), ...tradeHubs().map(h => [h.sys, h.sysName || h.name.split(" ")[0]])];
+  box.innerHTML = `<label class="label" for="mb-from">Jumps from</label><select id="mb-from" data-mb-c="from"><option value="">Nowhere (no Jumps column)</option>${froms.map(([s, l]) => `<option value="${s}"${String(s) === String(C.from) ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>
+    <div class="toolbar"><span class="label" style="width:64px">Price</span>${inp("pa", "from", "Price from")}–${inp("pb", "to", "Price to")}</div>
+    <div class="toolbar"><span class="label" style="width:64px">Quantity</span>${inp("qa", "from", "Quantity from")}–${inp("qb", "to", "Quantity to")}</div>
+    <div class="toolbar"><span class="label" style="width:64px">Jumps</span>${inp("jb", "up to", "Jumps up to")}${C.from ? "" : `<span class="muted">pick Jumps from</span>`}</div>
+    <span class="label">Leave out</span><div class="toolbar">${chk("hs", "High-sec")}${chk("ls", "Low-sec")}${chk("ns", "Null-sec")}</div><div class="toolbar">${chk("npc", "NPC stations")}${chk("cit", "Player structures")}</div>
+    ${chk("hubs", "Only trade hubs and your citadels")}${chk("mine", "Only your orders")}
+    <label class="label" for="mb-loc">Location contains</label><input type="text" id="mb-loc" data-mb-f="loc" value="${esc(f.loc || "")}" placeholder="Station, system or region" style="width:100%">
+    ${mapData ? "" : `<p class="muted" style="margin:0">Security and jumps need the map: open the Map page once.</p>`}
+    <div><button type="button" id="mb-fclear"${n ? "" : " disabled"}>Clear filters</button></div>`;
+}
+// Where to look: every region, a trade hub, one of your citadels or a region
+function mbWhereSel() {
+  const C = mbCfg(), o = (v, l) => `<option value="${esc(v)}"${v === (C.reg || "") ? " selected" : ""}>${esc(l)}</option>`, cits = citadelMarkets();
+  return `<select id="mb-where" aria-label="Where to look" style="max-width:260px">${o("", "Every region")}<optgroup label="Trade hubs">${tradeHubs().map(h => o("st:" + h.id, h.name)).join("")}</optgroup>${cits.length ? `<optgroup label="Your citadels">${cits.map(c => o("cit:" + c.id, c.name)).join("")}</optgroup>` : ""}<optgroup label="Regions">${(mbRegions.list || []).map(([id, nm]) => o("r:" + id, nm)).join("")}</optgroup></select>`;
+}
+// The item: its market group path, tiles over the filtered orders, both order books, its history and the trade hubs side by side
+function mbRenderItem() {
+  const top = $("mb-top"); if (!top) return;
+  const it = mbItem, d = it && it.data;
+  if (!it) { top.innerHTML = `<div class="bp-head"><div><h2 id="mb-title">Trading board</h2><p class="muted" style="margin:4px 0 0">Pick an item in the market groups on the left, or find one by name.</p></div><div class="toolbar"><button type="button" class="link" data-mb-howto>How this page works</button></div></div>`; $("mb-body").hidden = true; return; }
+  const t = it.id, name = idbName(t), path = mbPath(t), C = mbCfg();
+  const L = d ? mbFilter(d.orders) : [], sells = L.filter(o => !o.b).sort((a, b) => a.p - b.p), buys = L.filter(o => o.b).sort((a, b) => b.p - a.p);
+  const s5 = mbPct5(sells), b5 = mbPct5(buys), units = (X) => X.reduce((a, o) => a + o.q, 0), at = (o) => o ? `${esc(mbLocName(o))}` : "";
+  const tile = (l, v, sub) => `<div class="mb-stat"><span class="label">${l}</span><b>${v}</b>${sub ? `<div class="muted" title="${esc(sub.replace(/<[^>]+>/g, ""))}">${sub}</div>` : ""}</div>`, P = (v) => v == null ? `<span class="muted">—</span>` : iskFull(v);
+  const notes = d && d.fail.length ? [`${d.fail.length} region${d.fail.length === 1 ? "" : "s"} didn't answer (${esc(d.fail.slice(0, 5).map(mbRegName).join(", "))}${d.fail.length > 5 ? "…" : ""}): Refresh to try again.`] : [];   // a citadel whose market can't be read (no market module, mostly) is left out quietly
+  top.innerHTML = `<div class="mb-top">${icon(t, 44).replace(/size=32/, "size=64")}<div class="mb-id">
+      <div class="mb-path">${path.length ? path.map(g => `<button type="button" data-mb-reveal="${g}">${esc(mbIdx.M.mgs[g].n)}</button>`).join(" / ") : `<span class="muted">Not on the market</span>`}</div>
+      <h2 id="mb-title"><button type="button" class="copyname" data-copy="${esc(name)}" data-copy-msg="${esc(name)} copied" title="Click to copy the name">${esc(name)}</button></h2>
+</div>
+      <div class="mb-tools"><div class="toolbar">${mbWhereSel()}<button type="button" data-mb-idb="${t}">Item database</button><button type="button" data-mb-refresh="${t}"${it.busy ? " disabled" : ""}>Refresh</button><button type="button" class="link" data-mb-howto>How this page works</button></div>
+        <span class="muted" id="mb-status" style="font-size:.8rem">${it.busy ? "Reading orders…" : d ? `${esc(mbWhereName())} · read ${ago(d.at)} · ${L.length.toLocaleString()} of ${d.orders.length.toLocaleString()} orders shown` : ""}</span></div></div>
+    ${d ? `<div class="mb-stats">${tile("Sell (5%)", P(s5), sells.length ? `lowest ${iskFull(sells[0].p)} at ${at(sells[0])}` : "nobody sells")}${tile("Buy (5%)", P(b5), buys.length ? `highest ${iskFull(buys[0].p)} at ${at(buys[0])}` : "nobody buys")}
+      ${tile("Margin", s5 != null && b5 != null ? iskFull(s5 - b5) : P(null), s5 != null && b5 != null && s5 ? `${((s5 - b5) / s5 * 100).toFixed(1)}% of the sell price` : "")}${tile("For sale", units(sells).toLocaleString(), `${sells.length.toLocaleString()} order${sells.length === 1 ? "" : "s"}`)}${tile("Wanted", units(buys).toLocaleString(), `${buys.length.toLocaleString()} order${buys.length === 1 ? "" : "s"}`)}</div>` : ""}
+    ${it.err ? `<div class="notice" style="color:var(--bad);border-color:var(--bad)">The orders couldn't be read: ${esc(it.err)}</div>` : ""}${notes.map(x => `<div class="notice">${x}</div>`).join("")}`;
+  $("mb-body").hidden = !d; if (!d) return;
+  mbRenderHubs(d.orders); mbRenderBooks(sells, buys);
+}
+function mbRenderHubs(orders) {
+  if (!orders) { if (!mbItem || !mbItem.data) return; orders = mbItem.data.orders; }
+  for (const D of mbDocs("hubs")) { D.getElementById("mb-hubs").innerHTML = mbHubsHtml(orders); if (D !== document) D.title = `Markets comparison · ${idbName(mbItem.id)}`; }
+}
+function mbHubsHtml(orders) {
+  const by = new Map(); for (const o of orders) (by.get(o.loc) || by.set(o.loc, []).get(o.loc)).push(o);
+  const rows = [...tradeHubs().map(h => ({ id: h.id, name: h.name })), ...citadelMarkets().map(c => ({ id: +c.id, name: c.name, cit: true }))].filter(m => by.has(m.id)).map((m, i) => {
+    const L = by.get(m.id), s = L.filter(o => !o.b), b = L.filter(o => o.b), ls = s.length ? Math.min(...s.map(o => o.p)) : null, hb = b.length ? Math.max(...b.map(o => o.p)) : null;
+    return { ...m, i, ls, hb, sq: s.reduce((a, o) => a + o.q, 0), bq: b.reduce((a, o) => a + o.q, 0), sp: ls != null && hb != null ? ls - hb : null }; });
+  if (!rows.length) return `<p class="muted" style="margin:0">No orders for it at the trade hubs or your citadels${mbCfg().reg ? ` (looking at ${esc(mbWhereName())})` : ""}.</p>`;
+  const v = (x, f) => x == null ? `<td class="num"><span class="muted">—</span></td>` : `<td class="num">${f(x)}</td>`, def = { key: "i", dir: 1 }, H = (k, l, num) => sortHead("mbh", k, l, def).replace("<th ", num ? `<th class="num" ` : "<th "), un = (x) => x ?? -Infinity;
+  const L = sortRows("mbh", def, rows, { i: r => r.i, name: r => r.name, ls: r => un(r.ls), sq: r => r.sq, hb: r => un(r.hb), bq: r => r.bq, sp: r => un(r.sp) });
+  return `<div class="scroller"><table class="bp-table"><thead><tr>${H("name", "Market")}${H("ls", "Lowest sell", 1)}${H("sq", "For sale", 1)}${H("hb", "Highest buy", 1)}${H("bq", "Wanted", 1)}${H("sp", "Spread", 1)}</tr></thead><tbody>${L.map(r => `<tr><th scope="row">${esc(r.name)}${r.cit ? ` <span class="pill">citadel</span>` : ""}</th>${v(r.ls, iskFull)}${v(r.ls != null ? r.sq : null, x => x.toLocaleString())}${v(r.hb, iskFull)}${v(r.hb != null ? r.bq : null, x => x.toLocaleString())}${v(r.sp, x => `${iskFull(x)} <span class="muted">${(x / r.ls * 100).toFixed(1)}%</span>`)}</tr>`).join("")}</tbody></table></div>`;
+}
+function mbBook(side, L) {
+  const id = side === "s" ? "mbs" : "mbb", def = { key: "p", dir: side === "s" ? 1 : -1 }, hops = mbHops(), mine = mbMine(), now = Date.now();
+  if (!L.length) return `<p class="muted" style="margin:0">${side === "s" ? "No sell order" : "No buy order"}${mbFiltersOn() ? " passes the filters" : ""}.</p>`;
+  const rows = sortRows(id, def, L, { reg: o => mbRegName(o.reg), q: o => o.q, p: o => o.p, loc: o => mbLocName(o), j: o => hops ? hops.get(o.sys) ?? 1e9 : 0, rng: o => o.rng === "station" ? -2 : o.rng === "solarsystem" ? -1 : o.rng === "region" ? 1e9 : +o.rng, min: o => o.min, exp: o => o.iss + o.dur * 864e5, iss: o => -o.iss });
+  const H = (k, l, num) => sortHead(id, k, l, def).replace("<th ", num ? `<th class="num" ` : "<th "), shown = rows.slice(0, mbLim[side]);
+  return `<div class="scroller"><table class="bp-table"><thead><tr>${H("reg", "Region")}${H("q", "Quantity", 1)}${H("p", "Price", 1)}${H("loc", "Location")}${hops ? H("j", "Jumps", 1) : ""}${side === "b" ? H("rng", "Range") + H("min", "Min. volume", 1) : ""}${H("exp", "Expires in", 1)}${H("iss", "Changed", 1)}</tr></thead><tbody>${shown.map(o => { const s = mbSys(o.sys), j = hops && hops.get(o.sys);
+    return `<tr data-mb-o="${o.id}"${mbSel[side] === o.id ? ` class="sel"` : ""}><td>${esc(mbRegName(o.reg))}</td><td class="num">${o.q.toLocaleString()}</td><td class="num"><button type="button" class="copyname" data-copy="${o.p}" data-copy-msg="Price copied" title="Click to copy the price">${iskFull(o.p)}</button></td><td>${s ? `<span style="color:${secColor(s.s)}">${secRound(s.s).toFixed(1)}</span> ` : ""}${esc(mbLocName(o))}${mine.has(o.id) ? ` <span class="pill">yours · ${esc(mine.get(o.id))}</span>` : ""}</td>${hops ? `<td class="num">${j != null ? j : `<span class="muted">—</span>`}</td>` : ""}${side === "b" ? `<td>${esc(mbRange(o.rng))}</td><td class="num">${o.min.toLocaleString()}</td>` : ""}<td class="num">${o.dur ? fmtDur(Math.max(0, (o.iss + o.dur * 864e5 - now) / 1000)) : "—"}</td><td class="num">${ago(o.iss)}</td></tr>`; }).join("")}</tbody></table></div>
+    ${rows.length > shown.length ? `<button type="button" class="link" data-mb-more="${side}">Show ${Math.min(200, rows.length - shown.length).toLocaleString()} more of ${(rows.length - shown.length).toLocaleString()}</button>` : ""}`;
+}
+function mbRenderBooks(sells, buys) {
+  if (!sells) { const d = mbItem && mbItem.data; if (!d) return; const L = mbFilter(d.orders); sells = L.filter(o => !o.b); buys = L.filter(o => o.b); }
+  $("mb-sn").textContent = sells.length.toLocaleString(); $("mb-bn").textContent = buys.length.toLocaleString();
+  $("mb-sells").innerHTML = mbBook("s", sells); $("mb-buys").innerHTML = mbBook("b", buys); mbFitBooks();
+}
+// Sellers and buyers share the room the board leaves them evenly; a short one gives the other its unused room. On a wide screen that's what's left
+// of the screen under the item panel (the board is one screen tall); on a narrow one, about a screen
+function mbFitBooks() {
+  const box = $("mb-books"), a = document.querySelector("#mb-sells .scroller"), b = document.querySelector("#mb-buys .scroller"); if ($("page-trading").hidden || box.hidden) return;
+  const chrome = [...box.children].reduce((t, p) => { const sc = p.querySelector(".scroller"); return t + p.offsetHeight - (sc ? sc.offsetHeight : 0); }, 12);
+  const H = Math.max(160, (getComputedStyle(box).display === "flex" ? box.clientHeight : window.innerHeight - 200) - chrome), na = a ? a.scrollHeight + 2 : 0, nb = b ? b.scrollHeight + 2 : 0; let ha = H / 2, hb = H / 2;
+  if (na < ha) { ha = na; hb = H - na; } else if (nb < hb) { hb = nb; ha = H - nb; }
+  if (a) a.style.maxHeight = Math.round(ha) + "px"; if (b) b.style.maxHeight = Math.round(hb) + "px";
+}
+window.addEventListener("resize", () => { if (!$("page-trading").hidden) mbFitBooks(); });
+
+async function mbHistory(r, t) {
+  const k = r + "|" + t, c = mbHistC.get(k); if (c && Date.now() - c.at < 3600e3) return c.rows;
+  const res = await esiMarket(`https://esi.evetech.net/latest/markets/${r}/history/?datasource=tranquility&type_id=${t}`, undefined, 3);
+  if (!res.ok && res.status !== 404) throw new Error(res.status === 503 ? "ESI's market isn't answering (downtime?)" : "ESI answered " + res.status);
+  const rows = res.ok ? (await res.json()).map(x => ({ ...x, lowest: x.lowest ?? x.average, highest: x.highest ?? x.average, order_count: x.order_count || 0, volume: x.volume || 0 })).sort((a, b) => a.date.localeCompare(b.date)) : []; mbHistC.set(k, { at: Date.now(), rows }); return rows;
+}
+// The region's daily prices (ESI keeps about 13 months): the average as a line, the day's lowest to highest as a band, the units traded as bars
+function mbChart(rows) {
+  const W = 1000, top = 10, ph = 190, vt = 222, vh = 50, L0 = 78, R0 = 64, w = W - L0 - R0, avg = rows.map(x => x.average), lo = Math.min(...avg), hi = Math.max(...avg);
+  // a day's lowest / highest can be far off its average (one odd trade): the scale follows the averages, with room for the band up to ×2
+  let y0 = Math.min(lo, ...rows.map(x => Math.max(x.lowest, lo / 2))), y1 = Math.max(hi, ...rows.map(x => Math.min(x.highest, hi * 2))); if (y1 <= y0) { y1 = y0 * 1.1 + 1; y0 *= 0.9; }
+  const n = rows.length, X = (i) => L0 + (n === 1 ? w / 2 : i * w / (n - 1)), Y = (v) => top + ph - (Math.min(y1, Math.max(y0, v)) - y0) / (y1 - y0) * ph, vmax = Math.max(1, ...rows.map(x => x.volume)), bw = Math.max(1, w / n * 0.7), step = n > 1 ? w / (n - 1) : w;
+  const fp = (v) => v >= 1e6 ? isk(v) : v.toLocaleString(undefined, { maximumFractionDigits: v < 100 ? 2 : 0 }), f = (v) => v.toFixed(1);
+  const band = rows.map((x, i) => `${f(X(i))},${f(Y(x.highest))}`).concat(rows.map((x, i) => `${f(X(i))},${f(Y(x.lowest))}`).reverse()).join(" ");
+  const ticks = [0, 1, 2, 3].map(k => y0 + (y1 - y0) * k / 3), dates = [...new Set([0, n >> 2, n >> 1, (3 * n) >> 2, n - 1])], vy = (v) => vt + vh - v / vmax * vh;
+  mbGeo = { rows, x: rows.map((_, i) => X(i)), y: rows.map(x => Y(x.average)), W, L0, w };
+  return `<svg viewBox="0 0 ${W} 300" role="img" aria-label="Daily average price and units traded">
+    ${ticks.map(v => `<line x1="${L0}" x2="${W - R0}" y1="${f(Y(v))}" y2="${f(Y(v))}" style="stroke:var(--line)"/><text x="${L0 - 6}" y="${f(Y(v) + 4)}" text-anchor="end" style="fill:var(--muted);font-size:12px">${fp(v)}</text>`).join("")}
+    <polygon points="${band}" style="fill:var(--accent);opacity:.18"/><path d="${rows.map((x, i) => `${i ? "L" : "M"}${f(X(i))},${f(Y(x.average))}`).join("")}" style="fill:none;stroke:var(--accent);stroke-width:2"/>
+    ${rows.map((x, i) => `<rect x="${f(X(i) - bw / 2)}" y="${f(vt + vh - x.volume / vmax * vh)}" width="${f(bw)}" height="${f(x.volume / vmax * vh)}" style="fill:var(--muted);opacity:.55"/>`).join("")}
+    ${[0, vmax / 2, vmax].map(v => `<line x1="${L0}" x2="${W - R0}" y1="${f(vy(v))}" y2="${f(vy(v))}" style="stroke:var(--line);opacity:.6"/><text x="${W - R0 + 6}" y="${f(vy(v) + 4)}" style="fill:var(--muted);font-size:12px">${isk(v)}</text>`).join("")}
+    <text x="${W - R0 + 6}" y="${vt - 8}" style="fill:var(--muted);font-size:11px">Volume</text><text x="${L0 - 6}" y="${top + 2}" text-anchor="end" style="fill:var(--muted);font-size:11px">ISK</text>
+    ${dates.map(i => `<text x="${f(X(i))}" y="292" text-anchor="${i === 0 && n > 1 ? "start" : i === n - 1 && n > 1 ? "end" : "middle"}" style="fill:var(--muted);font-size:12px">${esc(rows[i].date)}</text>`).join("")}
+    <g class="mb-cx" style="display:none"><line y1="${top}" y2="${vt + vh}" style="stroke:var(--muted);stroke-dasharray:3 3"/><circle r="4" style="fill:var(--accent);stroke:var(--panel);stroke-width:2"/></g></svg><div class="mb-tip" hidden></div>`;
+}
+function mbRenderHist() { for (const D of mbDocs("hist")) mbRenderHistIn(D); }
+async function mbRenderHistIn(D) {
+  const box = D.getElementById("mb-hist"), it = mbItem; if (!box || !it || !it.data) return;
+  const C = mbCfg(), seq = box._seq = (box._seq || 0) + 1, R = mbRegions.list || [], O = it.data.orders, hr = O.length && O.every(o => o.reg === MB_GLOBAL) ? MB_GLOBAL : +C.hist;   // an item only in the global market (PLEX): its history
+  const sel = D.getElementById("mb-hreg"); if (D.activeElement !== sel) sel.innerHTML = R.map(([id, nm]) => `<option value="${id}"${id === hr ? " selected" : ""}>${esc(nm)}</option>`).join("");
+  D.getElementById("mb-span").value = String(C.span); if (D !== document) D.title = `History · ${idbName(it.id)}`;
+  box.innerHTML = `<p class="muted" style="margin:0">Reading ${esc(mbRegName(hr))}'s history…</p>`;
+  try { const all = await mbHistory(hr, it.id); if (seq !== box._seq) return;
+    const rows = all.slice(-C.span); if (!rows.length) { box.innerHTML = `<p class="muted" style="margin:0">No trades of ${esc(idbName(it.id))} in ${esc(mbRegName(hr))} ${C.span < 400 ? `in the last ${C.span} days` : "in the last 13 months"}.</p>`; return; }
+    const S = mhStats({ rows: all.map(x => [x.date, x.average, x.volume]) }), pc = (v) => v == null ? "—" : `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v * 100).toFixed(1)}%`;
+    box.innerHTML = mbChart(rows) + `<p class="muted" style="margin:6px 0 0;font-size:.85rem">${esc(mbRegName(hr))}, last 7 days: ${Math.round(S.perDay).toLocaleString()} sold a day, ${isk(S.iskDay)} ISK traded a day · daily average ${pc(S.d1)} over a day, ${pc(S.d7)} over a week · point at the chart for a day's numbers</p>`; box._geo = mbGeo;
+  } catch (e) { if (seq === box._seq) box.innerHTML = `<div class="notice">The history couldn't be read: ${esc(netMsg(e))}</div>`; }
+}
+async function mbOpen(t, force) {
+  t = +t; const C = mbCfg(), seq = ++mbOpen.n, same = mbItem && mbItem.id === t;
+  if (!same) { mbLim = { s: 100, b: 100 }; mbSel = { s: null, b: null }; }
+  mbItem = { id: t, busy: true, data: same ? mbItem.data : null, err: "" };
+  if (C.last !== t || mbPath(t).some(g => !C.open.includes(g))) { C.last = t; C.open = [...new Set([...C.open, ...mbPath(t)])]; saveMisc(); }   // its market groups open in the tree
+  if ($("page-trading").hidden) return;
+  mbTree(); mbRenderItem(); const cur = document.querySelector("#mb-tree [aria-current]"); if (cur) cur.scrollIntoView({ block: "nearest" });
+  try { const d = await mbLoad(t, force); if (seq !== mbOpen.n) return; await mbResolve(d.orders); if (seq !== mbOpen.n) return; mbItem.data = d; } catch (e) { if (seq !== mbOpen.n) return; mbItem.err = netMsg(e); }
+  mbItem.busy = false; mbFilters(); mbRenderItem(); mbApplyView();
+}
+mbOpen.n = 0;
+let mbFindT = 0;
+$("mb-find").addEventListener("input", () => { clearTimeout(mbFindT); mbFindT = setTimeout(mbTree, 150); });
+// Pointing at the chart: a line on the nearest day and a box with its numbers
+function mbHistPoint(e) {
+  const box = e.currentTarget, sv = box.querySelector("svg"), G = box._geo, tip = box.querySelector(".mb-tip"); if (!sv || !G || !tip || !G.rows.length) return;
+  const r = sv.getBoundingClientRect(), vx = (e.clientX - r.left) * G.W / r.width, n = G.rows.length, i = Math.max(0, Math.min(n - 1, Math.round((vx - G.L0) / G.w * (n - 1)))), x = G.rows[i];
+  const cx = box.querySelector(".mb-cx"); cx.style.display = ""; cx.querySelector("line").setAttribute("x1", G.x[i]); cx.querySelector("line").setAttribute("x2", G.x[i]); cx.querySelector("circle").setAttribute("cx", G.x[i]); cx.querySelector("circle").setAttribute("cy", G.y[i]);
+  const row = (l, v) => `<div><span class="muted">${l}</span><b>${v}</b></div>`;
+  tip.innerHTML = `<b>${esc(x.date)}</b>${row("Average", iskFull(x.average))}${row("Highest", iskFull(x.highest))}${row("Lowest", iskFull(x.lowest))}${row("Volume", x.volume.toLocaleString())}${row("Orders", x.order_count.toLocaleString())}`; tip.hidden = false;
+  const px = G.x[i] / G.W * r.width + (r.left - box.getBoundingClientRect().left), right = px > r.width * 0.6; tip.style.left = right ? "" : px + 14 + "px"; tip.style.right = right ? (r.width - px + 14) + "px" : "";
+}
+function mbHistLeave(e) { const cx = e.currentTarget.querySelector(".mb-cx"), tip = e.currentTarget.querySelector(".mb-tip"); if (cx) cx.style.display = "none"; if (tip) tip.hidden = true; }
+function mbHistHooks(D) {
+  D.getElementById("mb-hist").addEventListener("pointermove", mbHistPoint); D.getElementById("mb-hist").addEventListener("pointerleave", mbHistLeave);
+  D.getElementById("mb-hreg").addEventListener("change", (e) => { mbCfg().hist = e.target.value; saveMisc(); mbRenderHist(); });
+  D.getElementById("mb-span").addEventListener("change", (e) => { mbCfg().span = +e.target.value; saveMisc(); mbRenderHist(); });
+}
+// Sellers / buyers, history or the markets comparison in their place; history and comparison can open in a window of their own (to put on
+// another screen; it gets a copy of the panel, drawn again whenever the item or its settings change) and the board goes back to sellers / buyers
+const mbWin = { hist: null, hubs: null };
+const mbDocs = (which) => { const out = []; if (!$((which === "hist" ? "mb-hist" : "mb-hubs") + "-panel").hidden) out.push(document); const w = mbWin[which]; if (w && !w.closed) out.push(w.document); return out; };
+function mbApplyView() {
+  $("mb-books").hidden = mbView !== "orders"; $("mb-hist-panel").hidden = mbView !== "hist"; $("mb-hubs-panel").hidden = mbView !== "hubs";
+  document.querySelectorAll("[data-mb-view]").forEach(b => { const v = b.dataset.mbView; b.textContent = mbView === v ? "Back to sellers and buyers" : v === "hist" ? "Show history" : "Show markets comparison"; });
+  mbRenderHist(); mbRenderHubs(); mbFitBooks();
+}
+function mbPop(which) {
+  const old = mbWin[which]; if (old && !old.closed) { old.focus(); mbView = "orders"; mbApplyView(); return; }
+  const w = window.open("", "eve-trading-" + which, `popup,width=1200,height=${which === "hist" ? 560 : 420}`); if (!w) { toast("The browser blocked the window: allow pop-ups for this page"); return; }
+  const D = w.document, attrs = [...document.documentElement.attributes].map(a => ` ${a.name}="${esc(a.value)}"`).join(""), head = [...document.head.querySelectorAll('style, link[rel="stylesheet"], link[rel="preconnect"]')].map(x => x.outerHTML).join("");
+  D.open(); D.write(`<!doctype html><html${attrs}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trading board</title>${head}</head><body style="padding:12px"></body></html>`); D.close();
+  const sec = $(which === "hist" ? "mb-hist-panel" : "mb-hubs-panel").cloneNode(true); sec.hidden = false; sec.classList.remove("folded");
+  sec.querySelectorAll(".fold-ind, [data-mb-pop]").forEach(x => x.remove()); sec.querySelectorAll(".fold-h").forEach(h => { h.classList.remove("fold-h"); h.removeAttribute("role"); h.removeAttribute("tabindex"); });
+  D.body.append(D.importNode(sec, true));
+  if (which === "hist") mbHistHooks(D); else D.addEventListener("click", sortClick);   // its table sorts like the page's
+  mbWin[which] = w; mbView = "orders"; mbApplyView(); w.focus();
+}
+window.addEventListener("pagehide", () => { for (const w of Object.values(mbWin)) if (w && !w.closed) w.close(); });
+mbHistHooks(document);
+$("mb-howto-close").addEventListener("click", () => $("mb-howto").close());
+$("mb-howto").addEventListener("click", (e) => { if (e.target === $("mb-howto")) $("mb-howto").close(); });
+document.addEventListener("click", (e) => {
+  const r = e.target.closest && e.target.closest(".mb-book tr[data-mb-o]");
+  if (r) { const side = r.closest("#mb-sells") ? "s" : "b", id = +r.dataset.mbO; mbSel[side] = mbSel[side] === id ? null : id; r.parentElement.querySelectorAll("tr.sel").forEach(x => x !== r && x.classList.remove("sel")); r.classList.toggle("sel", mbSel[side] === id); }
+  const b = e.target.closest && e.target.closest("[data-mb-open],[data-mb-g],[data-mb-reveal],[data-mb-more],[data-mb-refresh],[data-mb-idb],[data-mb-view],[data-mb-pop],[data-mb-howto],#mb-fclear"); if (!b) return;
+  const C = mbCfg();
+  if (b.dataset.mbView) { mbView = mbView === b.dataset.mbView ? "orders" : b.dataset.mbView; mbApplyView(); return; }
+  if (b.dataset.mbPop) { mbPop(b.dataset.mbPop); return; }
+  if (b.hasAttribute("data-mb-howto")) { $("mb-howto-text").textContent = HOWTO.trading; $("mb-howto").showModal(); return; }
+  // also from other pages (the Item database): the Trading board opens on that item
+  if (b.dataset.mbOpen) { const t = +b.dataset.mbOpen; if ($("page-trading").hidden) { C.last = t; mbItem = null; showPage("trading"); window.scrollTo(0, 0); } else mbOpen(t); return; }
+  if (b.dataset.mbG || b.dataset.mbReveal) { const g = +(b.dataset.mbG || b.dataset.mbReveal), on = C.open.includes(g); $("mb-find").value = "";
+    if (b.dataset.mbG) C.open = on ? C.open.filter(x => x !== g) : [...C.open, g]; else { let p = g; const up = []; while (p != null && mbIdx.M.mgs[p]) { up.push(p); p = mbIdx.M.mgs[p].up; } C.open = [...new Set([...C.open, ...up])]; }
+    saveMisc(); mbTree(); if (b.dataset.mbReveal) { const n = document.querySelector(`#mb-tree [data-mb-g="${g}"]`); if (n) n.scrollIntoView({ block: "start" }); } return; }
+  if (b.dataset.mbMore) { mbLim[b.dataset.mbMore] += 200; mbRenderBooks(); return; }
+  if (b.dataset.mbRefresh) { mbOpen(+b.dataset.mbRefresh, true); return; }
+  if (b.dataset.mbIdb) { showPage("itemdb"); idbShow(+b.dataset.mbIdb); return; }
+  if (b.id === "mb-fclear") { C.f = {}; saveMisc(); document.activeElement.blur(); mbFilters(); mbRenderItem(); }
+});
+document.addEventListener("change", (e) => { if (e.target.id !== "mb-where") return; const C = mbCfg(); C.reg = e.target.value; const W = mbWhere();
+  const hr = W.k === "r" ? +W.id : W.hub ? W.hub.region : W.k === "cit" ? (mbSys((citadelMarkets().find(c => c.id === W.id) || {}).sys) || {}).r : null; if (hr) C.hist = String(hr);
+  saveMisc(); e.target.blur(); if (mbItem) mbOpen(mbItem.id); });
+const mbOnFilter = (e) => { const x = e.target; if (!x.closest || !x.closest("#mb-filters")) return; const C = mbCfg();
+  if (x.dataset.mbC === "from") { if (e.type !== "change") return; C.from = x.value; saveMisc(); x.blur(); mbFilters(); mbRenderItem(); return; }
+  const k = x.dataset.mbF; if (!k || (x.type === "checkbox") !== (e.type === "change")) return;   // typing filters as you type (its change on leaving would redraw the box under a click)
+  C.f[k] = x.type === "checkbox" ? x.checked : x.value; saveMisc(); mbFilters(); mbRenderItem(); };
+document.addEventListener("input", mbOnFilter); document.addEventListener("change", mbOnFilter);
 // ---------- Reactions management: slots, picks, shopping and jobs for moon reactions
 const RX_PROD_GROUPS = [428, 429], FUEL_GRP = 1136, GOO_GRP = 427;
 // Structure, rigs, system, tax and import cost as set in Build planning (read only)
@@ -3467,9 +3849,27 @@ document.addEventListener("change", (e) => {
   else return;
   saveMisc(); t.blur && t.blur(); setTimeout(renderPi, 0);
 });
+// Settings: the trade hubs (built in, and the stations you add)
+function renderHubs() {
+  const tb = $("hub-table"); if (!tb) return; tb.dataset.sorted = "";
+  tb.innerHTML = `<thead><tr><th scope="col">Station</th><th scope="col">System</th><th scope="col">Region</th><th scope="col"></th></tr></thead><tbody>${tradeHubs().map(h => `<tr><th scope="row">${esc(h.name)}</th><td>${esc(h.sysName || "")}</td><td>${esc(h.regionName || regionName(h.region))}</td><td>${HUBS_DEFAULT.some(d => d.id === h.id) ? `<span class="muted">built in</span>` : `<button type="button" class="link" data-hub-del="${h.id}">Remove</button>`}</td></tr>`).join("")}</tbody>`;
+}
+$("hub-form").addEventListener("submit", async (e) => {
+  e.preventDefault(); const v = $("hub-name").value.trim(), msg = $("hub-msg"); if (!v) return; msg.textContent = "Looking it up…";
+  try {
+    let id = /^\d+$/.test(v) ? +v : null;
+    if (!id) { const r = await fetchRetry("https://esi.evetech.net/latest/universe/ids/?datasource=tranquility&language=en", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([v]) }, 3); id = r.ok ? (((await r.json()).stations || [])[0] || {}).id : null; }
+    if (!id || id < 60000000 || id >= 64000000) throw new Error("no NPC station by that name: type its full name as in the game (e.g. Jita IV - Moon 4 - Caldari Navy Assembly Plant), or its ID");
+    if (tradeHubs().some(h => h.id === id)) throw new Error("it's already in the list");
+    const st = await esiGet(`/universe/stations/${id}/`), sy = await esiGet(`/universe/systems/${st.system_id}/`), co = await esiGet(`/universe/constellations/${sy.constellation_id}/`), nm = await esiNames([co.region_id]).catch(() => ({}));
+    (state.misc.hubs = state.misc.hubs || []).push({ id, name: st.name, sys: st.system_id, sysName: sy.name || "", region: co.region_id, regionName: nm[co.region_id] || "" });
+    saveMisc(); $("hub-name").value = ""; msg.textContent = `Added ${st.name}.`; renderSettingsPage();
+  } catch (err) { msg.textContent = netMsg(err); }
+});
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-hub-del]"); if (!b) return; state.misc.hubs = (state.misc.hubs || []).filter(h => h.id !== +b.dataset.hubDel); saveMisc(); renderSettingsPage(); });
 // Settings: your pricings and the reprocessing yield
 function renderSettingsPage() {
-  const L = state.misc.pricings || [], tb = $("pricing-table"); if (!tb) return;
+  const L = state.misc.pricings || [], tb = $("pricing-table"); if (!tb) return; renderHubs();
   const desc = (p) => p.kind === "pct" ? `${p.pct}% of ${esc(pricingName(p.base))}` : `${esc(citName(p.sid))} · ${p.side === "buy" ? "highest buy order" : p.side === "split" ? "split" : "lowest sell order"}`;
   tb.dataset.sorted = "";
   tb.innerHTML = `<thead><tr><th scope="col">Pricing</th><th scope="col">Value</th><th scope="col"></th></tr></thead><tbody>${Object.values(PRICE_MODES).map(n => `<tr><th scope="row">${esc(n)}</th><td class="muted">Live Jita 4-4 market</td><td></td></tr>`).join("")}${L.map(p => `<tr><th scope="row">${esc(p.name)}</th><td>${desc(p)}</td><td><button type="button" class="link" data-pr-del="${esc(p.id)}">Remove</button></td></tr>`).join("")}</tbody>`;
@@ -3482,7 +3882,7 @@ function renderSettingsPage() {
   const pil = state.chars.map(c => ({ c, f: (1 + 0.03 * lv(c, "Reprocessing")) * (1 + 0.02 * lv(c, "Reprocessing Efficiency")) * (1 + implantRx(c) / 100) })).sort((a, b) => b.f - a.f)[0];
   $("reproc-mine").innerHTML = `<p class="muted" style="margin:0;font-size:.85rem">Best you can get: <b>${esc(best.name)}</b> (${esc(best.how)}, ${(best.base * 100).toFixed(1)}% before skills)${pil ? ` with <b>${esc(pil.c.name)}</b> (Reprocessing ${lv(pil.c, "Reprocessing")}, Reprocessing Efficiency ${lv(pil.c, "Reprocessing Efficiency")}${implantRx(pil.c) ? `, RX-80${implantRx(pil.c)}` : ""}) = ${(best.base * pil.f * 100).toFixed(1)}%` : ""}, then +2% per level of each ore's processing skill. Refineries come from your corporation's structures and the imported industry structures (their reprocessing rigs count).</p>`;
   $("tax-mode").value = state.misc.salesTaxMode || "auto"; $("tax-own").hidden = (state.misc.salesTaxMode || "auto") !== "custom"; if (document.activeElement !== $("tax-own")) $("tax-own").value = state.misc.salesTax ?? "";
-  if (document.activeElement !== $("brk-st")) { $("brk-st").innerHTML = TRADE_HUBS.map(h => `<option value="st:${h.id}"${state.misc.brkSt === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join(""); }
+  if (document.activeElement !== $("brk-st")) { $("brk-st").innerHTML = tradeHubs().map(h => `<option value="st:${h.id}"${state.misc.brkSt === "st:" + h.id ? " selected" : ""}>${esc(h.name)}</option>`).join(""); }
   if (document.activeElement !== $("cit-broker")) $("cit-broker").value = state.misc.citBroker ?? "";
   bestBroker($("brk-st").value).then(b => $("brk-now").textContent = `${b.pct}% (${b.how})`).catch(e => $("brk-now").textContent = netMsg(e));
   const tx = salesTax(); $("tax-now").textContent = `Used: ${tx.pct}% (${tx.how})`;
@@ -4194,11 +4594,12 @@ function sortRows(id, def, rows, getters) {
   const st = sortState(id, def), g = getters[st.key] || getters[def.key];
   return rows.map((r, i) => [r, i]).sort(([a, ia], [b, ib]) => { const x = g(a), y = g(b); const c = typeof x === "string" || typeof y === "string" ? String(x).localeCompare(String(y)) : (x > y) - (x < y); return c * st.dir || ia - ib; }).map(([r]) => r);
 }
-document.addEventListener("click", (e) => {
+function sortClick(e) {
   const b = e.target.closest && e.target.closest("button[data-sort]"); if (!b) return;
   const [id, key] = b.dataset.sort.split(":"), all = state.misc.sorts = state.misc.sorts || {}, cur = all[id];
   all[id] = { key, dir: cur && cur.key === key ? -cur.dir : 1 }; saveMisc(); (SORT_RENDER[id] || render)();
-});
+}
+document.addEventListener("click", sortClick);
 /* ---------- custom filters ---------- */
 // Filters built from conditions (user's request, like jEveAssets): a table with filters gets a "Filters" bar where you add conditions on its columns
 // (contains, is, more than, in the last N days…), match all or any of them, switch one off for a moment, and save the set under a name.
@@ -8210,16 +8611,16 @@ async function buyPrices(ids, cfg) {
 async function structOrders(sid) {
   const c0 = structMarket[sid]; if (c0 && Date.now() - c0.at < 1800e3) return c0.min;
   const who = state.chars.find(c => c.esiId && esiTokens()[c.esiId] && (c.scopes || "").includes(MARKET_SCOPE)); if (!who) throw new Error("no pilot allows citadel markets");
-  const { access } = await freshAccess(who), min = new Map(), max = new Map(), sells = new Map(), buyB = new Map();
+  const { access } = await freshAccess(who), min = new Map(), max = new Map(), sells = new Map(), buyB = new Map(), raw = new Map();   // raw: every order of a type, for the Trading board
   let page = 1, pages = 1;
   do {
     const r = await esiMarket(`https://esi.evetech.net/latest/markets/structures/${sid}/?datasource=tranquility&page=${page}`, { headers: { Authorization: "Bearer " + access } }, 3);
     if (!r.ok) throw new Error("ESI answered " + r.status); pages = +r.headers.get("X-Pages") || 1;
-    for (const o of await r.json()) { if (!o.is_buy_order) { min.set(o.type_id, Math.min(min.get(o.type_id) || Infinity, o.price)); (sells.get(o.type_id) || sells.set(o.type_id, []).get(o.type_id)).push([o.price, o.volume_remain]); } else { max.set(o.type_id, Math.max(max.get(o.type_id) || 0, o.price)); (buyB.get(o.type_id) || buyB.set(o.type_id, []).get(o.type_id)).push([o.price, o.volume_remain]); } }
+    for (const o of await r.json()) { (raw.get(o.type_id) || raw.set(o.type_id, []).get(o.type_id)).push(o); if (!o.is_buy_order) { min.set(o.type_id, Math.min(min.get(o.type_id) || Infinity, o.price)); (sells.get(o.type_id) || sells.set(o.type_id, []).get(o.type_id)).push([o.price, o.volume_remain]); } else { max.set(o.type_id, Math.max(max.get(o.type_id) || 0, o.price)); (buyB.get(o.type_id) || buyB.set(o.type_id, []).get(o.type_id)).push([o.price, o.volume_remain]); } }
   } while (++page <= Math.min(pages, 30));
   for (const l of sells.values()) l.sort((a, b) => a[0] - b[0]);
   for (const l of buyB.values()) l.sort((a, b) => b[0] - a[0]);
-  structMarket[sid] = { at: Date.now(), min, max }; structBooks[sid] = { at: Date.now(), sells, buys: max, buyB }; return min;
+  structMarket[sid] = { at: Date.now(), min, max }; structBooks[sid] = { at: Date.now(), sells, buys: max, buyB, raw }; return min;
 }
 // Hauling: one ship leaves the delivery system, carries every load in the cheapest order, and comes back
 async function computeHaul(res, modeOverride) {
@@ -9490,7 +9891,7 @@ function renderBuildInner(page) {
     return head + (P.length ? pcTable(P, `<th scope="col" class="num">Units</th><th scope="col" class="num">Each</th><th scope="col" class="num">Price</th><th scope="col" class="num">vs building</th>`, (x) => `<td class="num" data-v="${x.q}">${x.q.toLocaleString()}</td><td class="num" data-v="${x.unit}">${isk(x.unit)}</td><td class="num" data-v="${x.price}">${isk(x.price)}</td><td class="num" data-v="${buildUnit ? x.unit - buildUnit : ""}">${pcVs(x.unit, buildUnit)}</td>`) : "") + bp
       + `<p class="muted" style="margin:4px 0 0;font-size:.8rem">Read ${ago(R.at)}: ${R.read.toLocaleString()} item exchanges in ${esc(regionName(R.region))}, ${R.checked} opened (those whose volume is a whole number of ${esc(r.name)}, or whose title names it). Only contracts holding that item alone and asking for nothing count. Building is per unit with everything the plan counts (materials, fees, hauling, invention, your stock at market value). Buy in game: search the contract by its title.</p>`;
   };
-  const pcBox = `<h3 id="pl-pc" style="margin:16px 0 6px">Public contracts</h3><div class="toolbar" style="margin-bottom:6px"><label class="label" for="pc-region">Region</label><select id="pc-region" aria-label="Region">${TRADE_HUBS.map(h => `<option value="${h.region}"${+(c.pcRegion || 10000002) === h.region ? " selected" : ""}>${esc(regionName(h.region))}</option>`).join("")}</select><button type="button" data-pc-check="1"${PC && PC.busy ? " disabled" : ""}>${PC && PC.res ? "Check again" : "Check public contracts"}</button><span class="muted" id="pc-status" style="font-size:.85rem">${PC && PC.msg ? esc(PC.msg) : ""}</span></div>
+  const pcBox = `<h3 id="pl-pc" style="margin:16px 0 6px">Public contracts</h3><div class="toolbar" style="margin-bottom:6px"><label class="label" for="pc-region">Region</label><select id="pc-region" aria-label="Region">${tradeHubs().map(h => `<option value="${h.region}"${+(c.pcRegion || 10000002) === h.region ? " selected" : ""}>${esc(regionName(h.region))}</option>`).join("")}</select><button type="button" data-pc-check="1"${PC && PC.busy ? " disabled" : ""}>${PC && PC.res ? "Check again" : "Check public contracts"}</button><span class="muted" id="pc-status" style="font-size:.85rem">${PC && PC.msg ? esc(PC.msg) : ""}</span></div>
     ${PC && PC.res ? pcRes(PC.res) : `<p class="muted" style="margin:0;font-size:.85rem">Looks for ${esc(r.name)}${r.inv ? " and copies of its blueprint" : ""} on a region's public contracts, to see whether buying beats building. It reads every public contract there, so it takes a moment.</p>`}`;
   const a = assignJobs(r);
   const noSkill = a.parts.filter(p => !p.c), noSlot = a.parts.filter(p => p.c && !p.slot), notOwned = r.jobs.filter(j => !(j.own && (j.own.bpo || j.own.bpc)) && !(j.type === r.top.type && /set by you/.test(j.meSrc)));
@@ -10460,6 +10861,9 @@ const IDB_META = { 1: "Tech I", 2: "Tech II", 3: "Storyline", 4: "Faction", 5: "
 const IDB_RACE = { 1: "Caldari", 2: "Minmatar", 4: "Amarr", 8: "Gallente", 16: "Jove", 32: "Pirate", 64: "Sleepers", 128: "ORE", 135: "Triglavian", 168: "EDENCOM" };
 const IDB_ACT = { manufacturing: "Manufacturing", reaction: "Reaction", invention: "Invention", copying: "Copying", research_material: "Material efficiency research", research_time: "Time efficiency research", planet: "Planet factory" };
 const idbName = (t) => (idbData && idbData.byId.get(+t) || {}).n || state.typeNames[t] || "Item " + t;
+// Items sold on the market (in one of CCP's market groups) get a button to the Trading board
+const idbOnMarket = (t) => { if (!idbData) return false; if (idbOnMarket.d !== idbData) { idbOnMarket.d = idbData; idbOnMarket.s = new Set(Object.values(idbData.M.mgs || {}).flatMap(g => g.t)); } return idbOnMarket.s.has(t); };
+const mbGo = (t, n) => `<button type="button" class="mb-go" data-mb-open="${t}" title="View on the Trading board" aria-label="View ${esc(n)} on the Trading board"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1 13h14M3 11V7M7 11V3M11 11V6" style="fill:none;stroke:currentColor;stroke-width:2"/></svg></button>`;
 const idbGrp = (x) => (idbData.M.groups[x.g] || {}).n || "", idbCat = (x) => (idbData.M.cats[x.c] || {}).n || "";
 function idbOwned() { const m = new Map(); for (const a of Object.values(state.assets || {})) for (const r of [...(a.rows || []), ...(a.other || [])]) m.set(r.t, (m.get(r.t) || 0) + r.q); return m; }
 SORT_RENDER.itemdb = () => renderItemDb(); FOLD_RENDER["idb-table"] = () => renderItemDb();
@@ -10495,7 +10899,7 @@ function renderItemDb() {
   tbl.dataset.sortId = "itemdb"; if (filt) tbl.dataset.nofold = ""; else delete tbl.dataset.nofold;
   tbl.innerHTML = `<thead><tr>${R("name", "Item")}${R("grp", "Group")}${R("meta", "Meta group")}${R("v", "Volume")}${R("pv", "Packaged")}${R("own", "You own")}</tr></thead><tbody>${body.map(x => x.head ? `<tr class="${x.cls}" data-fold="${esc(x.key || x.head)}" data-n="${x.n}"><th colspan="6" scope="colgroup">${esc(x.head)} <span class="muted num">${x.n.toLocaleString()}</span></th></tr>`
     : x.more ? `<tr><td colspan="6"><button type="button" class="link" data-idb-more="${esc(x.more)}">Show ${Math.min(200, x.rest).toLocaleString()} more of ${x.rest.toLocaleString()} in ${esc(x.more)}</button></td></tr>`
-    : `<tr><th scope="row"><span class="item-cell"><img src="https://images.evetech.net/types/${x.id}/icon?size=32" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'"><button type="button" class="link" data-idb-open="${x.id}" style="color:inherit;text-align:left">${esc(x.n)}</button>${x.p ? "" : ` <span class="pill mid">not in the game</span>`}</span></th><td>${esc(idbGrp(x))}</td><td>${esc(IDB_META[x.mt] || (x.mt != null ? "Meta group " + x.mt : ""))}</td><td class="num">${x.v != null ? (+x.v).toLocaleString() + " m³" : "—"}</td><td class="num">${x.pv != null ? (+x.pv).toLocaleString() + " m³" : "—"}</td><td class="num">${own.get(x.id) ? own.get(x.id).toLocaleString() : ""}</td></tr>`).join("")}</tbody><tfoot><tr class="total"><th scope="row" colspan="6">${rows.length.toLocaleString()} item${rows.length === 1 ? "" : "s"}${open > shownN ? ` <span class="muted" style="font-weight:400">(${shownN.toLocaleString()} shown)</span>` : ""}</th></tr></tfoot>`;
+    : `<tr><th scope="row"><span class="item-cell"><img src="https://images.evetech.net/types/${x.id}/icon?size=32" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'"><button type="button" class="link" data-idb-open="${x.id}" style="color:inherit;text-align:left">${esc(x.n)}</button>${x.p && idbOnMarket(x.id) ? mbGo(x.id, x.n) : ""}${x.p ? "" : ` <span class="pill mid">not in the game</span>`}</span></th><td>${esc(idbGrp(x))}</td><td>${esc(IDB_META[x.mt] || (x.mt != null ? "Meta group " + x.mt : ""))}</td><td class="num">${x.v != null ? (+x.v).toLocaleString() + " m³" : "—"}</td><td class="num">${x.pv != null ? (+x.pv).toLocaleString() + " m³" : "—"}</td><td class="num">${own.get(x.id) ? own.get(x.id).toLocaleString() : ""}</td></tr>`).join("")}</tbody><tfoot><tr class="total"><th scope="row" colspan="6">${rows.length.toLocaleString()} item${rows.length === 1 ? "" : "s"}${open > shownN ? ` <span class="muted" style="font-weight:400">(${shownN.toLocaleString()} shown)</span>` : ""}</th></tr></tfoot>`;
   if (idbItem) renderIdbItem();
 }
 // Dogma attribute names and units (ESI's /dogma/attributes/, CCP's own data), read once each: [name, unit, published]
@@ -10531,7 +10935,7 @@ function renderIdbItem() {
   const box = $("idb-item"), I = idbItem; if (!box || !I) return;
   const x = (idbData && idbData.byId.get(I.id)) || { id: I.id, n: idbName(I.id) }, t = I.t, C = idbCfg(), pr = validPricing(C.price, "split");
   $("idb-item-title").innerHTML = `<span class="item-cell"><img src="https://images.evetech.net/types/${I.id}/icon?size=64" alt="" width="40" height="40" onerror="this.style.visibility='hidden'">${esc(x.n)}</span>`;
-  const bar = $("idb-item-bar"); if (!bar.contains(document.activeElement)) bar.innerHTML = `<label class="label" for="idb-price">Price at</label>${pricingOptions(pr, 'id="idb-price"')}<button type="button" class="link" data-copy="${esc(x.n)}" data-copy-msg="Name copied">Copy the name</button><button type="button" class="link" data-idb-close="1">Close</button>`;
+  const bar = $("idb-item-bar"); if (!bar.contains(document.activeElement)) bar.innerHTML = `<label class="label" for="idb-price">Price at</label>${pricingOptions(pr, 'id="idb-price"')}${x.p && idbOnMarket(I.id) ? `<button type="button" class="link" data-mb-open="${I.id}">View on the Trading board</button>` : ""}<button type="button" class="link" data-copy="${esc(x.n)}" data-copy-msg="Name copied">Copy the name</button><button type="button" class="link" data-idb-close="1">Close</button>`;
   if (I.err) { box.innerHTML = `<div class="notice" style="color:var(--bad);border-color:var(--bad)">This item couldn't be read: ${esc(I.err)}</div>`; return; }
   if (!t) { box.innerHTML = `<p class="muted" style="margin:0">Reading…</p>`; return; }
   const li = (k, v) => v == null || v === "" ? "" : `<li><span class="grow">${esc(k)}</span><span class="val">${v}</span></li>`, M = idbData && idbData.M;
@@ -10577,7 +10981,7 @@ const BOOST_ATTR = [[175, "Charisma"], [176, "Intelligence"], [177, "Memory"], [
 function boostCfg() { const c = state.misc.boost = state.misc.boost || {}; if (c.v !== 1) Object.assign(c, { v: 1, at: "pr:jsv", bio: null }); return c; }
 let boostList = null, boostBusy = false, boostErr = ""; const boostPrice = {};   // per place: { busy, p: { type: price or null }, err }
 function boostAt() { const at = String(boostCfg().at || ""), [k, id] = at.split(":");
-  return k === "pr" && pricings().some(p => p.id === at.slice(3)) || k === "st" && TRADE_HUBS.some(h => String(h.id) === id) || k === "cit" && citadelMarkets().some(c => String(c.id) === id) ? at : "pr:jsv"; }
+  return k === "pr" && pricings().some(p => p.id === at.slice(3)) || k === "st" && tradeHubs().some(h => String(h.id) === id) || k === "cit" && citadelMarkets().some(c => String(c.id) === id) ? at : "pr:jsv"; }
 const boostBio = () => { const b = boostCfg().bio; return b != null ? b : Math.max(0, ...state.chars.map(c => lv(c, "Biology"))); };
 async function boostLoad() {
   if (boostList || boostBusy) return; boostBusy = true; boostErr = ""; renderBoost();

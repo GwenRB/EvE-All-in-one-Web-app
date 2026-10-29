@@ -22,13 +22,15 @@
 
 **Market**
 - [Prices](Prices)
-- [Trading board](Trading-board)
 - [Suppliers](Suppliers)
 - [Contract management](Contract-management)
 - [Contracts browser](Contracts-browser)
 - [Shortages](Shortages)
 - [Profit and loss](Profit-and-loss)
 - [LP store](LP-store)
+
+**Trading board**
+- [Trading board](Trading-board)
 
 **Stock · Pilots**
 - [Assets](Assets)

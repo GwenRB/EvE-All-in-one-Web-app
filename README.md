@@ -60,7 +60,7 @@ Everything is stored in your browser (localStorage and IndexedDB). **Settings �
 
 ## Pages
 
-Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Stock ▾ · Pilots ▾ · Other ▾ · Settings · Notes · Tests**
+Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · Trading board · Stock ▾ · Pilots ▾ · Other ▾ · Settings · Notes · Tests**
 
 What each page is for, and how to use it step by step, is in [the wiki](https://github.com/GwenRB/EvE-All-in-one-Web-app/wiki) (its home page lists every page of the tool). Each page that computes numbers also explains how in **How this page works**, folded at its bottom.
 

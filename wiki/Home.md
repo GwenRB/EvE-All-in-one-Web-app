@@ -24,7 +24,8 @@ The tab bar, left to right:
 | **Map** | [Map and jump planner](Map-and-jump-planner), [Supply chain](Supply-chain) | Map of New Eden, jump routes, jump freighter logistics |
 | **Industry ▾** | [PI Management](PI-Management), [Reactions management](Reactions-management), [Build planning](Build-planning), [Orders management and Jobs](Orders-management-and-Jobs) | Plan and run production |
 | **Planets** | [Planets](Planets) | Your colonies, ordered by when they stop |
-| **Market ▾** | [Prices](Prices), [Trading board](Trading-board), [Suppliers](Suppliers), [Contract management](Contract-management), [Contracts browser](Contracts-browser), [Shortages](Shortages), [Profit and loss](Profit-and-loss), [LP store](LP-store) | Buying, selling, clients and money |
+| **Market ▾** | [Prices](Prices), [Suppliers](Suppliers), [Contract management](Contract-management), [Contracts browser](Contracts-browser), [Shortages](Shortages), [Profit and loss](Profit-and-loss), [LP store](LP-store) | Buying, selling, clients and money |
+| **Trading board** | [Trading board](Trading-board) | A market browser: every order for an item in every region, the hubs side by side, price history |
 | **Stock ▾** | [Assets](Assets) | What you own and where |
 | **Pilots ▾** | [Characters](Characters), [Skills](Skills), [Omega](Omega), [Fittings](Fittings) | Your pilots |
 | **Other ▾** | [Misc](Misc), [Corporation](Corporation), [Intel](Intel), [Item database](Item-database) | Calculators, wallets, attribute boosters, structure fuel, moon mining, in-game notifications, every item in the game |

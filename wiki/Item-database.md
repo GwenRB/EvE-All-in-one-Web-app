@@ -10,6 +10,8 @@
 
 Results are grouped by category and group (fold them like any grouped table) and sorted by the column you click. Each category shows its first 100 items; its **Show more** line shows more of that category.
 
+Items sold on the market have a small chart button next to their name: it opens the item on the [Trading board](Trading-board) (every order for it, the hubs side by side, its price history). An opened item has **View on the Trading board** in its title bar.
+
 ## Open an item
 Click its name. The panel below shows:
 - **What it is:** type ID, group, category, market group, tech level, meta group, race, volume, packaged volume, mass, capacity, portion size and CCP's base price (a reference value, not a market price).

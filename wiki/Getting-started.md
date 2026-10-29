@@ -46,7 +46,7 @@ New permissions start unticked. When you want a new one:
 3. Log in again with **each** pilot, so their login includes it.
 
 ## 5. First things to set up
-- **Settings → Pricings:** the default Jita prices are there already; add a citadel's market or a buyback % if you use them. See [Pricings](Pricings).
+- **Settings → Pricings and HUBs:** the default Jita prices are there already; add a citadel's market or a buyback % if you use them. See [Pricings](Pricings).
 - **Settings → Market taxes:** check your sales tax and broker fee.
 - **Map → Citadels:** add the structures you build or react in, with their rigs, so plans place jobs in the right place. See [Map and jump planner](Map-and-jump-planner#citadels).
 - **Omega:** enter when each account's Omega ends (ESI doesn't share it). See [Omega](Omega).
