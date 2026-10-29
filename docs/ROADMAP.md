@@ -35,6 +35,13 @@
 - Moon mining and notifications are kept 90 days in this browser only (not in backups); a structure's name in a notification is only known for structures the tool already knows.
 - Ideas: chunk times on the Overview's calendar; notifications as To-Do alerts (only the Intel tab counts them now); fuel blocks to buy on To-Do.
 
+## Sovereignty
+- Only alliances holding sovereignty are ranked, not every alliance (DOTLAN lists ~3,000): members are counted one request per corporation, so every alliance would be thousands more.
+- The first read takes a few minutes (one request per corporation of those alliances); it's then kept a day. Not checked yet against the real ESI for how long it takes and whether ESI's rate limits slow it.
+- CCP's data has no sovereignty history, so Top sov changes and Alliance movements compare with the tool's own snapshots: one a day, only on days the page is opened, in this browser only (not in backups). They show nothing the first day and count from the oldest snapshot until there are 7 days. A day the page isn't opened leaves a gap; a system that changed hands and changed back between two snapshots isn't seen.
+- Movements only follow corporations of alliances holding sovereignty (then or now): a corporation moving between two alliances without sov isn't seen.
+- Ideas: keep the snapshots in backups; read DOTLAN-like history from another source if the user agrees to a third party.
+
 ## Ideas from ESI (not built yet)
 Suggested on 2026-10-20 (built since: Profit and loss; skill queues on Skills, To-Do and Fittings; Upcoming events; LP store; danger on the Map; server status; empty job slots on To-Do; market history on the Trading board and LP store; client deliveries; public contracts vs building; fleets on the calendar; moon mining, structure fuel and running costs (Corporation page); in-game notifications (Intel page); customs office taxes (PI Management and Planets)). Each new ESI read needs its scope added to `ESI_SCOPE` / `SCOPE_USE` (new scopes start unticked), to the user's application on developers.eveonline.com, and a new login for every pilot.
 - **Market orders, what's left** (orders are read since Net worth: `c.orders`, `state.misc.corpOrders`): your orders against the Jita / citadel orders already read (undercut or not), order slots used vs the skill maximum, relist cost, order history (`/orders/history/`). Market menu.

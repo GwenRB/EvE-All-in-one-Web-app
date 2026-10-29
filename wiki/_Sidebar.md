@@ -46,6 +46,7 @@
 - [Item database](Item-database)
 - [Settings and backups](Settings-and-backups)
 - [Tests](Tests)
+- [Sovereignty](Sovereignty)
 
 **Help**
 - [FAQ and troubleshooting](FAQ-and-troubleshooting)

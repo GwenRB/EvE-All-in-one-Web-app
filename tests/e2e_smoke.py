@@ -145,7 +145,7 @@ async def tabs_and_menus(t):
     t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab]')].map(b=>b.dataset.tab)"), ["prices", "suppliers", "contracts", "cbrowse", "shortages", "pnl", "lp"], "Market menu pages, the Contracts browser, Profit and loss and LP store included")
     t.eq(await t.js("(()=>{const n=[...document.querySelector('.tabs').children]; const i=n.findIndex(x=>x.matches('button[data-tab=trading]')); return [n[i-1].querySelector('button[data-tab=prices]')!=null, n[i+1].querySelector('button[data-tab=stock]')!=null]})()"), [True, True], "the Trading board is its own tab between the Market and Stock menus")
     t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=misc]) button[data-tab]')].map(b=>b.dataset.tab)"), ["misc", "corp", "intel", "itemdb"], "the Other menu holds Misc, Corporation, Intel and the Item database")
-    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-3)"), ["settings", "notes", "tests"], "Settings, Notes and Tests end the bar")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-4)"), ["settings", "notes", "tests", "sov"], "Settings, Notes, Tests and Sovereignty end the bar")
     await t.tab("misc"); h = await t.js("document.querySelector('#page-misc h2').textContent"); t.ok(h.endswith("Blueprint calculator"), "Misc's first panel is the Blueprint calculator", h)
 
 @scenario
@@ -906,6 +906,21 @@ async def jump_planner_and_blueprint_calc(t):
     t.ok(await t.until("(s=>s.includes('Incursion (no cynos) · 1 system') && !s.includes('1 systems'))(document.getElementById('map-legend').innerText)", 8), "incursions show on the map legend", await t.text("#map-legend"))
     await t.pg.fill("#jp-from", "Charlie"); await t.pg.fill("#jp-to", "Echo"); await t.pg.select_option("#jp-trips", "round"); await t.pg.fill("#jp-rounds", "3"); await t.pg.click("#jp-form button[type=submit]"); await asyncio.sleep(0.3)
     jp = t.show("round trips", (await t.text("#jp-out"))[:400]); t.ok(jp and "jump" in jp.lower(), "the jump planner plans round trips", jp)
+    iso = "+document.querySelectorAll('#jp-out .slot-tile')[1].querySelector('.muted').textContent.split(' ')[0].replace(/[^0-9]/g,'')"
+    i5 = await t.js(iso); await t.pg.select_option("#jp-jfc", "0"); await asyncio.sleep(0.3); i0 = await t.js(iso)
+    t.ok(i5 and abs(i0 / i5 - 2) < 0.01, "Jump Fuel Conservation set on the planner: 0 burns twice what the pilot's V does", [i5, i0])
+    await t.pg.select_option("#jp-jfs", "0"); await asyncio.sleep(0.3); j0 = await t.js(iso)
+    t.ok(j0 > i0 and await t.js("state.misc.map.jfc === '0' && state.misc.map.jfs === '0'"), "Jump Freighters set on the planner changes the fuel, both kept", [i0, j0])
+    await t.pg.select_option("#jp-jfc", ""); await t.pg.select_option("#jp-jfs", ""); await asyncio.sleep(0.3)
+    t.eq(await t.js(iso), i5, "Pilot's goes back to the pilot's own levels")
+    jdc = t.show("range by JDC", await t.js("()=>{ const d=state.misc.types.Rhea, r=()=>mapRange().range/d.jumpRange; const out=[$('jp-jdc').value, r()]; state.misc.map.jdc='5'; out.push(r()); state.misc.map.jdc=''; return out; }"))
+    t.ok(jdc[0] == "" and abs(jdc[1] - 1.8) < 1e-9 and abs(jdc[2] - 2) < 1e-9, "Jump Drive Calibration: Pilot's (the default) uses the pilot's IV, a picked V gives +100%", jdc)
+    inc = "()=>{ const P=state.misc.map.plan; P.from='Charlie'; P.to=mapIndex().byId.get(30000006).n; P.trips='one'; planJumps(); return $('jp-out').innerText; }"
+    t.ok("incursion" in (await t.js(inc)).lower(), "a jump freighter can't jump into an incursion")
+    await t.js("()=>{ state.misc.types.Sin={...state.misc.types.Rhea, id:22430, req:{}, fuel:[]}; state.misc.map.ship='a|Sin'; renderMap(); }")
+    out = t.show("black ops", (await t.js(inc))[:300])
+    t.ok("incursion" not in out.lower() and "jumps" in out.lower(), "Black Ops jump into an incursion (covert cynos)", out)
+    await t.js("()=>{ delete state.misc.types.Sin; state.misc.map.ship=''; renderMap(); }")
     await t.tab("misc"); await t.pg.fill("#bc-sys", "Delta"); await t.pg.dispatch_event("#bc-sys", "change")
     await t.pg.fill("#bc-bp", "Venture Blueprint"); await t.pg.dispatch_event("#bc-bp", "input"); await asyncio.sleep(0.2)
     t.eq(await t.js("document.getElementById('bc-me0').value"), "10", "the Blueprint calculator starts from the copy you own")
@@ -1696,34 +1711,80 @@ async def boosters(t):
 
 @scenario
 async def bp_library(t):
-    """Tests page: the Blueprint library (originals with their levels, research and copying jobs matched to them, the others, every copy)."""
+    """Misc page: the Blueprint library (originals with their levels, research and copying jobs matched to them, the others, then every copy)."""
     await t.js("""()=>{const now=Date.now(); state.misc.ownedBps={'char:9001':{at:now,name:'Ender Alpha',list:[[32881,5,10,-1,0],[601,0,0,-1,0,3],[501,8,16,10,1],[501,8,16,10,1],[501,10,20,5,1]]}};
       state.chars[0].jobs=[{id:1,activity:4,bp:32881,runs:3,start:now-3600e3,end:now+7200e3,product:'x'},{id:2,activity:5,bp:601,runs:4,lr:10,start:now,end:now+864e5,product:'x'},{id:3,activity:3,bp:701,runs:2,start:now-7200e3,end:now-3600e3,product:'x'},{id:4,activity:1,bp:32881,runs:1,start:now,end:now+3600e3,product:'x'}];
       saveMisc(); saveLocal();}""")
-    await t.tab("tests", 0.5)
-    t.ok(await t.js("!document.getElementById('page-tests').querySelector('#boost-table') && !!document.getElementById('page-misc').querySelector('#boost-table')"), "the attribute boosters are on the Misc page, not on Tests")
+    await t.tab("misc", 0.5)
+    t.ok(await t.js("!document.getElementById('page-tests').querySelector('#bpl-table') && !!document.getElementById('page-misc').querySelector('#bpl-table') && !document.getElementById('bpc-table')"), "the blueprint library is on the Misc page, copies in the same table")
     grp = t.show("groups", await t.js("[...document.querySelectorAll('#bpl-table tr.group th')].map(h=>h.textContent.replace(/[▾▸]/g,'').replace(/·.*$/,'').trim())"))
-    t.eq(grp, ["In research 2", "Copying 1", "Not in a job 1"], "originals grouped: in research, copying, the others")
+    t.eq(grp, ["In research 2", "Copying 1", "Not in a job 1", "Copies 2"], "originals grouped: in research, copying, the others; copies last")
     rows = t.show("rows", await t.js("[...document.querySelectorAll('#bpl-table tbody tr:not(.group)')].map(r=>[...r.cells].map(c=>c.innerText.replace(/\\s+/g,' ').trim()))"))
-    t.ok(rows[1][1:3] == ["5", "10"] and "ME research · 5 → 8" in rows[1][4] and "h" in rows[1][5], "ME research adds its runs to the original's ME, with when it ends", rows[1])
-    t.ok(rows[0][1] == "—" and "TE research · +4" in rows[0][4] and "Ready" in rows[0][5], "a job whose blueprint isn't in the list still shows, without levels; past its end it's ready", rows[0])
-    t.ok("4 copies × 10 runs" in rows[2][4] and "× 2" in rows[3][0], "a copying job takes one original from a stack, the others stay idle", rows[2:])
-    t.ok(not any("Manufacturing" in r[4] for r in rows), "manufacturing jobs aren't listed", rows)
+    t.ok(rows[1][1:3] == ["5", "10"] and "ME research · 5 → 8" in rows[1][5] and "h" in rows[1][6], "ME research adds its runs to the original's ME, with when it ends", rows[1])
+    t.ok(rows[0][1] == "—" and "TE research · +4" in rows[0][5] and "Ready" in rows[0][6], "a job whose blueprint isn't in the list still shows, without levels; past its end it's ready", rows[0])
+    t.ok("4 copies × 10 runs" in rows[2][5] and "× 2" in rows[3][0], "a copying job takes one original from a stack, the others stay idle", rows[2:])
+    t.ok(not any("Manufacturing" in r[5] for r in rows), "manufacturing jobs aren't listed", rows)
     tiles = t.show("tiles", await t.js("[...document.querySelectorAll('#bpl-summary .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' '))"))
     t.ok([x.lower()[:13] for x in tiles] == ["originals 5 3", "in research 2", "copying 1 nex", "copies 3 25 r"], "tiles: originals, in research, copying, copies and their runs", tiles)
-    cps = t.show("copies", await t.js("[...document.querySelectorAll('#bpc-table tbody tr')].map(r=>[...r.cells].slice(1).map(c=>c.innerText.trim()))"))
-    t.eq(sorted(cps), [["10", "20", "5", "1", "Ender Alpha"], ["8", "16", "10", "2", "Ender Alpha"]], "copies: one line per ME, TE and runs, with how many")
-    t.ok(await t.js("()=>{renderBpLib(); return $('bpc-table').innerHTML.split('/bpc?').length === 3 && !$('bpl-table').innerHTML.includes('/bpc?');}"), "copies show the copy icon, originals the original's")
+    cps = t.show("copies", [r[1:5] for r in rows[4:]])
+    t.eq(sorted(cps), [["10", "20", "5", "Ender Alpha"], ["8", "16", "10", "Ender Alpha"]], "copies: one line per ME, TE and runs")
+    t.ok(sorted("× 2" in r[0] for r in rows[4:]) == [False, True] and all(r[3] == "—" for r in rows[:4]), "copies say how many (× 2); originals have no runs", rows)
+    t.ok(await t.js("()=>{renderBpLib(); return $('bpl-table').innerHTML.split('/bpc?').length === 3;}"), "copies show the copy icon, originals the original's")
     # Location: each blueprint's station or structure (one in a container counts where the container is); saves from before show as unknown
     t.eq(await t.js("""()=>{state.assets={'char:9001':{rows:[],other:[],places:{1030000000001:60008494}}}; return slimBps([{type_id:1,location_id:1030000000001,quantity:-2,runs:5},{type_id:2,location_id:60003760,quantity:-1,runs:-1}]).map(b=>b[6]);}"""), [60008494, 60003760], "a blueprint in a container is placed where the container is")
     await t.js("""()=>{Object.assign(state.locNames,{60003760:'Jita hub',60008494:'Amarr hub'}); const L=state.misc.ownedBps['char:9001'].list; L[0][5]=1; L[0][6]=60003760; L[1][6]=60003760; L[2][5]=1; L[2][6]=60008494; L[3][5]=1; L[3][6]=60008494; renderBpLib();}""")
     opts = t.show("locations", await t.js("[...$('bpl-loc').options].map(o=>o.textContent)"))
     t.eq(opts, ["Every location", "Amarr hub (2)", "Jita hub (4)", "Unknown: refresh from ESI (2)"], "Location lists each place with how many blueprints, unknown for old saves")
     await t.pg.select_option("#bpl-loc", "60008494"); await asyncio.sleep(0.1)
-    cps = t.show("copies at Amarr", await t.js("[...document.querySelectorAll('#bpc-table tbody tr')].map(r=>r.cells[3].innerText.trim())"))
-    t.ok(cps == ["10"] and "no original" in (await t.text("#bpl-table tbody")).lower() and await t.js("$('bpl-summary').innerText.includes('2')"), "Location filters both tables and the tiles", cps)
+    cps = t.show("copies at Amarr", await t.js("[...document.querySelectorAll('#bpl-table tbody tr:not(.group)')].map(r=>r.cells[3].innerText.trim())"))
+    t.ok(cps == ["10"] and await t.js("[...document.querySelectorAll('#bpl-table tr.group')].length === 1 && $('bpl-summary').innerText.includes('2')"), "Location filters the table and the tiles", cps)
     await t.pg.select_option("#bpl-loc", ""); await asyncio.sleep(0.1)
     await t.pg.screenshot(path=SP + "bp_library.png", full_page=True)
+
+@scenario
+async def sovereignty(t):
+    """Sovereignty page: alliances ranked by systems, coalitions adding them up, 7-day sov changes and alliance movements against a snapshot."""
+    await t.js("""()=>{ const day=864e5, now=Date.now(), A=99000001, B=99000002;
+      window._esiGet=esiGet; esiGet=async(p)=>{ const r={'/sovereignty/map/':[{system_id:30000001,alliance_id:A},{system_id:30000002,alliance_id:A},{system_id:30000003,alliance_id:B},{system_id:30000005,faction_id:500001}],
+        ['/alliances/'+A+'/']:{name:'Alpha Alliance',ticker:'AA'},['/alliances/'+A+'/corporations/']:[98000001,98000010],['/alliances/'+B+'/']:{name:'Beta Alliance',ticker:'BB'},['/alliances/'+B+'/corporations/']:[98000011],
+        '/corporations/98000001/':{name:'Fake Corp',ticker:'FC',member_count:10,alliance_id:A},'/corporations/98000010/':{name:'Newcomers',ticker:'NEW',member_count:30,alliance_id:A},'/corporations/98000011/':{name:'Movers',ticker:'MV',member_count:50,alliance_id:B},
+        '/corporations/98000012/':{name:'Leavers',ticker:'LV',member_count:5},'/corporations/98000010/alliancehistory/':[{alliance_id:99000003,start_date:new Date(now-100*day).toISOString()},{alliance_id:A,start_date:new Date(now-day).toISOString()}]}[p];
+        if (r === undefined) throw new Error('no fake for '+p); return r; };
+      sovInfo={v:1,al:{},corp:{},names:{99000003:'Gamma Alliance'}}; sovHist={v:1,snaps:[{at:now-3*day,own:[[30000001,B],[30000003,B],[30000004,B]],ca:{98000001:A,98000011:A,98000012:B}}]}; }""")
+    await t.tab("sov", 0.3)
+    t.ok(await t.until("!sovRun && !!sov && sovHist.snaps.length===2", 15), "reading sovereignty, alliances and corporations", await t.text("#sov-status"))
+    rows = t.show("ranking", await t.js("[...document.querySelectorAll('#sov-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
+    t.eq(rows, [["1", "Alpha Alliance [AA]", "2", "40", "2"], ["2", "Beta Alliance [BB]", "1", "50", "1"]], "alliances ranked by systems, with members and corporations (factions left out)")
+    await t.pg.fill("#sovc-name", "Test coalition"); await t.pg.click("#sovc-form button[type=submit]"); await asyncio.sleep(0.2)
+    cid = await t.js("sovCfg().coals[0].id")
+    for a in ("99000001", "99000002"): await t.pg.select_option(f"[data-sov-of='{a}']", cid); await asyncio.sleep(0.2)
+    co = t.show("coalition", await t.js("[...document.querySelectorAll('#sovc-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
+    t.ok(len(co) == 1 and co[0][0] == "Test coalition" and co[0][2:] == ["3", "90", "3"] and "AA" in co[0][1] and "BB" in co[0][1], "a coalition adds up its alliances' systems, members and corporations", co)
+    t.ok(co[0][1].index("BB") < co[0][1].index("AA"), "a coalition lists its alliances by members, most first", co)
+    ch = t.show("sov changes", await t.js("[...document.querySelectorAll('#sovx-table tbody tr')].map(r=>[...r.cells].map(c=>c.innerText.trim()))"))
+    t.eq(ch, [["Alpha Alliance [AA]", "+2", "0", "+2"], ["Beta Alliance [BB]", "0", "−2", "−2"]], "sov changes: systems gained and lost since the snapshot")
+    mv = t.show("movements", await t.js("[...document.querySelectorAll('#sovm-table tbody tr')].map(r=>[...r.cells].map(c=>c.innerText.trim()))"))
+    t.eq(mv, [["Movers [MV]", "50", "AA", "BB"], ["Newcomers [NEW]", "30", "Gamma Alliance", "AA"], ["Leavers [LV]", "5", "BB", "None"]], "movements: corporations that changed alliance, biggest first (from and to by ticker)")
+    t.ok("Since" in await t.text("#sovx-since"), "the 7-day panels say since when they count")
+    for w in (1280, 1600, 1920, 2560):
+        await t.pg.set_viewport_size({"width": w, "height": 1000}); await asyncio.sleep(0.2)
+        lay = t.show(f"layout {w}", await t.js("""(()=>{ const R=(e)=>{const r=e.getBoundingClientRect(); return [Math.round(r.left),Math.round(r.right),Math.round(r.height)]};
+          return {wrap:R(document.querySelector('.wrap')), main:R(document.querySelector('.sov-layout > div')), side:R(document.querySelector('.sov-side')), tabs:R(document.querySelector('nav.tabs')),
+            tables:[...document.querySelectorAll('.sov-side table')].map(x=>[x.scrollWidth, x.parentElement.clientWidth]), vw:document.documentElement.clientWidth, sw:document.documentElement.scrollWidth,
+            logo:R(document.querySelector('header.top .logo-l')), title:R(document.querySelector('header.top h1')), sticky:getComputedStyle(document.querySelector('.sov-stick')).position}; })()"""))
+        t.ok(lay["side"][0] >= lay["wrap"][1] and lay["side"][1] <= lay["vw"] and lay["sw"] <= lay["vw"] and lay["sticky"] == "sticky", f"{w} px: the 7-day panels sit right of the page body, in the window, and stay in view", lay)
+        t.ok(all(a <= b for a, b in lay["tables"]), f"{w} px: their tables fit the rail", lay["tables"])
+        t.ok(lay["logo"][1] <= lay["title"][0], f"{w} px: the header logo doesn't cover the title", lay)
+    # Map: the coalition your pilots' alliance is in is allied by default; a coalition's alliances share a colour
+    mp = t.show("map allies", await t.js("""()=>{ state.chars[0].allyId=99000001; const a=[...allyIds()].sort(), m=state.misc.map=state.misc.map||{}; delete m.allyCoals;
+      const col=(id)=>sovColor({id, s:-0.5}, new Set()), same=col(30000001)===col(30000003); m.allyCoals=[]; const none=allyIds().size; delete m.allyCoals; return {a, same, none}; }"""))
+    t.ok(mp["a"] == [99000001, 99000002] and mp["none"] == 0, "Map allies: your pilots' coalition by default, removable", mp)
+    t.ok(mp["same"], "colour by sovereignty: one coalition, one colour", mp)
+    await t.pg.click("[data-sov-coal-del]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("!sovCfg().coals.length && !Object.keys(sovCfg().of).length"), "removing a coalition takes its alliances out of it")
+    t.ok(await t.js("(()=>{ const td=document.querySelector('#sovc-table td.empty'); return !!td && td.getBoundingClientRect().width > td.closest('table').getBoundingClientRect().width - 2; })()"), "an empty table's message spans every column")
+    await t.pg.screenshot(path=SP + "sovereignty.png", full_page=True)
+    await t.js("()=>{ esiGet=window._esiGet; }")
 
 @scenario
 async def shared_ui(t):
