@@ -43,6 +43,7 @@
 - [Intel](Intel)
 - [Item database](Item-database)
 - [Settings and backups](Settings-and-backups)
+- [Tests](Tests)
 
 **Help**
 - [FAQ and troubleshooting](FAQ-and-troubleshooting)

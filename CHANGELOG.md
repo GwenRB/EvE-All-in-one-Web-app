@@ -9,6 +9,32 @@ How entries are kept:
 
 ---
 
+## 2026-10-29 — Tests page with attribute boosters, Reddit news channel, steadier background sync
+
+### Added
+- A **Tests** page at the end of the tab bar, with an **Attribute boosters** panel: every booster that adds to your attributes (cerebral accelerators), what it costs a month (30 days, injected back to back), the extra skill points it gives a month and what each costs, with its bonuses, how long it lasts (your Biology level counts) and the best one for each attribute. Buy at any of your pricings, a trade hub or a citadel market. Boosters with an expiry date are flagged, expired ones listed apart.
+- EvE News: a **Reddit r/Eve: top today** channel, the day's 5 most upvoted posts on r/Eve, on by default (untick it in Settings → EvE News channels).
+
+### Fixed
+- Logins: the background sync could stay on "Syncing in the background" for hours for a pilot whose corporation has many contracts. ESI only lets the tool read so many contracts' items at a time; when it says to slow down, the sync now stops reading items and finishes, and the rest are read at the next syncs. The line also says what each pilot is reading (skills, contracts, hangars…), an ESI request that never answers gives up after a minute and is tried again, and a save the browser refuses no longer waits forever.
+
+## 2026-10-27 — Import calculator with suppliers, map legend toggles, materials needed
+
+### Added
+- Prices → Import calculator: a "Look at your suppliers too" tick box (their stock is bought when it's cheaper; picked up in Jita pays the hauling), a "Sync markets" button to read both markets again after you bought there, and item names copy on click.
+- Map: click a line of the legend to hide or show those markers on the map (struck out while hidden); homes and incursions get their own tick boxes too.
+- Build planning: a "Materials needed" summary near the top: every raw material the build uses (needed, from your stock, to buy) and the components built on the way, with a button to copy the raw materials.
+- To-Do → Empty job slots: "Show" chips to list only some kinds of slot (manufacturing, science, reactions) and only some pilots; the To-Do tab's count follows them.
+- PI Management → Shopping: "Round up to" rounds every quantity to buy up to a multiple you choose (To-Do's Buy for PI too), and an "Import calculator" button next to Copy multibuy opens the list there.
+
+### Fixed
+- Import calculator: an item without enough for sale no longer counts as if every unit was bought. Only what is for sale is counted (cheapest first, wherever it is); the missing units are shown per item and left out of the totals.
+
+## 2026-10-27 — Unused code removed
+
+### Removed
+- Unused code and styles taken out of the page (old structure icon styles, a bar chart style, helpers nothing called). Nothing you use changes.
+
 ## 2026-10-27 — Background sync after logins, pilots on the map, safer launchers
 
 ### Added

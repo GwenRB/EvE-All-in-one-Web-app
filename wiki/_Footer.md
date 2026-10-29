@@ -1,1 +1,1 @@
-This guide matches the tool as of 2026-10-27 (changelog: *2026-10-27 — Background sync after logins, pilots on the map, safer launchers*) · [What changed](https://github.com/GwenRB/EvE-All-in-one-Web-app/blob/main/CHANGELOG.md)
+This guide matches the tool as of 2026-10-29 (changelog: *2026-10-29 — Tests page with attribute boosters, Reddit news channel, steadier background sync*) · [What changed](https://github.com/GwenRB/EvE-All-in-one-Web-app/blob/main/CHANGELOG.md)

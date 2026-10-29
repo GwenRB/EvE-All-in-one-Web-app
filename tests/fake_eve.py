@@ -85,6 +85,12 @@ WALLET_T=[{"transaction_id":501,"date":"2026-10-15T12:01:00Z","type_id":16671,"q
 NAMES.update({35878:"Standup Manufacturing Plant I",35891:"Standup Research Lab I",35899:"Standup Reprocessing Facility I",45009:"Standup Moon Drill I",35825:"Raitaru",35835:"Athanor",4246:"Hydrogen Fuel Block",4247:"Helium Fuel Block"})
 for k,g,f in [(35878,1415,12),(35891,1415,12),(35899,1322,10),(45009,1887,5)]: TYPES[k]={"group_id":g,"category_id":66,"dogma_attributes":dd({2109:f})}
 TYPES[35825]={"group_id":1404,"category_id":65,"dogma_attributes":dd({2339:-25})}; TYPES[35835]={"group_id":1406,"category_id":65,"dogma_attributes":dd({2339:-20})}
+# Attribute boosters (Tests page, group 303): +8 for 3 days, +10 for a day that expires in 2030, one not on the market, one expired in 2016,
+# one adding to two attributes with no price, and one adding no attribute (left out)
+NAMES.update({9500:"Fake Expert Accelerator",9501:"Fake Event Accelerator",9502:"Fake Contract Accelerator",9503:"Fake Old Accelerator",9504:"Fake Focus Booster",9505:"Fake Speed Booster"})
+for k,b,ms,mg,ex in [(9500,[8]*5,259200000,2487,None),(9501,[10]*5,86400000,2487,21915),(9502,[12]*5,86400000,None,None),(9503,[10]*5,86400000,2487,17032),(9504,[0,0,0,6,4],86400000,2487,None),(9505,[0]*5,86400000,2487,None)]:
+    TYPES[k]={"group_id":303,"category_id":20,"volume":1,**({"market_group_id":mg} if mg else {}),"dogma_attributes":dd({**{175+i:v for i,v in enumerate(b)},330:ms,**({2422:ex} if ex else {})})}
+PRICE.update({9500:30000000.0,9501:10000000.0,9503:1000.0})
 def build_sde():
     """CCP's static data zip, faked from the tables above (the same items EVE Ref answers for), plus fixtures/sde.zip's own lines
     (its reaction formulas and planet schematics win where both have an entry). The app reads items, blueprints and the map from it."""
@@ -144,6 +150,10 @@ async def handle(route):
         return await route.fulfill(status=200, headers={"Content-Type":"application/xml"}, body='\ufeff<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>EVE Online patch-notes</title>'
             '<item><title>News 1</title><link>https://www.eveonline.com/news/view/n1</link><pubDate>Mon, 19 Oct 2026 14:00:00 GMT</pubDate><description>&lt;p&gt;Same as the launcher&lt;/p&gt;</description></item>'
             '<item><title>Patch Notes - Version 9.99</title><link>https://www.eveonline.com/news/view/pn999</link><pubDate>Tue, 20 Oct 2026 15:00:00 GMT</pubDate><description>&lt;p&gt;Greetings,&lt;/p&gt;&lt;p&gt;New patch.&lt;/p&gt;&lt;img src="//images.ctfassets.net/x/pn.png" /&gt;</description></item></channel></rss>')
+    if u.startswith("http://localhost:8642/proxy") and "reddit.com" in u:
+        return await route.fulfill(status=200, headers={"Content-Type":"application/octet-stream"}, body='<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><title>top scoring links : Eve</title>'
+            '<entry><author><name>/u/pilot</name></author><content type="html">&lt;!-- SC_OFF --&gt;&lt;div class=&quot;md&quot;&gt;&lt;p&gt;Ten crates opened.&lt;/p&gt;&lt;/div&gt;&lt;!-- SC_ON --&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/pilot&quot;&gt; /u/pilot &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://v.redd.it/x&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/Eve/comments/1x/crates/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt;</content>'
+            '<id>t3_1x</id><link href="https://www.reddit.com/r/Eve/comments/1x/crates/" /><updated>2026-10-01T12:00:00+00:00</updated><published>2026-10-01T12:00:00+00:00</published><title>Buying 10 crates</title></entry></feed>')
     if u.startswith("http://localhost:8642"): return await route.continue_()
     if "fonts." in u or "images.evetech" in u or "ctfassets" in u: return await route.abort()
     def j(o, status=200, pages=None):
@@ -189,6 +199,11 @@ async def handle(route):
     if "/markets/10000002/orders" in path:
         tid=int(parse_qs(urlparse(u).query)["type_id"][0]); p=PRICE.get(tid,0)
         return await j([{"location_id":60003760,"price":p*1.1},{"location_id":60003760,"price":p},{"location_id":1,"price":p*0.5}] if p else [], pages=1)
+    # Amarr and Dodixie (Import calculator): sell orders with quantities, Amarr 30 at the price + 20 at +5%, Dodixie 5 at +50%; no buy orders
+    if "/markets/10000043/orders" in path or "/markets/10000032/orders" in path:
+        tid=int(parse_qs(urlparse(u).query)["type_id"][0]); p=PRICE.get(tid,0)
+        if "order_type=buy" in u or not p: return await j([], pages=1)
+        return await j([{"location_id":60008494,"price":p,"volume_remain":30},{"location_id":60008494,"price":p*1.05,"volume_remain":20}] if "10000043" in path else [{"location_id":60011866,"price":p*1.5,"volume_remain":5}], pages=1)
     # wallets (Profit and loss): pilot 9001's journal and market transactions, its jobs with completed ones; the corporation refuses (no Accountant role)
     if path.startswith("/characters/9001/wallet/journal"): return await j(WALLET_J, pages=1)
     if path.startswith("/characters/9001/wallet/transactions"): return await j(WALLET_T)

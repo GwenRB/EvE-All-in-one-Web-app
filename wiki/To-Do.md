@@ -19,5 +19,5 @@ Shopping lists have a tick box per line: tick each one as you buy it.
 
 ## Choosing what counts
 - **Skill queues:** untick a pilot on the [Skills](Skills) page to stop seeing them. Pilots idle for **more than 7 days** only show (and count on the tab) when you tick the box in this panel.
-- **Empty job slots:** ✕ hides one kind of slot for one pilot (for example a pilot who never does science); **Show them again** brings them back. Empty slots only count in the tab's number when you tick **Count in the To-Do tab's number** (off by default).
+- **Empty job slots:** the **Show** chips pick the kinds of slot (manufacturing, science, reactions) and the pilots listed; what you leave out doesn't count in the tab's number either. ✕ hides one kind of slot for one pilot (for example a pilot who never does science); **Show them again** brings them back. Empty slots only count in the tab's number when you tick **Count in the To-Do tab's number** (off by default).
 - **Freight trips:** once you've contracted one out, mark it **Sent by freight**.

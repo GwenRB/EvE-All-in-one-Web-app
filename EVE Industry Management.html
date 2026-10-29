@@ -255,11 +255,6 @@ body:not(.auto-login) .auto-only { display: none }
 .fc-chart text.goal-date { font: 600 10px var(--f-mono); fill: var(--ink); paint-order: stroke; stroke: var(--panel); stroke-width: 3px }
 
 .bars { display: grid; gap: 6px }
-.bar-row { display: grid; grid-template-columns: minmax(120px, 240px) 1fr auto; gap: 10px; align-items: center; font-size: .88rem }
-.bar-row .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.bar-track { height: 14px; background: var(--pip-off); border-radius: 3px; overflow: hidden }
-.bar-track > i { display: block; height: 100% }
-.bar-row .v { font-family: var(--f-mono); min-width: 120px; text-align: right }
 .finder { display: grid; gap: 4px }
 .finder input { font-size: 1rem; padding: 10px 12px }
 tr.loc-row th { padding-left: 34px; font-weight: 400 }
@@ -314,6 +309,7 @@ button.chip { cursor: pointer; font: inherit }
 .map-empty .muted { color: #9fb0c3 }
 .map-empty[hidden] { display: none }
 .map-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: .8rem; color: var(--muted); margin-top: 8px }
+.map-legend [data-ml-leg] { cursor: pointer } .map-legend .off { opacity: .45; text-decoration: line-through }
 .map-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; vertical-align: middle }
 .map-layers { display: inline-flex; flex-wrap: wrap; gap: 4px 10px; font-size: .85rem }
 .map-layers label { display: inline-flex; gap: 4px; align-items: center }
@@ -405,15 +401,6 @@ thead th:first-child { left: 0; z-index: 3 }
 tr.group th { background: var(--panel-2); font-family: var(--f-display); text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; color: var(--accent); padding-top: 10px }
 tr.group th button { margin-left: 8px }
 tr.group td, tr.subgroup td { background: var(--panel-2) }
-.sicon { display: inline-block; width: 16px; height: 16px; vertical-align: -3px; background: currentColor; -webkit-mask: var(--si) center / 16px 16px no-repeat; mask: var(--si) center / 16px 16px no-repeat }
-.si-astrahus { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASElEQVR42mNgGAV4wf///+/9////Hj41TJRaQrEBjNicjVcDI6MSMp8Fh7p8HOIT0QVY8Ni0Gc1lvtjUseCJAV+6hMEoYGAAAFXxGBOdWF8DAAAAAElFTkSuQmCC) }
-.si-keepstar { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42mNgGGjAyMDAwPD///97WCUZGZUIybMg8fPR5Cei8bHKM6GZuJmRkXEzTudikWeiNAwoNoAFnySuwCPWgHyyXYAvIKkeBtQNxP////tSNSkT1AxN6gMLAA6FGUOoQDFMAAAAAElFTkSuQmCC) }
-.si-fortizar { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgGPKAEZvg////72FVzMiohC7GgsfwfDT+RGyKmPA6j5FxMyMj42Z8algIORuX12DeYSHgbFxyE7Ga/v//f18iXOGL7BImSqORYgNYsDmRrIRETCwQSlRDFAAA5vAlY3EQz1gAAAAASUVORK5CYII=) }
-.si-raitaru { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR42mNgGNTg////9/7//38PnxomSi1hxGYrXg2MjErIfBYc6vJxiE9EF2DBY9NmNJf50iQMKDaABU8U+tIlFgY+IQ0DAADU8h/NM3/fxgAAAABJRU5ErkJggg==) }
-.si-sotiyo { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgoAX4////vf///9/DxUcGTJRaxkTIBkIuZIQJkGM7IyOjEgsSP59E/RMZGBgYWNBM3EykF3ypG4gDagALLr8RHROURiMTugAjI6MSsXy4F9AFibGZaoFIMQAA3F8waxjQiAMAAAAASUVORK5CYII=) }
-.si-azbel { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVklEQVR42mNgGNTg////9/7//38PnxomUjRgk2dEV0CMyxgZGZVgbBYs8vkE9E9E5rDgsGEzDi/44g0DcgDFBrAQ61ScAUppLDDhUoCsCJ1P1ZQ4DAAAnm4vzfz7N8oAAAAASUVORK5CYII=) }
-.si-tatara { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaUlEQVR42u1RQQ6AMAhrl31vPlYfiCdM07Bk6sGLPQ0YpRTgaxAAIiIeNZPsEm83+3cA6MZ4aJzKSNLyI9/trQe9YnYl1WQvKIbnlUA/Xgpyx9VrqCdtVepMPivXc4pewWtLDrsHFRp+nCjKWWd5irC/AAAAAElFTkSuQmCC) }
-.si-athanor { --si: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR42u1QOQ4AIAizhu/pY/WBdVFDDF5xtVuB0oJzH9CEJI9EQNeJ0Y8bfdJEJg5ZJ2qOJMM4619/YC6wnKza8okAoE8Ye0fxWHF9wscdCpA2J50FxajRAAAAAElFTkSuQmCC) }
 .fc-chart .legend button.lg { background: none; border: 0; padding: 2px 4px; border-radius: 4px; color: inherit; font: inherit; cursor: pointer; display: inline-flex; gap: 6px; align-items: center }
 .fc-chart .legend button.lg:hover { background: var(--panel-2) }
 .fc-chart .legend button.lg.off { opacity: .45; text-decoration: line-through }
@@ -499,6 +486,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="tabmenu" role="menu" aria-label="Other"><button type="button" data-tab="misc">Misc</button><button type="button" data-tab="corp">Corporation</button><button type="button" data-tab="intel">Intel</button><button type="button" data-tab="itemdb">Item database</button></div></div>
     <button type="button" data-tab="settings">Settings</button>
     <button type="button" data-tab="notes">Notes</button>
+    <button type="button" data-tab="tests">Tests</button>
   </nav>
   <datalist id="skill-names"></datalist>
 
@@ -775,7 +763,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <button type="submit" class="primary">Calculate</button></form>
       <div class="toolbar"><label class="label">Research in</label><select id="bc-st" style="max-width:280px"></select><input type="text" id="bc-sys" list="build-sys" placeholder="System" style="width:140px" aria-label="System"><select id="bc-type" aria-label="Structure type"></select><label class="label" for="bc-tax">Facility tax %</label><input type="text" id="bc-tax" inputmode="decimal" style="width:50px" value="0">
         <label class="label">Materials at</label><span id="bc-price-box"></span></div>
-      <div class="toolbar"><label class="label" for="bc-mfg">Built in</label><select id="bc-mfg" style="max-width:360px"></select><span id="bc-mfg-note" class="muted" style="font-size:.85rem"></span></div>
+      <div class="toolbar"><label class="label" for="bc-mfg">Built in</label><select id="bc-mfg" style="max-width:360px"></select></div>
       <div id="bc-own" class="muted" style="font-size:.85rem"></div>
       <div id="bc-out"></div>
     </section>
@@ -837,7 +825,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
     <section class="panel" aria-labelledby="todo-om-title" id="todo-om-panel" hidden><div class="bp-head"><div><h2 id="todo-om-title">Omega to renew</h2><p class="muted" style="margin:4px 0 0">Accounts whose Omega ends within 7 days (dates from the Omega tab).</p></div><button type="button" class="link" data-tab-go="omega">Open Omega</button></div><div id="todo-om"></div></section>
     <section class="panel" aria-labelledby="todo-fuel-title" id="todo-fuel-panel" hidden><div class="bp-head"><div><h2 id="todo-fuel-title">Structures to refuel</h2><p class="muted" style="margin:4px 0 0">Your corporation's structures whose fuel runs out within the warning set on the Corporation page.</p></div><button type="button" class="link" data-tab-go="corp">Open Corporation</button></div><div id="todo-fuel"></div></section>
     <section class="panel" aria-labelledby="todo-sq-title" id="todo-sq-panel" hidden><div class="bp-head"><div><h2 id="todo-sq-title">Skill queues to fill</h2><p class="muted" style="margin:4px 0 0">Pilots whose skill queue is empty or paused (from the last ESI sync). Pilots idle for more than 7 days only show when ticked. Untick a pilot on the Skills page to stop seeing them here.</p></div><span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;flex:none"><label style="display:flex;gap:6px;align-items:center;white-space:nowrap"><input type="checkbox" id="todo-sq-idle"> Show pilots idle for over 7 days</label><button type="button" class="link" data-tab-go="overview">Open Skills</button></span></div><div id="todo-sq"></div></section>
-    <section class="panel" aria-labelledby="todo-sl-title" id="todo-sl-panel" hidden><div class="bp-head"><div><h2 id="todo-sl-title">Empty job slots</h2><p class="muted" style="margin:4px 0 0">Manufacturing, science and reaction slots with no job in them, and finished jobs to deliver (they hold their slot until then), from the last ESI sync. ✕ hides a kind of slot for a pilot.</p></div><span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;flex:none"><label style="display:flex;gap:6px;align-items:center;white-space:nowrap"><input type="checkbox" id="todo-sl-count"> Count in the To-Do tab's number</label><button type="button" class="link" data-tab-go="jobs">Open Jobs</button></span></div><div id="todo-sl"></div></section>
+    <section class="panel" aria-labelledby="todo-sl-title" id="todo-sl-panel" hidden><div class="bp-head"><div><h2 id="todo-sl-title">Empty job slots</h2><p class="muted" style="margin:4px 0 0">Manufacturing, science and reaction slots with no job in them, and finished jobs to deliver (they hold their slot until then), from the last ESI sync. Show picks the kinds of slot and the pilots listed; ✕ hides a kind of slot for one pilot.</p></div><span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;flex:none"><label style="display:flex;gap:6px;align-items:center;white-space:nowrap"><input type="checkbox" id="todo-sl-count"> Count in the To-Do tab's number</label><button type="button" class="link" data-tab-go="jobs">Open Jobs</button></span></div><div id="todo-sl"></div></section>
     <section class="panel" aria-labelledby="todo-ct-title" id="todo-ct-panel" hidden><div class="bp-head"><div><h2 id="todo-ct-title">Ongoing contracts</h2><p class="muted" style="margin:4px 0 0">Client orders still missing goods (Contract management) and your contracts in game that are still open.</p></div><button type="button" class="link" data-tab-go="contracts">Open Contract management</button></div><div id="todo-ct"></div></section>
     <section class="panel" aria-labelledby="todo-sc-title" id="todo-sc-panel" hidden><div class="bp-head"><div><h2 id="todo-sc-title">Trips for a freight service</h2><p class="muted" style="margin:4px 0 0">Supply chain trips none of your ships can do (from the last plan on the Map page): contract them out, then mark them sent.</p></div><button type="button" class="link" data-tab-go="map">Open the Map</button></div><div id="todo-sc"></div></section>
     <section class="panel" aria-labelledby="todo-rx-title"><div class="bp-head"><div><h2 id="todo-rx-title">Buy for reactions</h2><p class="muted" style="margin:4px 0 0">What the Reactions management plan still needs, after your stock: tick each line as you buy it.</p></div><button type="button" class="link" data-tab-go="reactions">Open Reactions management</button></div><div id="todo-rx"></div></section>
@@ -899,6 +887,15 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div id="pnl-ent-cf"></div>
       <div class="scroller"><table id="pnl-ent" class="bp-table"></table></div><div id="pnl-more"></div></section>
    </div></div>
+  </div>
+
+  <div id="page-tests" class="page" hidden>
+    <section class="panel" aria-labelledby="boost-title"><div class="bp-head"><div><h2 id="boost-title">Attribute boosters</h2><p class="muted" style="margin:4px 0 0">Every booster that adds to your attributes (cerebral accelerators): what it costs for each hour it runs and per extra skill point, and the best one for each attribute.</p></div></div>
+      <div class="toolbar" id="boost-bar"></div>
+      <div class="toolbar"><span class="muted" id="boost-status" style="font-size:.85rem"></span></div>
+      <div id="boost-summary" class="slot-tiles"></div>
+      <div id="boost-note"></div>
+      <div class="scroller"><table id="boost-table" class="bp-table" data-sorted="6:1"></table></div></section>
   </div>
 
   <div id="page-lp" class="page" hidden>
@@ -1013,14 +1010,15 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
   </div>
 
   <div id="page-prices" class="page" hidden>
-    <section class="panel" aria-labelledby="prices-title"><div class="bp-head"><div><h2 id="prices-title">Import calculator</h2><p class="muted" style="margin:4px 0 0">Paste a list of items, pick where you need them and where you could buy them, and the hauling price. For each item it compares buying on the local market with buying at the other station and shipping it, walking through the sell orders for the quantity you need. Local orders cheaper than the imported price (with hauling) are bought locally, the rest is imported.</p></div></div>
+    <section class="panel" aria-labelledby="prices-title"><div class="bp-head"><div><h2 id="prices-title">Import calculator</h2><p class="muted" style="margin:4px 0 0">Paste a list of items, pick where you need them and where you could buy them, and the hauling price. For each item it compares buying on the local market with buying at the other station and shipping it, walking through the sell orders for the quantity you need. The cheapest units are bought first, wherever they are: local orders, imported ones (with hauling) and, when ticked, your suppliers. Only what is for sale is counted.</p></div></div>
       <div class="toolbar"><label class="label" for="imp-local">Delivery station</label><select id="imp-local" style="max-width:300px"></select>
         <label class="label" for="imp-src">Buying station</label><select id="imp-src" style="max-width:300px"></select>
         <label class="label" for="imp-mode">Buy there with</label><select id="imp-mode"><option value="sell">Sell orders (instant)</option><option value="split">Split</option><option value="buy">Buy orders (wait)</option></select></div>
       <div class="toolbar" style="margin-top:6px"><span class="label">Hauling</span><input type="text" id="imp-rate" inputmode="decimal" style="width:80px" aria-label="ISK per m³"><span class="muted" style="font-size:.85rem">ISK per m³</span>
-        <input type="text" id="imp-coll" inputmode="decimal" style="width:60px" aria-label="Collateral %"><span class="muted" style="font-size:.85rem">% of the value (collateral fee)</span></div>
+        <input type="text" id="imp-coll" inputmode="decimal" style="width:60px" aria-label="Collateral %"><span class="muted" style="font-size:.85rem">% of the value (collateral fee)</span>
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="imp-sup"> Look at your suppliers too</label></div>
       <textarea id="imp-text" rows="8" style="width:100%;margin-top:8px" placeholder="Paste items: a copy from your inventory or a contract, a multibuy list, a fit (EFT), a cargo scan… one item per line, e.g. Tritanium 10000, 10000 Tritanium, Tritanium x10000"></textarea>
-      <div class="toolbar" style="margin-top:6px"><button type="button" class="primary" id="imp-go">Compare</button><span class="muted" id="imp-status" style="font-size:.85rem"></span></div>
+      <div class="toolbar" style="margin-top:6px"><button type="button" class="primary" id="imp-go">Compare</button><button type="button" id="imp-sync" title="Read both markets again, e.g. after buying there (ESI updates market orders every 5 minutes)">Sync markets</button><span class="muted" id="imp-status" style="font-size:.85rem"></span></div>
       <div id="imp-out"></div>
     </section>
     <section class="panel" aria-labelledby="cmp-title"><div class="bp-head"><div><h2 id="cmp-title">Price comparison</h2><p class="muted" style="margin:4px 0 0">What a citadel sells, against another market's prices, for the items you pick: whole categories, or single items. Remove anything from the selection with its ✕.</p></div></div>
@@ -1133,7 +1131,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <input type="search" id="map-find" list="map-names" placeholder="Find a system" aria-label="Find a system" style="width:180px"><datalist id="map-names"></datalist>
         <label class="label" for="map-origin">Jump from</label><input type="text" id="map-origin" list="map-names" placeholder="System" style="width:140px" aria-label="Jump origin system">
         <label class="label" for="map-ship">Range</label><select id="map-ship" aria-label="Pilot and ship for jump range"></select><input type="text" id="map-range" inputmode="decimal" style="width:70px" aria-label="Custom jump range in light years" hidden>
-        <span class="map-layers"><label><input type="checkbox" data-ml="gates"> Gates</label><label><input type="checkbox" data-ml="structs"> Citadels</label><label><input type="checkbox" data-ml="stations"> Stations</label><label><input type="checkbox" data-ml="pi"> Planets</label><label><input type="checkbox" data-ml="pilots"> Pilots</label><label><input type="checkbox" data-ml="clones"> Clones</label><label><input type="checkbox" data-ml="friendly"> Friendly</label><label><input type="checkbox" data-ml="keepstars"> Keepstars</label><label><input type="checkbox" data-ml="npc"> NPC stations</label><label><input type="checkbox" data-ml="caps"> Capitals</label><label><input type="checkbox" data-ml="danger"> Kills (last hour)</label><label title="Ships and pods killed in the last hour that make a system dangerous (supply chain gate legs warn about them)">Danger from <input type="text" id="map-danger" inputmode="numeric" style="width:44px" aria-label="Kills that make a system dangerous"> kills</label></span>
+        <span class="map-layers"><label><input type="checkbox" data-ml="gates"> Gates</label><label><input type="checkbox" data-ml="structs"> Citadels</label><label><input type="checkbox" data-ml="stations"> Stations</label><label><input type="checkbox" data-ml="pi"> Planets</label><label><input type="checkbox" data-ml="pilots"> Pilots</label><label><input type="checkbox" data-ml="clones"> Clones</label><label><input type="checkbox" data-ml="friendly"> Friendly</label><label><input type="checkbox" data-ml="keepstars"> Keepstars</label><label><input type="checkbox" data-ml="npc"> NPC stations</label><label><input type="checkbox" data-ml="caps"> Capitals</label><label><input type="checkbox" data-ml="danger"> Kills (last hour)</label><label><input type="checkbox" data-ml="incursions"> Incursions</label><label><input type="checkbox" data-ml="homes"> Homes</label><label title="Ships and pods killed in the last hour that make a system dangerous (supply chain gate legs warn about them)">Danger from <input type="text" id="map-danger" inputmode="numeric" style="width:44px" aria-label="Kills that make a system dangerous"> kills</label></span>
         <button type="button" id="map-reset">Reset view</button>
       </div>
       <div class="toolbar" id="map-tools2" style="margin-top:6px">
@@ -1535,7 +1533,6 @@ $("import-file").addEventListener("change", (e) => { const f = e.target.files[0]
 
 /* ---------- blueprints ---------- */
 const ACT = { manufacturing: "Manufacturing", reaction: "Reaction", invention: "Invention" };
-const ACT_ORDER = Object.keys(ACT);
 const bp = { names: null, byName: new Map(), saved: {}, current: null, loading: false, status: "", error: "" };
 const ESI_NAMES = ["https://esi.evetech.net/latest/universe/names/?datasource=tranquility", "https://esi.evetech.net/universe/names/"];
 
@@ -1597,10 +1594,10 @@ async function fetchRetry(url, init, tries = 6) {
   let last;
   for (let i = 0; i < tries; i++) {
     try {
-      const r = await fetch(url, init);
+      const r = await fetch(url, { ...init, signal: AbortSignal.timeout(60e3) });   // a stalled request fails and is retried, it never hangs a sync
       if (r.status !== 429 && r.status !== 420 && r.status < 500) return r;
       const ra = +r.headers.get("Retry-After");
-      last = new Error("the service answered " + r.status);
+      last = Object.assign(new Error("the service answered " + r.status), { status: r.status });
       await sleep(ra > 0 ? Math.min(ra, 60) * 1000 : Math.min(30000, 800 * 2 ** i) + Math.random() * 400);
     } catch (e) { last = e; await sleep(Math.min(20000, 800 * 2 ** i) + Math.random() * 400); }
   }
@@ -1639,7 +1636,7 @@ function esiMarket(url, init, tries = 6) {
   if (esiDown()) return Promise.resolve(new Response("", { status: 503 }));   // downtime: refused, so prices keep what they had
   return new Promise((resolve, reject) => {
     let n = 0; const job = { page: mktPage(), go: async () => {
-      let r = null, err = null; try { r = await fetch(url, init); } catch (e) { err = e; }
+      let r = null, err = null; try { r = await fetch(url, { ...init, signal: AbortSignal.timeout(60e3) }); } catch (e) { err = e; }
       MKT.active--; if (r) mktHeaders(r);
       const busy = r && (r.status === 429 || r.status === 420 || r.status >= 500);
       if ((err || busy) && ++n < tries) {
@@ -2038,11 +2035,13 @@ const SQ_IDLE_LONG = 7 * 864e5;   // idle longer than this: an alt you don't tra
 // Pilots whose queue is empty or paused (and not unticked on the Skills page); idle for over 7 days only with To-Do's tick box (or all = true)
 const queuesToFill = (all = !!state.misc.todoSqIdle) => { const now = Date.now(); return state.chars.filter(c => !(state.misc.sqOff || {})[c.id] && [0, -1].includes(queueEnd(c, now)) && (all || now - queueIdleSince(c, now) <= SQ_IDLE_LONG)); };
 // Empty job slots: pilots with job data, per kind of slot (one you hid stays hidden), and finished jobs still holding a slot
+// Which kinds of slot and which pilots Empty job slots shows (To-Do's Show chips): false = left out
+const slotShow = () => (state.misc.slotShow = { K: {}, C: {}, ...(state.misc.slotShow || {}) });
 function slotsToFill(now = Date.now()) {
-  const off = state.misc.slotOff || {};
-  return state.chars.filter(hasJobData).map(c => { const s = slotsOf(c), u = usedOf(c), ready = jobsOf(c).filter(j => j.end <= now && j.status !== "delivered").length;
+  const off = state.misc.slotOff || {}, sh = slotShow();
+  return state.chars.filter(c => hasJobData(c) && sh.C[c.id] !== false).map(c => { const s = slotsOf(c), u = usedOf(c), ready = jobsOf(c).filter(j => j.end <= now && j.status !== "delivered" && sh.K[JOB_KIND[j.activity]] !== false).length;
     const can = { M: true, S: lv(c, "Science") > 0, R: lv(c, "Reactions") > 0 };   // a slot the pilot can't use (no Science / Reactions skill) isn't empty work
-    return { c, can, free: "MSR".split("").filter(k => can[k] && s[k] > u[k] && !off[c.id + ":" + k]).map(k => [k, s[k] - u[k]]), ready }; }).filter(x => x.free.length || x.ready);
+    return { c, can, free: "MSR".split("").filter(k => can[k] && s[k] > u[k] && !off[c.id + ":" + k] && sh.K[k] !== false).map(k => [k, s[k] - u[k]]), ready }; }).filter(x => x.free.length || x.ready);
 }
 // The To-Do tab's count: supply chain trips for a freight service, skill queues to fill, structures to refuel, and pilots with empty job slots when ticked on To-Do
 function todoBadge() {
@@ -2076,7 +2075,7 @@ $("keys-reset-no").addEventListener("click", () => { $("keys-reset-confirm").hid
 $("keys-reset-yes").addEventListener("click", () => { state.keys = DEFAULT_KEYS.map(k => ({ ...k })); saveKeys(); $("keys-reset-confirm").hidden = true; renderKeys(); toast("Key skills reset"); });
 
 /* ---------- pages ---------- */
-const PAGES = { todo: "to-do", shortages: "shortages", reactions: "reactions-management", pimgmt: "pi-management", orders: "orders-management", trading: "trading-board", suppliers: "suppliers", stockmgmt: "stock-management", contracts: "contract-management", prices: "prices", notes: "notes", settings: "settings", plan: "build-planning", map: "map", misc: "misc", overview: "blueprints", jobs: "jobs", planets: "planets", forecast: "overview", omega: "omega", stock: "assets", fittings: "fittings", characters: "characters", pnl: "profit-and-loss", lp: "lp-store", corp: "corporation", intel: "intel", cbrowse: "contracts-browser", itemdb: "item-database" };
+const PAGES = { todo: "to-do", shortages: "shortages", reactions: "reactions-management", pimgmt: "pi-management", orders: "orders-management", trading: "trading-board", suppliers: "suppliers", stockmgmt: "stock-management", contracts: "contract-management", prices: "prices", notes: "notes", settings: "settings", plan: "build-planning", map: "map", misc: "misc", overview: "blueprints", jobs: "jobs", planets: "planets", forecast: "overview", omega: "omega", stock: "assets", fittings: "fittings", characters: "characters", pnl: "profit-and-loss", lp: "lp-store", corp: "corporation", intel: "intel", cbrowse: "contracts-browser", itemdb: "item-database", tests: "tests" };
 function showPage(tab) {
   const t = PAGES[tab] ? tab : "overview";
   for (const k of Object.keys(PAGES)) $("page-" + k).hidden = k !== t;
@@ -2101,6 +2100,7 @@ function showPage(tab) {
   if (t === "intel") renderIntel();
   if (t === "cbrowse") renderCbrowse();
   if (t === "itemdb") renderItemDb();
+  if (t === "tests") renderBoost();
   if (t === "trading") { renderImportCalc(); renderBoards(); if (!(state.misc.catList || []).length) categoryList().then(() => renderBoards()).catch(() => null); }
   document.querySelectorAll(".tabs button[data-tab]").forEach(b => { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   tabGroupsSync(); uiQueue(); renderHowto(t);
@@ -2119,6 +2119,7 @@ const HOWTO = {
   stock: "Values use the pricing chosen at the top: Jita prices are read live from ESI's orders and kept 6 hours; a citadel pricing only uses that citadel's own orders. An item without a price is shown empty and left out of the totals; blueprint copies count as zero. The search and the filters look in every hangar, ticked or not, and also find what sits in ship cargo, Deliveries and your open contracts (marked not counted); a filter's conditions test each stack (one item in one hangar or container), so Value more than 1b means a stack worth that much. " + CF_NOTE,
   cbrowse: "Contracts come from ESI at each sync (Contracts permission on each pilot, Corporation contracts for your corporation's): ESI gives the active ones and those of the last 30 days; ended ones are kept here for 90 days. A contract several of your pilots see shows once. What each one gives and asks for is read once per contract. Your side: You sell (you put items up for a price), You buy (you pay for someone's items, or ask for items and pay a reward), You give / You receive (no ISK), You ship (your courier contract), You haul (a courier you accepted), Between your pilots. Items worth = what it gives less what it asks for, in the pricing chosen above (blueprint copies count as zero; an item without a price there leaves the worth unknown, never 0). Against worth = how much better than that worth the price is for you: selling, price less worth; buying, worth less price. A contract still waiting after its expiry date is Expired. " + CF_NOTE,
   itemdb: "Items come from CCP's own game data (the static data export of the current game build, read once and kept in this browser; the same data every page uses). Attribute names and units come from ESI's dogma attributes, read once each when you open an item. Prices: the pricing chosen on the item, Jita sell and buy (ESI's live orders), ESI's average price and its adjusted price (what job costs are worked out from). CCP base price is the game's own reference value, not a market price. You own counts everything in the hangars read from ESI, ship cargo and containers included. Used in lists every blueprint and planet factory that takes the item as a material. " + CF_NOTE,
+  tests: "Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price.",
   lp: "Loyalty points come from ESI at each sync (Loyalty points permission). The store's offers are ESI's public list for that corporation, read when you open it (Refresh reads it again). Sells for = the item's price in the \"Sell items at\" pricing × the quantity, less your sales tax (Settings: your best Accounting level, or your own rate); broker fees aren't counted. Costs = the offer's ISK plus each other item it asks for at its price in the \"Buy other items at\" pricing. ISK per LP = (sells for − costs) ÷ LP. An item with no price in its pricing (blueprint copies usually have none) leaves its offer's profit and ISK per LP unknown: never 0, never another market's price. Analysis Kredits (AK) are shown but not valued. You can buy = your pilots' LP with that corporation, added up, ÷ the offer's LP.",
   fittings: `Can fly it counts every skill the hull, modules, rigs, drones and fighters need. Skill levels are the last ESI sync's, plus the levels the pilot's skill queue has finished since (needs the Skill queues permission). For a pilot who can't fly it yet: when every missing level is in their queue, the date the last of them finishes (the queue's own order and dates); otherwise the time to train only what's missing, prerequisites included, from their attributes and implants (~ when attributes weren't read yet), whatever else is queued. ${SYNC_NOTE}`,
   jobs: `Corporation jobs need one linked pilot with the Factory Manager role; they then count against the slots of whichever of your pilots installed them. Job slots in use come from ESI and include jobs that are finished but not yet delivered. ${SLOTS_NOTE}`,
@@ -2193,8 +2194,15 @@ function parseItemLines(text) {
   }
   return out;
 }
-async function runImport() {
-  const st = $("imp-status"), box = $("imp-out"), cfg = state.misc.imp = { ...(state.misc.imp || {}), local: $("imp-local").value, src: $("imp-src").value, mode: $("imp-mode").value, rate: $("imp-rate").value, coll: $("imp-coll").value }; saveMisc();
+// Buys q units from offers ({k: "loc" | "imp" | "sup", src, unit, avail, base}), cheapest first: units, cost and hauling (unit − base) per kind, units per supplier, units nobody sells
+function impFill(offers, q) {
+  const by = { loc: { q: 0, c: 0, h: 0 }, imp: { q: 0, c: 0, h: 0 }, sup: { q: 0, c: 0, h: 0 } }, sups = new Map(); let left = q;
+  for (const o of [...offers].sort((a, b) => a.unit - b.unit)) { if (left <= 0) break; const k = Math.min(left, o.avail || 0); if (k <= 0) continue;
+    const g = by[o.k]; g.q += k; g.c += k * o.unit; g.h += k * (o.unit - o.base); if (o.k === "sup") sups.set(o.src, (sups.get(o.src) || 0) + k); left -= k; }
+  return { by, sups, miss: left };
+}
+async function runImport(fresh) {
+  const st = $("imp-status"), box = $("imp-out"), cfg = state.misc.imp = { ...(state.misc.imp || {}), local: $("imp-local").value, src: $("imp-src").value, mode: $("imp-mode").value, rate: $("imp-rate").value, coll: $("imp-coll").value, sup: $("imp-sup").checked }; saveMisc();
   const lines = parseItemLines($("imp-text").value); if (!lines.length) { st.textContent = "Paste some items first."; return; }
   if (cfg.local === cfg.src) { st.textContent = "Pick two different stations."; return; }
   st.textContent = "Reading the item names…";
@@ -2205,32 +2213,42 @@ async function runImport() {
   const types = [...want.keys()], names = {}, vols = {};
   st.textContent = "Reading item volumes…";
   await pool(types, 3, async (t) => { try { const d = await getJSON(REF + "/types/" + t); names[t] = tName(d); vols[t] = d.packaged_volume || d.volume || 0; } catch (e) { names[t] = state.typeNames[t] || "Item " + t; vols[t] = 0; } });
+  // Sync: forget what was read from both markets, so the orders are read again
+  if (fresh) for (const v of [cfg.local, cfg.src]) { const [k, id] = String(v).split(":"); if (k === "cit") { delete structMarket[id]; delete structBooks[id]; } else for (const key of Object.keys(bookCache)) if (key.startsWith(id + "|")) delete bookCache[key]; }
+  const sups = cfg.sup ? supList().filter(sp => types.some(t => (sp.stock || {})[t])) : [];
+  for (const sp of sups) { const P = sp.pricing || {}; if (P.mode === "pct") await ensurePrices(types, validPricing(P.base || "jbv")).catch(() => null); }
   try {
     st.textContent = `Reading ${marketName(cfg.local)}…`; const L = await marketBooks(cfg.local, types, (d, n) => st.textContent = `Reading ${marketName(cfg.local)}… ${d} of ${n}`);
     st.textContent = `Reading ${marketName(cfg.src)}…`; const S = await marketBooks(cfg.src, types, (d, n) => st.textContent = `Reading ${marketName(cfg.src)}… ${d} of ${n}`);
     const rate = parseIsk(cfg.rate || "0") || 0, coll = (parseFloat(String(cfg.coll || "0").replace(",", ".")) || 0) / 100;
     const rows = types.map(t => {
-      const q = want.get(t), l = L.get(t) || { sells: [] }, s = S.get(t) || { sells: [] }, sw = walkSells(s.sells, q), minS = s.sells.length ? s.sells[0][0] : 0;
-      const srcUnit = cfg.mode === "buy" ? s.buy : cfg.mode === "split" ? (minS && s.buy ? (minS + s.buy) / 2 : minS || s.buy) : (sw.got ? sw.cost / sw.got : 0);
-      const landed = srcUnit ? srcUnit * (1 + coll) + vols[t] * rate : Infinity;
-      const loc = walkSells(l.sells, q, landed), locAvail = l.sells.reduce((a, o) => a + o[1], 0), imp = q - loc.got;
-      const short = cfg.mode === "sell" && imp > 0 && sw.got < q;
-      return { t, q, name: names[t], vol: vols[t], localMin: l.sells.length ? l.sells[0][0] : 0, locAvail, loc, imp, landed, srcUnit, impCost: isFinite(landed) ? imp * landed : 0, noSrc: !isFinite(landed) && imp > 0, short };
-    }).sort((a, b) => (b.loc.cost + b.impCost) - (a.loc.cost + a.impCost));
-    const totL = rows.reduce((a, r) => a + r.loc.cost, 0), totI = rows.reduce((a, r) => a + r.impCost, 0), volI = rows.reduce((a, r) => a + r.imp * r.vol, 0);
-    const allLocal = rows.reduce((a, r) => a + (r.locAvail >= r.q ? walkSells(r.localMin ? (L.get(r.t) || { sells: [] }).sells : [], r.q).cost : NaN), 0);
-    const list = (xs, f) => xs.map(r => `${r.name}\t${f(r)}`).join("\n");
-    const locList = rows.filter(r => r.loc.got > 0), impList = rows.filter(r => r.imp > 0 && !r.noSrc);
+      const q = want.get(t), l = L.get(t) || { sells: [] }, s = S.get(t) || { sells: [] }, minS = s.sells.length ? s.sells[0][0] : 0, land = (p) => p * (1 + coll) + vols[t] * rate;
+      // Bought there with buy orders (or split): any quantity at one price; with sell orders: only what is for sale
+      const srcUnit = cfg.mode === "buy" ? s.buy : cfg.mode === "split" ? (minS && s.buy ? (minS + s.buy) / 2 : minS || s.buy) : 0;
+      const imps = cfg.mode === "sell" ? s.sells.map(([p, v]) => ({ k: "imp", unit: land(p), avail: v, base: p })) : srcUnit ? [{ k: "imp", unit: land(srcUnit), avail: Infinity, base: srcUnit }] : [];
+      // shortcut: a supplier "picked up in Jita" pays this calculator's hauling whatever the buying station is
+      const supO = sups.flatMap(sp => { const e = (sp.stock || {})[t], p = supplierPrice(sp, t); return e && p ? [{ k: "sup", src: sp.name, unit: (sp.pricing || {}).at === "jita" ? land(p) : p, avail: e.q || 0, base: p }] : []; });
+      const F = impFill([...l.sells.map(([p, v]) => ({ k: "loc", unit: p, avail: v, base: p })), ...imps, ...supO], q), B = F.by;
+      return { t, q, name: names[t], vol: vols[t], localMin: l.sells.length ? l.sells[0][0] : 0, locAvail: l.sells.reduce((a, o) => a + o[1], 0), B, sups: F.sups, miss: F.miss, cost: B.loc.c + B.imp.c + B.sup.c,
+        landed: B.imp.q ? B.imp.c / B.imp.q : imps.length ? imps[0].unit : null, srcShort: cfg.mode === "sell" && B.imp.q > 0 && B.imp.q === imps.reduce((a, o) => a + o.avail, 0) && F.miss > 0 };
+    }).sort((a, b) => b.cost - a.cost);
+    const sum = (f) => rows.reduce((a, r) => a + f(r), 0), totL = sum(r => r.B.loc.c), totI = sum(r => r.B.imp.c), totS = sum(r => r.B.sup.c), volI = sum(r => r.B.imp.q * r.vol), short = rows.filter(r => r.miss > 0);
+    const allLocal = sum(r => r.locAvail >= r.q ? walkSells((L.get(r.t) || { sells: [] }).sells, r.q).cost : NaN);
+    const list = (xs, f) => xs.map(r => `${r.name}\t${f(r)}`).join("\n"), copyBtn = (xs, f, msg) => xs.length ? `<button type="button" class="cargo" data-copy="${esc(list(xs, f))}" data-copy-msg="${esc(msg)}" data-tip="Copy the list (multibuy format)">Copy list</button>` : "";
+    const locList = rows.filter(r => r.B.loc.q > 0), impList = rows.filter(r => r.B.imp.q > 0), supNames = [...new Set(rows.flatMap(r => [...r.sups.keys()]))].sort();
+    const n = (k) => `${k} item${k === 1 ? "" : "s"}`;
     box.innerHTML = `<div class="slot-tiles" style="margin-top:10px">
-        <div class="slot-tile"><div class="label">Buy locally</div><span class="big-num">${isk(totL)}</span><div class="muted">${locList.length} item${locList.length === 1 ? "" : "s"} at ${esc(marketName(cfg.local))} ${locList.length ? `<button type="button" class="cargo" data-copy="${esc(list(locList, r => r.loc.got))}" data-tip="Copy the list (multibuy format)">Copy list</button>` : ""}</div></div>
-        <div class="slot-tile"><div class="label">Import</div><span class="big-num">${isk(totI)}</span><div class="muted">${impList.length} item${impList.length === 1 ? "" : "s"} from ${esc(marketName(cfg.src))}, ${Math.round(volI).toLocaleString()} m³, hauling ${isk(rows.reduce((a, r) => a + (isFinite(r.landed) ? r.imp * (r.landed - r.srcUnit) : 0), 0))} included ${impList.length ? `<button type="button" class="cargo" data-copy="${esc(list(impList, r => r.imp))}" data-tip="Copy the list (multibuy format)">Copy list</button>` : ""}</div></div>
-        <div class="slot-tile"><div class="label">Total</div><span class="big-num">${isk(totL + totI)}</span><div class="muted">${isFinite(allLocal) && allLocal > 0 ? `everything locally: ${isk(allLocal)} (${allLocal > totL + totI ? "saves " + isk(allLocal - totL - totI) : "same"})` : "the local market can't supply everything"}</div></div></div>
+        <div class="slot-tile"><div class="label">Buy locally</div><span class="big-num">${isk(totL)}</span><div class="muted">${n(locList.length)} at ${esc(marketName(cfg.local))} ${copyBtn(locList, r => r.B.loc.q, "Local list copied")}</div></div>
+        <div class="slot-tile"><div class="label">Import</div><span class="big-num">${isk(totI)}</span><div class="muted">${n(impList.length)} from ${esc(marketName(cfg.src))}, ${Math.round(volI).toLocaleString()} m³, hauling ${isk(sum(r => r.B.imp.h))} included ${copyBtn(impList, r => r.B.imp.q, "Import list copied")}</div></div>
+        ${cfg.sup ? `<div class="slot-tile"><div class="label">Suppliers</div><span class="big-num">${isk(totS)}</span><div class="muted">${supNames.length ? supNames.map(s => { const xs = rows.filter(r => r.sups.get(s)); return `${n(xs.length)} from ${esc(s)} <button type="button" class="cargo" data-copy="${esc(list(xs, r => r.sups.get(s)))}" data-copy-msg="${esc(s)}: list copied" data-tip="Copy the list">Copy list</button>`; }).join("<br>") : sups.length ? "none cheaper than the markets" : "no supplier has these items"}</div></div>` : ""}
+        <div class="slot-tile"><div class="label">Total</div><span class="big-num">${isk(totL + totI + totS)}</span><div class="muted">${short.length ? `<span style="color:var(--bad)">${n(short.length)} not fully for sale: the missing units aren't counted</span><br>` : ""}${isFinite(allLocal) && allLocal > 0 ? `everything locally: ${isk(allLocal)} (${allLocal > totL + totI + totS ? "saves " + isk(allLocal - totL - totI - totS) : "same"})` : "the local market can't supply everything"}</div></div></div>
       <div class="scroller" style="margin-top:8px"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Quantity</th><th scope="col" class="num">Volume</th><th scope="col" class="num">Local lowest</th><th scope="col" class="num">Local for sale</th><th scope="col" class="num">Imported, landed</th><th scope="col">Best</th><th scope="col" class="num">Cost</th></tr></thead><tbody>${rows.map(r => {
-        const best = r.imp === 0 ? `<span class="pill good">Buy locally</span>` : r.loc.got === 0 ? (r.noSrc ? `<span class="pill bad">Not found</span>` : `<span class="pill mid">Import</span>`) : `<span class="pill mid">${r.loc.got.toLocaleString()} locally, ${r.imp.toLocaleString()} imported</span>`;
-        return `<tr><th scope="row">${icon(r.t)} ${esc(r.name)}</th><td class="num">${r.q.toLocaleString()}</td><td class="num">${Math.round(r.q * r.vol).toLocaleString()} m³</td><td class="num">${r.localMin ? isk(r.localMin) : "—"}</td><td class="num">${r.locAvail ? r.locAvail.toLocaleString() : "—"}</td><td class="num">${isFinite(r.landed) ? isk(r.landed) : "—"}${r.short ? `<div class="label" style="color:var(--bad)">not enough for sale there</div>` : ""}</td><td>${best}</td><td class="num">${isk(r.loc.cost + r.impCost)}</td></tr>`; }).join("")}</tbody></table></div>
+        const parts = [[r.B.loc.q, "locally", "Buy locally"], [r.B.imp.q, "imported", "Import"], ...[...r.sups].map(([s, q]) => [q, "from " + s, "From " + s])].filter(p => p[0] > 0);
+        const best = (parts.length === 1 && !r.miss ? `<span class="pill ${parts[0][1] === "imported" ? "mid" : "good"}">${esc(parts[0][2])}</span>` : parts.length ? `<span class="pill mid">${esc(parts.map(p => `${p[0].toLocaleString()} ${p[1]}`).join(", "))}</span>` : "") + (r.miss ? ` <span class="pill bad">${parts.length ? `${r.miss.toLocaleString()} not for sale` : "Not found"}</span>` : "");
+        return `<tr><th scope="row">${icon(r.t)} <button type="button" class="copyname" data-copy="${esc(r.name)}" data-copy-msg="${esc(r.name)} copied" title="Click to copy the name">${esc(r.name)}</button></th><td class="num">${r.q.toLocaleString()}</td><td class="num">${Math.round(r.q * r.vol).toLocaleString()} m³</td><td class="num">${r.localMin ? isk(r.localMin) : "—"}</td><td class="num">${r.locAvail ? r.locAvail.toLocaleString() : "—"}</td><td class="num">${r.landed != null ? isk(r.landed) : "—"}${r.srcShort ? `<div class="label" style="color:var(--bad)">not enough for sale there</div>` : ""}</td><td>${best}</td><td class="num">${isk(r.cost)}${r.miss ? `<div class="label" style="color:var(--bad)">${r.miss.toLocaleString()} missing, not counted</div>` : ""}</td></tr>`; }).join("")}</tbody></table></div>
       ${unknown.length ? `<p class="muted" style="margin:6px 0 0;font-size:.85rem">Not recognised: ${esc(unknown.slice(0, 12).join(", "))}${unknown.length > 12 ? "…" : ""}</p>` : ""}
-      <p class="muted" style="margin:6px 0 0;font-size:.8rem">Imported, landed = price at ${esc(marketName(cfg.src))} (${cfg.mode === "sell" ? "walking up the sell orders" : cfg.mode === "buy" ? "highest buy order: you place a buy order and wait" : "halfway between lowest sell and highest buy"}) + ${(coll * 100).toFixed(1)}% collateral + ${rate.toLocaleString()} ISK per m³. Local orders cheaper than that are bought first.</p>`;
-    st.textContent = `${want.size} item${want.size === 1 ? "" : "s"} compared`;
+      <p class="muted" style="margin:6px 0 0;font-size:.8rem">Imported, landed = price at ${esc(marketName(cfg.src))} (${cfg.mode === "sell" ? "walking up the sell orders" : cfg.mode === "buy" ? "highest buy order: you place a buy order and wait" : "halfway between lowest sell and highest buy"}) + ${(coll * 100).toFixed(1)}% collateral + ${rate.toLocaleString()} ISK per m³. The cheapest units are bought first${cfg.sup ? ", your suppliers' stock included (picked up in Jita: hauling added)" : ""}. Click a name to copy it.</p>`;
+    st.textContent = `${n(want.size)} compared${fresh ? " · markets read again" : ""}`;
   } catch (e) { st.textContent = netMsg(e); }
 }
 function renderImportCalc() {
@@ -2250,10 +2268,15 @@ function renderImportCalc() {
   const c = state.misc.imp || {}, mk = (id, def) => { const el = $(id), cur = c[id === "imp-local" ? "local" : "src"] || def; if (document.activeElement !== el) el.innerHTML = marketOptions(cur); };
   mk("imp-local", defaultCitadel() ? "cit:" + defaultCitadel().id : "st:60008494"); mk("imp-src", "st:60003760");
   if (document.activeElement !== $("imp-mode")) $("imp-mode").value = c.mode || "sell";
+  $("imp-sup").checked = !!c.sup;
   if (document.activeElement !== $("imp-rate")) $("imp-rate").value = c.rate != null ? c.rate : ((buildCfg().haul || {}).rate ?? 1000);
   if (document.activeElement !== $("imp-coll")) $("imp-coll").value = c.coll != null ? c.coll : ((buildCfg().haul || {}).coll ?? 1);
 }
 $("imp-go").addEventListener("click", () => runImport());
+$("imp-sync").addEventListener("click", () => runImport(true));
+$("imp-sup").addEventListener("change", (e) => { state.misc.imp = { ...(state.misc.imp || {}), sup: e.target.checked }; saveMisc(); });
+// "Import calculator" buttons elsewhere (PI shopping): the list goes into the calculator, which runs it
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-imp-send]"); if (!b) return; const tb = document.querySelector('.tabs button[data-tab="prices"]'); if (tb) tb.click(); else showPage("prices"); $("imp-text").value = b.dataset.impSend; $("prices-title").scrollIntoView({ block: "start" }); runImport(); });
 // Categories (from ESI) and the items in one (from EVE Ref), read once
 async function categoryList() {
   if ((state.misc.catList || []).length) return state.misc.catList;
@@ -2513,15 +2536,8 @@ async function viaLauncher(url, binary) {
 }
 // A whole Google Sheet (every tab) as an .xlsx file, unpacked here: tabs → rows of cells
 async function unzip(buf) {
-  const v = new DataView(buf), u8 = new Uint8Array(buf), out = {}; let e = buf.byteLength - 22;
-  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--; if (e < 0) throw new Error("not a zip file");
-  let p = v.getUint32(e + 16, true); const n = v.getUint16(e + 10, true);
-  for (let i = 0; i < n; i++) {
-    const method = v.getUint16(p + 10, true), csize = v.getUint32(p + 20, true), nlen = v.getUint16(p + 28, true), xlen = v.getUint16(p + 30, true), clen = v.getUint16(p + 32, true), off = v.getUint32(p + 42, true);
-    const name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nlen)); p += 46 + nlen + xlen + clen;
-    const lo = off + 30 + v.getUint16(off + 26, true) + v.getUint16(off + 28, true), data = u8.subarray(lo, lo + csize);
-    out[name] = async () => method === 0 ? new TextDecoder().decode(data) : new TextDecoder().decode(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
-  }
+  const out = {};
+  for (const x of zipEntries(buf)) out[x.name] = async () => new TextDecoder().decode(x.method === 0 ? x.data : await new Response(new Blob([x.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
   return out;
 }
 async function xlsxTabs(buf) {
@@ -2545,7 +2561,6 @@ function supplierPrice(sp, t) {
   if (P.mode === "pct") { const v = priceIn(validPricing(P.base || "jbv"), +t); return v ? v * (+P.pct || 100) / 100 : null; }
   return e.price || null;
 }
-const supPricingText = (sp) => { const P = sp.pricing || { mode: "list" }; return (P.mode === "pct" ? `${+P.pct || 100}% of ${pricingName(validPricing(P.base || "jbv"))}` : "their listed prices") + (P.at === "jita" ? ", in Jita" : ", in your delivery system"); };
 // A number in a cell ("1,234", "668904.0", "1.236E8" from a sheet export); null when the cell isn't a number
 const supNum = (x) => { const s = String(x ?? "").trim(); if (/^-?\d+(\.\d+)?e[+-]?\d+$/i.test(s)) return +s; return /^[\d\s,.' ]+$/.test(s) && /\d/.test(s) ? +s.replace(/[^\d.,]/g, "").replace(/,/g, "") || 0 : null; };
 // The header row of a stock list: which column holds the item name, the type ID, the quantity and the unit price. Null when there's none
@@ -2842,7 +2857,7 @@ async function sdeFetch(url, binary, onProg) {
 }
 function zipEntries(buf) {
   const v = new DataView(buf), u8 = new Uint8Array(buf), out = []; let e = buf.byteLength - 22;
-  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--; if (e < 0) throw new Error("the static data isn't a zip file");
+  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--; if (e < 0) throw new Error("not a zip file");
   let p = v.getUint32(e + 16, true); const n = v.getUint16(e + 10, true);
   for (let i = 0; i < n; i++) {
     const method = v.getUint16(p + 10, true), csize = v.getUint32(p + 20, true), nlen = v.getUint16(p + 28, true), xlen = v.getUint16(p + 30, true), clen = v.getUint16(p + 32, true), off = v.getUint32(p + 42, true);
@@ -2958,7 +2973,6 @@ const rxEiv = (f) => f.mats.reduce((a, [t, q]) => a + q * ((state.adjPrices || {
 function rxUnitCost(E, t) { const C = E.C, k = rxKind(t), p = priceIn(validPricing(k === "fuel" ? C.fuelP : C.inP), t); if (p == null) return null; return p * (1 + (C.inOrders ? E.brk : 0)) + (C.shipIn ? (rxD().vols[t] || 0) * rxNum(C.rateIn) + p * rxNum(C.collIn) / 100 : 0); }
 // Selling: a contract has no sales tax or broker fee, an immediate sale pays the sales tax, a sell order the sales tax and the broker fee
 const rxSellFee = (E) => E.C.sellHow === "contract" ? 0 : E.C.sellHow === "instant" ? E.tax : E.tax + E.brk;
-const RX_SELL = { contract: "Contract", instant: "Immediate", orders: "Sell order" };
 function rxUnitSell(E, t) { const C = E.C, p = priceIn(validPricing(C.outP, "jsv"), t); if (p == null) return null; return p * (1 - rxSellFee(E)) - (C.shipOut ? (rxD().vols[t] || 0) * rxNum(C.rateOut) + p * rxNum(C.collOut) / 100 : 0); }
 // Jobs of the product in one instance: as many as one slot of each reaction feeding it can supply (one intermediate slot feeds about 2 composite jobs)
 function rxPerInst(E, P) { return rxInstShape(E, P).k; }
@@ -3068,7 +3082,7 @@ function renderRx() {
   rxEnsure().then(ch => { if (ch) renderRx(); });
   if (!(state.misc.rigData || {}).list && !rigLoading && !rigFailed) loadRigData().then(() => renderRx(), () => { rigFailed = true; renderRx(); });
   fillSysList();
-  const E = rxEnv(), C = E.C, D = rxD(), by = rxByProd(), fk = Object.keys(C.picks || {});
+  const E = rxEnv(), C = E.C, D = rxD();
   if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#page-reactions") && document.activeElement.matches("input[type=text],input[type=number],input:not([type])")) return;   // don't redraw under your typing
   const opt = (v, cur, l) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(l)}</option>`;
   const runs0 = E.runs(D.f[0]);
@@ -3109,7 +3123,7 @@ function renderRx() {
   renderRxPick(E); renderRxShop(E); renderRxReact(E); renderRxNav();
 }
 function renderRxPick(E) {
-  const C = E.C, D = rxD(), by = rxByProd(), box = $("rx-pick"); if (!box) return;
+  const C = E.C, D = rxD(), box = $("rx-pick"); if (!box) return;
   const plan = rxPlan(E), rows = D.f.filter(f => rxCat(f.p)).map(f => rxInstance(E, f.p));
   const gooOf = (r) => [...r.acc.raw.keys()].filter(t => rxKind(t) === "goo"), goos = [...new Set(rows.flatMap(gooOf))].sort((a, b) => rxName(a).localeCompare(rxName(b))), have = new Set(C.goo || []);
   const covered = (r) => { const g = gooOf(r); return g.length > 0 && g.every(t => have.has(t)); };
@@ -3392,14 +3406,16 @@ function renderPiPick(E) {
     <div class="scroller" style="margin-top:8px"><table class="bp-table"><thead><tr>${th("name", "P4")}${th("pct", "Profit %", "num")}${th("inv", "Investment / week", "num")}${th("profit", "Profit / week", "num")}${th("day", "Profit / day", "num")}${th("jita", "Jita sold / day", "num")}${th("share", "Your share", "num")}${th("n", "Planets", "num")}</tr></thead><tbody>${rows.map((r, i) => `${i === 0 || piGroup(rows[i - 1].p) !== piGroup(r.p) ? `<tr class="group"><th colspan="8" scope="colgroup">${esc(PI_GROUPS.find(g => g[0] === piGroup(r.p))[1])}</th></tr>` : ""}<tr><th scope="row">${icon(r.p)} ${esc(piName(r.p))} <span class="muted" style="font-size:.8rem">${(r.out).toLocaleString()} a week</span></th>${r.pct == null ? `<td class="num" style="color:var(--bad)" title="No price for ${esc(r.missing.map(piName).join(", "))}">no price</td>` : `<td class="num" style="color:${r.pct < 0 ? "var(--bad)" : "var(--good)"};font-weight:600">${(r.pct * 100).toFixed(1)}%</td>`}<td class="num">${isk(r.investment)}${r.missing.length ? "*" : ""}</td><td class="num">${r.profit == null ? "—" : isk(r.profit)}</td><td class="num">${r.perDay == null ? "—" : isk(r.perDay)}</td><td class="num">${r.jitaDay == null ? `<span class="muted">…</span>` : Math.round(r.jitaDay).toLocaleString()}</td><td class="num"${r.share > 0.2 ? ` style="color:var(--bad)"` : ""}>${r.share == null ? "—" : (r.share * 100).toFixed(1) + "%"}</td><td class="num"><input type="text" inputmode="numeric" data-pi-n="${r.p}" value="${P.n(r) || ""}" placeholder="0" style="width:50px;text-align:right"></td></tr>`).join("")}</tbody></table></div>
     <p class="muted" style="margin:4px 0 0;font-size:.8rem">Per planet and per week, at ${esc(pricingName(validPricing(C.inP)))} for inputs and ${esc(pricingName(validPricing(C.outP)))} for P4: inputs, customs tax (imports half rate), transport and fees. "Your share" is what all your planets on that P4 make per day against Jita's average daily volume over the last ${Math.round(rxNum(C.histDays, 5))} days (red above 20%). Estimates: runs are counted per planet here, Shopping prices the whole order.</p>${(() => { const all = [...new Set(P.rows.flatMap(r => r.missing))]; const ins = all.filter(t => piTier(t) < 4), outs = all.filter(t => piTier(t) === 4); return noPriceNote(validPricing(C.inP), ins.map(t => ({ t, name: piName(t) })), "P4 that need them show no profit") + noPriceNote(validPricing(C.outP), outs.map(t => ({ t, name: piName(t) })), "their profit isn't shown"); })()}`;
 }
+// What to buy rounded up to a multiple of the Shopping panel's "Round up to" (empty: as is)
+const piRound = (q, C) => { const R = Math.round(parseIsk(C.roundTo ?? "")) || 0; return R > 1 && q > 0 ? Math.ceil(q / R) * R : q; };
 function piNeeds(E) { const P = piPortfolio(E, E.days), need = new Map(); for (const r of P.rows) { const n = P.n(r); if (!n) continue; for (const [m, q] of Object.entries(r.inn)) need.set(+m, (need.get(+m) || 0) + q * n); } return { P, need }; }
 function renderPiShop(E) {
   const box = $("pi-shop"); if (!box) return; const C = E.C, { P, need } = piNeeds(E), stock = piStock();
-  const head = `<div class="toolbar"><label class="label">Days of stock</label><input type="text" data-pi="stockDays" value="${esc(C.stockDays)}" inputmode="numeric" style="width:50px"><label class="label">Stock counted</label><select data-pi="scope"><option value="all"${C.scope !== "sys" ? " selected" : ""}>Every hangar</option><option value="sys"${C.scope === "sys" ? " selected" : ""}>Only in the delivery system</option></select><span class="muted" style="font-size:.85rem">What your hangars hold (Assets) is taken off. Remaining: how long that stock lasts at the planets' use (red under a day).</span></div>`;
+  const head = `<div class="toolbar"><label class="label">Days of stock</label><input type="text" data-pi="stockDays" value="${esc(C.stockDays)}" inputmode="numeric" style="width:50px"><label class="label">Stock counted</label><select data-pi="scope"><option value="all"${C.scope !== "sys" ? " selected" : ""}>Every hangar</option><option value="sys"${C.scope === "sys" ? " selected" : ""}>Only in the delivery system</option></select><label class="label">Round up to</label><input type="text" data-pi="roundTo" value="${esc(C.roundTo ?? "")}" inputmode="numeric" style="width:70px" placeholder="e.g. 1000" title="What to buy is rounded up to a multiple of this (empty: not rounded)"><span class="muted" style="font-size:.85rem">What your hangars hold (Assets) is taken off. Remaining: how long that stock lasts at the planets' use (red under a day).</span></div>`;
   if (!need.size) { box.innerHTML = head + `<p class="muted" style="margin:0">Give some planets to a P4 in Pick production first.</p>`; return; }
-  const rows = [...need].map(([t, q]) => { const nq = Math.ceil(q), held = stock.get(t) || 0, buy = Math.max(0, nq - held); const u = piPrice(t, C.inP); return { t, need: nq, held, buy, last: q > 0 ? held / q * E.days * 86400 : null, cost: u == null ? null : buy * u, tier: piTier(t) }; });   // last: seconds the stock lasts at the plan's use
+  const rows = [...need].map(([t, q]) => { const nq = Math.ceil(q), held = stock.get(t) || 0, buy = piRound(Math.max(0, nq - held), C); const u = piPrice(t, C.inP); return { t, need: nq, held, buy, last: q > 0 ? held / q * E.days * 86400 : null, cost: u == null ? null : buy * u, tier: piTier(t) }; });   // last: seconds the stock lasts at the plan's use
   const list = (tier, title) => { const L = rows.filter(x => x.tier === tier).sort((a, b) => piName(a.t).localeCompare(piName(b.t))); if (!L.length) return ""; const toBuy = L.filter(x => x.buy > 0);
-    return `<h3 style="margin:12px 0 6px;font-size:1rem">${title} ${toBuy.length ? `<button type="button" class="cargo" data-copy="${esc(toBuy.map(x => `${piName(x.t)}\t${x.buy}`).join("\n"))}" data-copy-msg="Multibuy list copied">Copy multibuy</button>` : `<span class="pill good">All in stock</span>`}</h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">In stock</th><th scope="col" class="num">Remaining</th><th scope="col" class="num">To buy</th><th scope="col" class="num">Cost</th></tr></thead><tbody>${L.map(x => `<tr><th scope="row">${icon(x.t)} <button type="button" class="copyname" data-copy="${esc(piName(x.t))}" data-copy-msg="${esc(piName(x.t))} copied">${esc(piName(x.t))}</button></th><td class="num">${x.need.toLocaleString()}</td><td class="num">${x.held ? x.held.toLocaleString() : "—"}</td><td class="num" data-v="${x.last || 0}"${x.held && x.last < 864e2 ? ` style="color:var(--bad)"` : ""}>${x.held && x.last ? fmtDur(x.last) : "—"}</td><td class="num"><b>${x.buy.toLocaleString()}</b></td><td class="num">${x.cost == null ? `<span style="color:var(--bad)">no price</span>` : isk(x.cost)}</td></tr>`).join("")}</tbody><tfoot><tr class="total"><th scope="row">Total</th><td></td><td></td><td></td><td></td><td class="num"><b>${isk(L.reduce((a, x) => a + (x.cost || 0), 0))}</b>${L.some(x => x.cost == null && x.buy > 0) ? `<div class="label" style="color:var(--bad)">${L.filter(x => x.cost == null && x.buy > 0).length} not counted</div>` : ""}</td></tr></tfoot></table></div>`; };
+    return `<h3 style="margin:12px 0 6px;font-size:1rem">${title} ${toBuy.length ? `<button type="button" class="cargo" data-copy="${esc(toBuy.map(x => `${piName(x.t)}\t${x.buy}`).join("\n"))}" data-copy-msg="Multibuy list copied">Copy multibuy</button> <button type="button" class="cargo" data-imp-send="${esc(toBuy.map(x => `${piName(x.t)}\t${x.buy}`).join("\n"))}" title="Open this list in the Import calculator (Prices page)">Import calculator</button>` : `<span class="pill good">All in stock</span>`}</h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">In stock</th><th scope="col" class="num">Remaining</th><th scope="col" class="num">To buy</th><th scope="col" class="num">Cost</th></tr></thead><tbody>${L.map(x => `<tr><th scope="row">${icon(x.t)} <button type="button" class="copyname" data-copy="${esc(piName(x.t))}" data-copy-msg="${esc(piName(x.t))} copied">${esc(piName(x.t))}</button></th><td class="num">${x.need.toLocaleString()}</td><td class="num">${x.held ? x.held.toLocaleString() : "—"}</td><td class="num" data-v="${x.last || 0}"${x.held && x.last < 864e2 ? ` style="color:var(--bad)"` : ""}>${x.held && x.last ? fmtDur(x.last) : "—"}</td><td class="num"><b>${x.buy.toLocaleString()}</b></td><td class="num">${x.cost == null ? `<span style="color:var(--bad)">no price</span>` : isk(x.cost)}</td></tr>`).join("")}</tbody><tfoot><tr class="total"><th scope="row">Total</th><td></td><td></td><td></td><td></td><td class="num"><b>${isk(L.reduce((a, x) => a + (x.cost || 0), 0))}</b>${L.some(x => x.cost == null && x.buy > 0) ? `<div class="label" style="color:var(--bad)">${L.filter(x => x.cost == null && x.buy > 0).length} not counted</div>` : ""}</td></tr></tfoot></table></div>`; };
   const cost = rows.reduce((a, x) => a + (x.cost || 0), 0), fee = C.buyHow === "orders" ? cost * E.brk : 0, volBuy = rows.reduce((a, x) => a + x.buy * piVol(x.t), 0), volAll = rows.reduce((a, x) => a + x.need * piVol(x.t), 0), valAll = rows.reduce((a, x) => a + x.need * (piPrice(x.t, C.inP) || 0), 0);
   const outRows = P.rows.filter(r => P.n(r) > 0), volOut = outRows.reduce((a, r) => a + r.outM3 * P.n(r), 0), valOut = outRows.reduce((a, r) => a + r.exportValue * P.n(r), 0);
   const jitaIn = C.shipIn ? volBuy * rxNum(C.rateIn) + cost * rxNum(C.collIn) / 100 : 0, runs = piHaulCost(volAll, valAll, volOut, valOut, true);
@@ -3590,7 +3606,7 @@ async function esiAuthGet(path, access, page) {
   const q = page ? `&page=${page}` : "", sep = path.includes("?") ? "&" : "?";   // a path may carry its own query (from_id, include_completed)
   for (const url of [`https://esi.evetech.net/latest${path}${sep}datasource=tranquility${q}`, `https://esi.evetech.net${path}${page ? sep + "page=" + page : ""}`]) {
     try { r = await fetchRetry(url, { headers: { Authorization: "Bearer " + access } }, 3); if (r.ok) break; lastErr = new Error("ESI answered " + r.status); lastErr.status = r.status; if (r.status === 403) break; }
-    catch (e) { lastErr = new Error("couldn't reach ESI"); }
+    catch (e) { lastErr = new Error("couldn't reach ESI"); if (e.status === 429 || e.status === 420) { lastErr = new Error("ESI is limiting requests: try again in a few minutes"); lastErr.status = e.status; break; } }   // rate-limited: the other address is the same server
   }
   if (!r || !r.ok) throw lastErr;
   const data = await r.json();
@@ -3680,6 +3696,8 @@ async function fetchQueue(charId, access) {
 }
 async function applyToken(tok) {
   const p = jwtPayload(tok.access_token), charId = +String(p.sub).split(":").pop(), name = p.name;
+  const step = (x) => { syncStep[charId] = x; bgSyncMsg(); };   // what the background status line says this pilot is reading
+  step("skills");
   const { skills, totalSp, alpha } = await fetchSkills(charId, tok.access_token);
   let attrs = null; try { attrs = await esiAuthGet(`/characters/${charId}/attributes/`, tok.access_token); } catch (e) {}
   const scopes = [].concat(p.scp || []).join(" ");
@@ -3688,12 +3706,14 @@ async function applyToken(tok) {
   if (scopes.includes(IMPLANTS_SCOPE)) { try { const ids = await esiAuthGet(`/characters/${charId}/implants/`, tok.access_token); const nm = await esiNames(ids).catch(() => ({}));
     implants = await pool(ids, 3, async (id) => { const out = { id, name: nm[id] || "Implant #" + id, bonus: {} }; try { const t = await getJSON(REF + "/types/" + id); out.slot = dogma(t, 331) || null; for (const [aid, k] of Object.entries(IMPLANT_ATTR)) { const v = dogma(t, +aid); if (v) out.bonus[k] = v; } if (!nm[id]) out.name = tName(t); } catch (e) {} return out; }); } catch (e) {} }
   let jobs = null, jobsError = "", corpId = null, allyId = null, corpError = "", planets = null, planetsError = "";
+  step("industry jobs");
   if (scopes.includes(JOBS_SCOPE)) { try { jobs = await fetchJobs(charId, tok.access_token); } catch (e) { jobsError = netMsg(e); } }
   try { const ci = await esiGet(`/characters/${charId}/`); corpId = ci.corporation_id || null; allyId = ci.alliance_id || null; } catch (e) {}
   if (corpId && scopes.includes(CORP_JOBS_SCOPE)) {
     try { state.corpJobs[corpId] = { jobs: await fetchCorpJobs(corpId, tok.access_token), syncedAt: Date.now(), via: name }; saveCorpJobs(); }
     catch (e) { corpError = e.status === 403 ? "no Factory Manager role in the corporation" : netMsg(e); }
   }
+  step("wallets");
   let wallet = null, walletError = "", corpWalletError = "";
   if (scopes.includes(WALLET_SCOPE)) { try { wallet = await esiAuthGet(`/characters/${charId}/wallet/`, tok.access_token); } catch (e) { walletError = netMsg(e); } }
   if (corpId) {
@@ -3704,10 +3724,13 @@ async function applyToken(tok) {
     }
   }
   // Wallet history for Profit and loss (journal and market transactions, kept beyond ESI's 30 days)
+  step("wallet history");
   try { await pnlSync(charId, name, corpId, tok.access_token, scopes); } catch (e) {}
+  step("planets");
   if (scopes.includes(PLANETS_SCOPE)) { try { planets = await fetchPlanets(charId, tok.access_token); } catch (e) { planetsError = netMsg(e); } }
   if (corpId && scopes.includes(POCO_SCOPE)) { try { await pocoSync(corpId, name, tok.access_token); } catch (e) {} }
   // Citadels: where jobs run, and the corporation's own structures (with fuel) when the pilot is a Station Manager
+  step("structures");
   let corpStructError = "";
   try { await discoverStructs([...(jobs || []), ...((corpId && state.corpJobs[corpId]) ? state.corpJobs[corpId].jobs : [])].map(j => j.facility), tok.access_token, scopes, "jobs"); } catch (e) {}
   if (corpId && scopes.includes(CORP_STRUCTS_SCOPE)) {
@@ -3715,17 +3738,21 @@ async function applyToken(tok) {
     catch (e) { corpStructError = e.status === 403 ? "no Station Manager role in the corporation" : netMsg(e); }
   }
   // Moon mining (Corporation page) and in-game notifications (Intel page)
+  step("mining and notifications");
   try { await minSync(charId, name, corpId, tok.access_token, scopes); } catch (e) {}
   if (scopes.includes(NOTIF_SCOPE)) { try { await intelSync(charId, name, tok.access_token); } catch (e) {} }
+  step("contracts");
   let contractsError = "";
   if (scopes.includes(CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/characters/${charId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("char:" + charId, raw); await contractItems("char:" + charId, [...L, ...P], (cid) => `/characters/${charId}/contracts/${cid}/items/`, tok.access_token, scopes); const sent = await cmDeliveries("char:" + charId, raw, charId, tok.access_token).catch(() => (state.contracts["char:" + charId] || {}).sent); state.contracts["char:" + charId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = netMsg(e); } }
   if (corpId && scopes.includes(CORP_CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/corporations/${corpId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("corp:" + corpId, raw); await contractItems("corp:" + corpId, [...L, ...P], (cid) => `/corporations/${corpId}/contracts/${cid}/items/`, tok.access_token, scopes); const sent = await cmDeliveries("corp:" + corpId, raw, null, tok.access_token, corpId).catch(() => (state.contracts["corp:" + corpId] || {}).sent); state.contracts["corp:" + corpId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = contractsError || (e.status === 403 ? "corporation contracts refused" : netMsg(e)); } }
   if (scopes.includes(CONTRACTS_SCOPE) || scopes.includes(CORP_CONTRACTS_SCOPE)) { try { await contractNames(); } catch (e) {} }
   // Market orders (Net worth on the Overview): what sell orders will bring in and the ISK held in buy orders (escrow)
+  step("market orders");
   let orders = null, ordersError = "";
   if (scopes.includes(ORDERS_SCOPE)) { try { orders = slimOrders(await esiAuthGet(`/characters/${charId}/orders/`, tok.access_token)); } catch (e) { ordersError = netMsg(e); } }
   if (corpId && scopes.includes(CORP_ORDERS_SCOPE)) { try { (state.misc.corpOrders = state.misc.corpOrders || {})[corpId] = { at: Date.now(), via: name, list: slimOrders(await esiAuthGetAll(`/corporations/${corpId}/orders/`, tok.access_token)) }; saveMisc(); } catch (e) { ordersError = ordersError || (e.status === 403 ? "corporation orders refused (no Accountant or Trader role)" : netMsg(e)); } }
   if (orders || (corpId && (state.misc.corpOrders || {})[corpId])) { try { const L = [...(orders || []), ...(((state.misc.corpOrders || {})[corpId] || {}).list || [])], types = [...new Set(L.map(o => o.t))].filter(t => !state.typeNames[t]); if (types.length) Object.assign(state.typeNames, await esiNames(types)); await locationNames(L.map(o => o.loc), tok.access_token, scopes); } catch (e) {} }
+  step("hangars");
   let assetsError = "", corpAssetsError = "";
   if (scopes.includes(ASSETS_SCOPE)) {
     try { await syncAssets("char:" + charId, name, "Personal", await esiAuthGetAll(`/characters/${charId}/assets/`, tok.access_token), false, tok.access_token, scopes, null); }
@@ -3746,6 +3773,7 @@ async function applyToken(tok) {
   if (!c) { c = { id: "c" + Date.now().toString(36), name }; state.chars.push(c); }
   if (attrs) c.attrs = attrs;
   c.corpStructError = corpStructError;
+  step("blueprints, clones and the rest");
   // Blueprints owned (pilot, and corporation for a Director)
   state.misc.ownedBps = state.misc.ownedBps || {};
   if (scopes.includes(BPS_SCOPE)) { try { state.misc.ownedBps["char:" + charId] = { at: Date.now(), name, list: slimBps(await esiAuthGetAll(`/characters/${charId}/blueprints/`, tok.access_token)) }; } catch (e) {} }
@@ -3779,7 +3807,7 @@ async function applyToken(tok) {
   return c;
 }
 // Syncs running now (by ESI id): a pilot is never read twice at once, a second sync waits for the first
-const syncRuns = {};
+const syncRuns = {}, syncStep = {};
 async function syncChar(c) {
   if (esiDown()) throw new Error(DOWNTIME_MSG);
   const rt = esiTokens()[c.esiId];
@@ -3789,7 +3817,7 @@ async function syncChar(c) {
   syncRuns[id] = (async () => {
     try { return await applyToken(await refreshTok(id)); }
     catch (e) { if (e.grant) { saveToken(id, null); throw new Error(`${c.name}'s login has expired. Use "Log in again to sync"`); } throw e; }
-  })().finally(() => { delete syncRuns[id]; render(); bgSyncMsg(); });
+  })().finally(() => { delete syncRuns[id]; delete syncStep[id]; render(); bgSyncMsg(); });
   render(); bgSyncMsg();
   return syncRuns[id];
 }
@@ -3818,7 +3846,7 @@ function bgSyncPump() {
 // Where a pilot's sync stands: "run" (reading now), "wait" (queued after a login) or ""
 const syncState = (c) => !c.esiId ? "" : syncRuns[c.esiId] ? "run" : bgSyncQ.includes(c.esiId) ? "wait" : "";
 function bgSyncMsg() {
-  const run = state.chars.filter(c => syncState(c) === "run").map(c => c.name), wait = bgSyncQ.length;
+  const run = state.chars.filter(c => syncState(c) === "run").map(c => c.name + (syncStep[c.esiId] ? ` (${syncStep[c.esiId]})` : "")), wait = bgSyncQ.length;
   const m = $("esi-sync-bg"); if (!m) return;
   m.hidden = !run.length && !wait;
   m.textContent = run.length || wait ? `Syncing in the background: ${run.join(", ") || "starting"}${wait ? ` · ${wait} waiting` : ""}. You can log in the next character now.` : "";
@@ -3950,14 +3978,6 @@ function renderImplants() {
       return `<span class="imp" data-tip="${esc(`${im.name}${im.slot ? `\nSlot ${im.slot}` : ""}${b ? `\n${b}` : ""}`)}"><img src="https://images.evetech.net/types/${im.id}/icon?size=32" alt="${esc(im.name)}" width="28" height="28" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('b'),{textContent:'●'}))"></span>`; };
     return `<tr><th scope="row">${esc(c.name)}${ims.length ? "" : ` <span class="muted" style="font-size:.8rem">None plugged in</span>`}</th>${slots.map(n => { const im = ims.find(x => x.slot === n); return `<td class="num">${im ? cell(im) : `<span class="muted">·</span>`}</td>`; }).join("")}${extra ? `<td>${ims.filter(im => !im.slot || im.slot > 10).map(cell).join(" ")}</td>` : ""}<td class="muted" style="font-size:.8rem">${ago(c.implantsAt)}</td></tr>`; }).join("")}</tbody>`;
 }
-function implantCell(c) {
-  if (!c.implantsAt) return c.esiId ? `<span class="muted" data-tip="Allow &quot;Implants&quot; on the ESI login and log in again to read them">Not read</span>` : `<span class="muted">—</span>`;
-  const ims = c.implants || [];
-  if (!ims.length) return `<span class="pill" style="background:var(--panel-2);color:var(--muted)" data-tip="${esc(`No implants plugged in (as of ${ago(c.implantsAt)})`)}">None</span>`;
-  const attr = {}; for (const im of ims) for (const [k, v] of Object.entries(im.bonus || {})) attr[k] = (attr[k] || 0) + v;
-  const sum = Object.entries(attr).map(([k, v]) => `+${v} ${k.slice(0, 3)}`).join(" ");
-  return `<span class="pill good" data-tip="${esc(ims.map(im => im.name).join("\n") + `\nas of ${ago(c.implantsAt)}`)}">${ims.length} implant${ims.length > 1 ? "s" : ""}</span>${sum ? ` <span class="muted num" style="font-size:.8rem">${esc(sum)}</span>` : ""}`;
-}
 function renderChars() {
   const t = $("chars-table"); if (!t) return;
   const tokens = esiTokens();
@@ -3974,7 +3994,6 @@ function renderChars() {
     const link = c.esiId ? (linked ? `<span class="pill good">Linked</span>` : `<span class="pill bad">Login expired</span>`) : `<span class="muted">Not linked</span>`;
     const synced = (c.syncedAt ? `${fmtDate(c.syncedAt)}<br><span class="muted">${ago(c.syncedAt)}</span>` : `<span class="muted">Never</span>`) + (ss ? `<br><span class="pill mid">${ss === "run" ? "Syncing…" : "Waiting to sync"}</span>` : "");
     const changed = c.updatedAt ? `${fmtDate(c.updatedAt)}<br><span class="muted">${esc(SOURCE[c.lastSource] || "")}</span>` : `<span class="muted">—</span>`;
-    const trained = allSkills().filter(sk => lv(c, sk.name) > 0).length;
     const act = c.esiId ? (linked ? (ss ? `<button class="link" disabled>${ss === "run" ? "Syncing…" : "Waiting to sync"}</button>` : `<button class="link" data-esi-sync="${c.id}">${missingScopes(c).length ? "Sync now (new login needed)" : "Sync now"}</button>`) : `<button class="link" data-esi-relink="1">Log in again</button>`) : `<button class="link" data-esi-relink="1">Link to ESI</button>`;
     const acts = c._mode === "delete"
       ? `<span>Remove ${esc(c.name)}?</span> <button class="danger" data-act="confirm-del" data-id="${c.id}">Remove</button> <button data-act="cancel" data-id="${c.id}">Keep</button>`
@@ -4639,7 +4658,7 @@ function renderJobs() {
   };
   const JDEF = { key: "end", dir: 1 };
   const jGet = { end: (r) => r.end, who: (r) => r.who, job: (r) => r.job, item: (r) => r.item, runs: (r) => r.runs };
-  const head = `<thead><tr>${sortHead("jobs", "end", "Finishes", JDEF)}${sortHead("jobs", "end", "Time left", JDEF).replace('data-sort="jobs:end"', 'data-sort="jobs:end" data-dup="1"')}${sortHead("jobs", "who", "Character", JDEF)}${sortHead("jobs", "job", "Job", JDEF)}${sortHead("jobs", "item", "Item", JDEF)}${sortHead("jobs", "runs", "Runs", JDEF)}</tr></thead>`;
+  const head = `<thead><tr>${sortHead("jobs", "end", "Finishes", JDEF)}${sortHead("jobs", "end", "Time left", JDEF)}${sortHead("jobs", "who", "Character", JDEF)}${sortHead("jobs", "job", "Job", JDEF)}${sortHead("jobs", "item", "Item", JDEF)}${sortHead("jobs", "runs", "Runs", JDEF)}</tr></thead>`;
   $("jobs-list").innerHTML = "MSR".split("").map(k => {
     const list = jobs.filter(j => JOB_KIND[j.activity] === k);
     const rows = k === "R" ? groupReactions(list).map(g => ({ html: groupRow(g), end: g.end, who: g.who, job: JOB_NAME[g.jobs[0].activity] || "", item: g.jobs.map(j => j.product).sort().join(", "), runs: g.jobs.reduce((t, j) => t + j.runs, 0) }))
@@ -4949,7 +4968,7 @@ function renderDoctrines() {
   if (!docs.length) { box.innerHTML = head + `<p class="muted" style="margin:0">No doctrine yet: tick "Doctrine" on a fitting on the Fittings page.</p>`; return; }
   if (docMsg) { box.innerHTML = head + `<div class="notice" style="color:var(--bad);border-color:var(--bad)">${esc(docMsg)}</div>`; return; }
   if (!book || docs.some(f => !(f.contents && f.contents.length))) { if (!docBusy) setTimeout(() => docRefresh(false), 0); box.innerHTML = head + `<p class="muted" style="margin:0">Reading ${esc(citName(sid))}'s market…</p>`; return; }
-  const onSale = (t) => (book.sells.get(t) || []).reduce((a, x) => a + x[1], 0), cheapest = (t) => ((book.sells.get(t) || [])[0] || [])[0];
+  const onSale = (t) => (book.sells.get(t) || []).reduce((a, x) => a + x[1], 0);
   const rows = docs.map(f => { const n = docKeep(f), items = f.contents.map(x => ({ ...x, have: onSale(x.t) })), empty = items.filter(x => !x.have), low = items.filter(x => x.have && x.q && x.have < x.q * n), withQ = items.filter(x => x.q);
     return { f, n, items, empty, low, fits: empty.length ? 0 : withQ.length ? Math.min(...withQ.map(x => Math.floor(x.have / x.q))) : null }; });
   // Every empty item once, with the doctrines that need it and how many to seed for the fits you keep
@@ -5638,11 +5657,13 @@ function pastContracts(key, raw) {
 // ESI takes their items out of your assets while the contract is up). A contract that can't be read (too old, not yours) isn't asked again
 async function contractItems(key, list, path, access, scopes) {
   const old = state.contracts[key] || {}, prev = new Map([...(old.list || []), ...(old.past || [])].map(c => [c.id, c]));
+  let limited = false;   // ESI rate-limits contract items: once it says so, the rest are read at the next sync instead of holding this one for hours
   await pool(list, 3, async (c) => {
     const p = prev.get(c.id); if (p && (p.ask || p.noItems)) { c.items = p.items; c.ask = p.ask; if (p.noItems) c.noItems = 1; return; }
     if (c.ask || c.noItems) return;
+    if (limited) { if (p && p.items) c.items = p.items; return; }
     try { const L = await esiAuthGet(path(c.id), access); c.items = L.filter(i => i.is_included).map(i => [i.type_id, i.quantity, i.raw_quantity === -2 ? 1 : 0]); c.ask = L.filter(i => !i.is_included).map(i => [i.type_id, i.quantity]); }   // [type, quantity, copy]
-    catch (e) { if (p && p.items) c.items = p.items; if (e.status === 404 || e.status === 403) c.noItems = 1; }
+    catch (e) { if (p && p.items) c.items = p.items; if (e.status === 404 || e.status === 403) c.noItems = 1; if (e.status === 429 || e.status === 420) limited = true; }
   });
   const have = list.filter(c => (c.items && c.items.length) || (c.ask && c.ask.length)), types = [...new Set(have.flatMap(c => [...(c.items || []), ...(c.ask || [])].map(i => i[0])))].filter(t => !state.typeNames[t]);
   if (types.length) Object.assign(state.typeNames, await esiNames(types).catch(() => ({})));
@@ -5806,7 +5827,6 @@ function oreValue(t, mode) {
   return v / (R.portion || 1);
 }
 // Reprocessing data for ores in your hangars (category 25: asteroids, moon ore, ice), read once from EVE Ref
-let reprocBusy = false;
 async function loadReproc(ids) {
   state.misc.reproc = state.misc.reproc || {};
   const need = [...new Set(ids)].filter(t => !state.misc.reproc[t] || state.misc.reproc[t].v !== 2); if (!need.length) return;
@@ -6052,11 +6072,11 @@ function renderStockChart(counted) {
   const angs = top.map(([, v]) => (v / total) * Math.PI * 2);
   let a0 = -Math.PI / 2;
   const slices = top.map(([k, v], i) => { const a1 = a0; a0 += angs[i];
-    return `<path d="${arc(a1, a0)}" fill="${BAR_COLORS[i % BAR_COLORS.length]}" data-slice="${i}"><title>${esc(k)}: ${isk(v)} (${(v / total * 100).toFixed(1)}%)</title></path>`; }).join("");
+    return `<path d="${arc(a1, a0)}" fill="${BAR_COLORS[i % BAR_COLORS.length]}"><title>${esc(k)}: ${isk(v)} (${(v / total * 100).toFixed(1)}%)</title></path>`; }).join("");
   let seps = "", b = -Math.PI / 2;
   if (top.length > 1) angs.forEach((a, i) => { const prev = angs[(i + angs.length - 1) % angs.length]; if (a >= SEP && prev >= SEP) seps += `<path d="M${p(r0, b)} L${p(R, b)}" class="sep"/>`; b += a; });
   el.innerHTML = `<div class="pie-wrap"><svg viewBox="0 0 200 200" class="pie" role="img" aria-label="Stock value breakdown">${slices}${seps}<text x="100" y="96" text-anchor="middle" class="pie-total">${isk(total)}</text><text x="100" y="114" text-anchor="middle" class="pie-sub">total</text></svg>
-    <ul class="pie-legend">${top.map(([k, v], i) => `<li data-slice="${i}"><i style="background:${BAR_COLORS[i % BAR_COLORS.length]}"></i><span class="lbl" title="${esc(k)}">${esc(k)}</span><span class="v">${isk(v)}</span><span class="muted num">${(v / total * 100).toFixed(1)}%</span></li>`).join("")}</ul></div>`;
+    <ul class="pie-legend">${top.map(([k, v], i) => `<li><i style="background:${BAR_COLORS[i % BAR_COLORS.length]}"></i><span class="lbl" title="${esc(k)}">${esc(k)}</span><span class="v">${isk(v)}</span><span class="muted num">${(v / total * 100).toFixed(1)}%</span></li>`).join("")}</ul></div>`;
 }
 $("st-refresh").addEventListener("click", async () => { const b = $("st-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await refreshPrices(true); await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; renderStock(); });
 ["st-search", "st-loc", "st-group", "st-cat", "st-grp"].forEach(id => $(id).addEventListener("input", () => { stockLimit = 200; renderStock(); }));
@@ -6138,7 +6158,7 @@ function repairSkillNames() {
   for (const sk of Object.values(state.misc.skills || {})) scan(sk && sk.req);
   for (const t of Object.values(state.misc.types || {})) scan(t.req);
   for (const f of state.fits || []) scan(f.req);
-  for (const n of names) if (state.misc.skills && state.misc.skills[n]) { const t = state.misc.skills[n]; delete state.misc.skills[n]; }   // reload these by id so their name is read
+  for (const n of names) if (state.misc.skills) delete state.misc.skills[n];   // reload these by id so their name is read
   if (names.size) setTimeout(() => loadSkillData([...names]), 0);
 }
 const durLabel = (minutes) => { if (minutes >= 1440) { const H = Math.round(minutes / 60); return `${Math.floor(H / 24)}d ${H % 24}h`; } const M = Math.max(1, Math.round(minutes)); return M >= 60 ? `${Math.floor(M / 60)}h ${M % 60}m` : `${M}m`; };
@@ -6291,7 +6311,7 @@ const MISC_V = 7;   // version of the cached item data; older entries are read a
 const CRYSTAL_FAMILIES = ["Simple", "Coherent", "Variegated", "Complex", "Abyssal", "Mercoxit", "Ubiquitous Moon", "Common Moon", "Uncommon Moon", "Rare Moon", "Exceptional Moon"];
 const CRYSTALS = CRYSTAL_FAMILIES.flatMap(f => ["A I", "A II", "B I", "B II"].map(v => ({ family: f, v, name: / Moon$/.test(f) ? `${f} Mining Crystal Type ${v}` : `${f} Asteroid Mining Crystal Type ${v}` })));
 const UPGRADES = ["Mining Laser Upgrade II", "Mining Laser Upgrade I"];
-const CARGO_FIT = ["Expanded Cargohold II", "Capital Cargohold Optimization II", "Capital Cargohold Optimization I"];
+const CARGO_FIT = ["Expanded Cargohold II", "Capital Cargohold Optimization I"];
 const ICE = ["Ice Harvester II", "Ice Harvester I"], ICE_UPGRADES = ["Ice Harvester Upgrade II", "Ice Harvester Upgrade I"];
 const MINERS = [...STRIPS.map(m => ({ mod: m })), ...CRYSTALS.map(c => ({ crystal: c.name })), ...UPGRADES.map(m => ({ mod: m })), ...ICE.map(m => ({ mod: m })), ...ICE_UPGRADES.map(m => ({ mod: m })), ...CARGO_FIT.map(m => ({ mod: m }))];   // everything to look up
 const EXHUMER_BARGE = { Hulk: "Covetor", Mackinaw: "Retriever", Skiff: "Procurer" };
@@ -6320,19 +6340,9 @@ function haulCapacity(c, d) {
   cargo *= exMult ** lows;
   let rigs = "";
   if (d.rigSlots > 0) {
-    const r2 = T["Capital Cargohold Optimization II"], r1 = T["Capital Cargohold Optimization I"];
-    const okRig = (r) => r && !r.missing && (!d.rigSize || !r.rigSize || r.rigSize === d.rigSize) ? r : null;
-    const A = null, B = okRig(r1);   // tech 1 rigs only
-    let best = { m: 1, n2: 0, n1: 0 };
-    for (let n2 = 0; n2 <= d.rigSlots; n2++) for (let n1 = 0; n1 + n2 <= d.rigSlots; n1++) {
-      if ((n2 && !A) || (n1 && !B)) continue;
-      const cost = n2 * ((A && A.rigCost) || 0) + n1 * ((B && B.rigCost) || 0);
-      if (d.calibration && cost > d.calibration) continue;
-      const m = (1 + ((A && A.rigBonus) || 0) / 100) ** n2 * (1 + ((B && B.rigBonus) || 0) / 100) ** n1;
-      if (m > best.m) best = { m, n2, n1 };
-    }
-    cargo *= best.m;
-    rigs = [best.n2 ? `${best.n2} × Capital Cargohold Optimization II` : "", best.n1 ? `${best.n1} × Capital Cargohold Optimization I` : ""].filter(Boolean).join(" + ");
+    const r1 = T["Capital Cargohold Optimization I"];   // tech 1 rigs only
+    const n1 = r1 && !r1.missing && r1.rigBonus > 0 && (!d.rigSize || !r1.rigSize || r1.rigSize === d.rigSize) ? Math.min(d.rigSlots, d.calibration && r1.rigCost ? Math.floor(d.calibration / r1.rigCost) : d.rigSlots) : 0;
+    if (n1) { cargo *= (1 + r1.rigBonus / 100) ** n1; rigs = `${n1} × Capital Cargohold Optimization I`; }
   }
   const fleet = d.fleetHangar || 0;
   return { cargo: cargo + fleet, hold: cargo, fleet, ore, fit: `${lows} × Expanded Cargohold II${rigs ? " + " + rigs : ""}` };
@@ -6733,7 +6743,7 @@ const idb = {
   _db: null,
   open() { return this._db || (this._db = new Promise((res, rej) => { const r = indexedDB.open("eve-industry", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); })); },
   async get(k) { try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); } catch (e) { return null; } },
-  async set(k, v) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { return false; } }
+  async set(k, v) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = res; tx.onerror = tx.onabort = () => rej(tx.error); }); return true; } catch (e) { return false; } }
 };
 let mapData = null, mapIdx = null, mapLoad = null, mapTried = false;
 const view = { k: null, cx: 0, cy: 0 };
@@ -6950,11 +6960,8 @@ function bracketIcon(k) {
   im.onload = () => { const cv = document.createElement("canvas"); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const c = cv.getContext("2d"); c.drawImage(im, 0, 0); c.globalCompositeOperation = "source-in"; c.fillStyle = "#e9a540"; c.fillRect(0, 0, cv.width, cv.height); e.cv = cv; drawMap(); paintMarks(); };
   im.src = BRACKET_SRC[k] || BRACKET_SRC.carrier; return null;
 }
-// Upwell structure icons (the game's brackets): which one a structure type uses
-const STRUCT_ICON_KINDS = ["keepstar", "fortizar", "astrahus", "sotiyo", "azbel", "raitaru", "tatara", "athanor"];
+// Upwell structure icons (the game's brackets)
 const STRUCT_ICON_SRC = {"astrahus": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASElEQVR42mNgGAV4wf///+/9////Hj41TJRaQrEBjNicjVcDI6MSMp8Fh7p8HOIT0QVY8Ni0Gc1lvtjUseCJAV+6hMEoYGAAAFXxGBOdWF8DAAAAAElFTkSuQmCC", "keepstar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42mNgGGjAyMDAwPD///97WCUZGZUIybMg8fPR5Cei8bHKM6GZuJmRkXEzTudikWeiNAwoNoAFnySuwCPWgHyyXYAvIKkeBtQNxP////tSNSkT1AxN6gMLAA6FGUOoQDFMAAAAAElFTkSuQmCC", "fortizar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgGPKAEZvg////72FVzMiohC7GgsfwfDT+RGyKmPA6j5FxMyMj42Z8algIORuX12DeYSHgbFxyE7Ga/v//f18iXOGL7BImSqORYgNYsDmRrIRETCwQSlRDFAAA5vAlY3EQz1gAAAAASUVORK5CYII=", "raitaru": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASUlEQVR42mNgGNTg////9/7//38PnxomSi1hxGYrXg2MjErIfBYc6vJxiE9EF2DBY9NmNJf50iQMKDaABU8U+tIlFgY+IQ0DAADU8h/NM3/fxgAAAABJRU5ErkJggg==", "sotiyo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR42mNgoAX4////vf///9/DxUcGTJRaxkTIBkIuZIQJkGM7IyOjEgsSP59E/RMZGBgYWNBM3EykF3ypG4gDagALLr8RHROURiMTugAjI6MSsXy4F9AFibGZaoFIMQAA3F8waxjQiAMAAAAASUVORK5CYII=", "azbel": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVklEQVR42mNgGNTg////9/7//38PnxomUjRgk2dEV0CMyxgZGZVgbBYs8vkE9E9E5rDgsGEzDi/44g0DcgDFBrAQ61ScAUppLDDhUoCsCJ1P1ZQ4DAAAnm4vzfz7N8oAAAAASUVORK5CYII=", "tatara": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaUlEQVR42u1RQQ6AMAhrl31vPlYfiCdM07Bk6sGLPQ0YpRTgaxAAIiIeNZPsEm83+3cA6MZ4aJzKSNLyI9/trQe9YnYl1WQvKIbnlUA/Xgpyx9VrqCdtVepMPivXc4pewWtLDrsHFRp+nCjKWWd5irC/AAAAAElFTkSuQmCC", "athanor": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR42u1QOQ4AIAizhu/pY/WBdVFDDF5xtVuB0oJzH9CEJI9EQNeJ0Y8bfdJEJg5ZJ2qOJMM4619/YC6wnKza8okAoE8Ye0fxWHF9wscdCpA2J50FxajRAAAAAElFTkSuQmCC"};
-const structKind = (typeName) => { const n = String(typeName || "").toLowerCase(); return STRUCT_ICON_KINDS.find(k => n.includes(k)) || null; };
-const sIcon = (typeName, color) => { const k = structKind(typeName); return k ? `<span class="sicon si-${k}"${color ? ` style="color:${color}"` : ""} title="${k[0].toUpperCase() + k.slice(1)}" aria-hidden="true"></span>` : ""; };
 const structCanvas = {};
 function drawStructIcon(g, k, x, y, sz, color) {
   const key = k + color; let e = structCanvas[key];
@@ -6994,7 +7001,7 @@ const mkIco = (kind, arg) => `<canvas class="mk-ico" width="32" height="32" data
 function paintMarks(root = document) {
   for (const c of root.querySelectorAll("canvas.mk-ico")) { const M = MK[c.dataset.mk], g = c.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.setTransform(c.width / 16, 0, 0, c.height / 16, 0, 0); if (M && M.draw) M.draw(g, 8, 8, M.ico, c.dataset.mkArg || ""); }
 }
-function mapLayers() { return { gates: true, structs: true, stations: true, pi: true, pilots: true, clones: true, friendly: true, keepstars: true, npc: true, caps: true, danger: true,...((state.misc.map || {}).layers || {}) }; }
+function mapLayers() { return { gates: true, structs: true, stations: true, pi: true, pilots: true, clones: true, friendly: true, keepstars: true, npc: true, caps: true, danger: true, homes: true, incursions: true,...((state.misc.map || {}).layers || {}) }; }
 let mapRaf = 0;
 function drawMap() { cancelAnimationFrame(mapRaf); mapRaf = requestAnimationFrame(drawMapNow); }
 // Sovereignty (public ESI), kept for an hour; allied alliances are picked by the user
@@ -7085,13 +7092,13 @@ function drawMapNow() {
   // Keepstars (yours or imported): a small gold star below-right of the dot
   if (L.keepstars) for (const [id, list] of dockSites()) if (list.some(x => x.cls === "XL")) mark(id, (x, y) => MK.keepstar.draw(g, x + r + 9, y + r + 8, 16));
   // Incursions: red hatched halo (no cynos there)
-  if (incursions) for (const id of incursions.sys) mark(id, (x, y) => MK.incursion.draw(g, x, y, 2 * (r + 5)));
+  if (L.incursions && incursions) for (const id of incursions.sys) mark(id, (x, y) => MK.incursion.draw(g, x, y, 2 * (r + 5)));
   // Jump clones: a small person to the right of the dot
   if (L.clones) for (const id of mk.clones.keys()) mark(id, (x, y) => MK.clone.draw(g, x + r + 15, y, 12));
   // Your pilots' last location: the game's own-ship bracket around the dot (who is there: the hover box and the system panel)
   if (L.pilots) for (const id of mapPilots().keys()) mark(id, (x, y) => MK.pilot.draw(g, x, y, 2 * (r + 6)));
   // Home systems: a little house to the left of the dot (labels sit above)
-  for (const id of mm.homes || []) mark(id, (x, y) => MK.home.draw(g, x - r - 17, y, 12));
+  if (L.homes) for (const id of mm.homes || []) mark(id, (x, y) => MK.home.draw(g, x - r - 17, y, 12));
   // Hauling trips from the build planner: each trip its own lane, an arrow for the direction, numbers placed so they never overlap
   if (mapUI.haul && mapUI.haul.length) {
     const segUse = new Map(), placed = [];
@@ -7141,7 +7148,7 @@ function drawMapNow() {
 function mapSelect(id, center) {
   const m = mapIndex(); if (!m) return; const s = m.byId.get(id); if (!s) return;
   mapUI.sel = id;
-  if (center) { const cv = $("map-canvas"); view.k = Math.max(view.k, view.k0 * 10); view.cx = s.px; view.cy = s.py; }
+  if (center) { view.k = Math.max(view.k, view.k0 * 10); view.cx = s.px; view.cy = s.py; }
   drawMap(); renderMapInfo();
 }
 function renderMapInfo() {
@@ -7224,7 +7231,8 @@ function renderMap() {
     const dl = $("map-names"); if (!dl.options.length) dl.innerHTML = mapData.systems.map(s => `<option value="${esc(s.n)}">`).join("");
     const o = mapOrigin(); if (document.activeElement !== $("map-origin")) $("map-origin").value = o ? o.n : "";
     $("map-status").textContent = `${mapData.systems.length.toLocaleString()} systems · loaded ${ago(mapData.at)}${m.has2d ? "" : " · no 2D layout"} · showing the ${m.layout === "2d" ? "2D schematic" : "3D (seen from above)"} map`;
-    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span>${mkIco("struct")} Your citadels</span><span>${mkIco("friendly")} Friendly (imported)</span><span>${mkIco("keepstar")} Keepstar</span><span>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span>${mkIco("npc")} NPC station (zoom in)</span><span>${mkIco("station")} Station with your stock</span><span>${mkIco("pi")} Your planets</span><span><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span>${mkIco("home")} Home (left of the system)</span><span>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
+    const lg = (k) => `data-ml-leg="${k}" role="button" tabindex="0" aria-pressed="${L[k] !== false}" title="Click to ${L[k] !== false ? "hide" : "show"} on the map"${L[k] !== false ? "" : ` class="off"`}`;   // a legend line with a layer shows or hides it
+    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span ${lg("structs")}>${mkIco("struct")} Your citadels</span><span ${lg("friendly")}>${mkIco("friendly")} Friendly (imported)</span><span ${lg("keepstars")}>${mkIco("keepstar")} Keepstar</span><span ${lg("caps")}>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span ${lg("npc")}>${mkIco("npc")} NPC station (zoom in)</span><span ${lg("stations")}>${mkIco("station")} Station with your stock</span><span ${lg("pi")}>${mkIco("pi")} Your planets</span><span ${lg("gates")}><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span ${lg("homes")}>${mkIco("home")} Home (left of the system)</span><span ${lg("pilots")}>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span ${lg("clones")}>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span ${lg("danger")}>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span ${lg("incursions")}>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
   } else { $("map-legend").innerHTML = ""; $("map-status").textContent = ""; }
   renderPlanner(); drawMap(); renderMapInfo();
 }
@@ -7453,7 +7461,10 @@ async function readFatigue(c, access) {
   $("map-ship").addEventListener("change", (e) => { state.misc.map = state.misc.map || {}; state.misc.map.ship = e.target.value; saveMisc(); renderMap(); });
   $("map-range").addEventListener("change", (e) => { state.misc.map = state.misc.map || {}; state.misc.map.range = parseFloat(e.target.value.replace(",", ".")) || 0; saveMisc(); renderMap(); });
   $("map-tools").addEventListener("change", (e) => { if (e.target.id === "map-danger") { state.misc.map = state.misc.map || {}; state.misc.map.danger = Math.max(1, Math.round(rxNum(e.target.value, 5))); saveMisc(); e.target.blur(); renderMap(); renderSupply(); } });
-  $("map-tools").addEventListener("change", (e) => { const k = e.target.dataset.ml; if (!k) return; state.misc.map = state.misc.map || {}; state.misc.map.layers = { ...mapLayers(), [k]: e.target.checked }; saveMisc(); drawMap(); });
+  const setLayer = (k, on) => { state.misc.map = state.misc.map || {}; state.misc.map.layers = { ...mapLayers(), [k]: on }; saveMisc(); renderMap(); };
+  $("map-tools").addEventListener("change", (e) => { const k = e.target.dataset.ml; if (k) setLayer(k, e.target.checked); });
+  const legTg = (e) => { const s = e.target.closest && e.target.closest("[data-ml-leg]"); if (!s || (e.type === "keydown" && e.key !== "Enter" && e.key !== " ")) return; e.preventDefault(); setLayer(s.dataset.mlLeg, mapLayers()[s.dataset.mlLeg] === false); };
+  $("map-legend").addEventListener("click", legTg); $("map-legend").addEventListener("keydown", legTg);
   $("map-color").addEventListener("change", (e) => { state.misc.map = state.misc.map || {}; state.misc.map.color = e.target.value; saveMisc(); if (e.target.value === "sov") loadSov(); renderMap(); });
   $("map-layout").addEventListener("click", () => {
     state.misc.map = state.misc.map || {}; const m = mapIndex();
@@ -7654,9 +7665,6 @@ async function industrySystem(name) {
 }
 let indicesP = null, indicesAt = 0;
 function industryIndices() { if (!indicesP || Date.now() - indicesAt > 3600e3) { indicesAt = Date.now(); indicesP = esiGet("/industry/systems/").catch(e => { indicesP = null; throw e; }); } return indicesP; }
-async function jitaSell(ids) { await jitaFetch(ids); return Object.fromEntries(ids.map(id => [id, (jitaCache[id] || {}).p || 0])); }
-// Prices in one of the Jita modes (JSV, JBV, split), for a set of items
-async function jitaPrices(ids, mode) { await jitaFetch(ids); return Object.fromEntries(ids.map(id => [id, jitaValue(id, mode) || 0])); }
 // How an item is made: blueprint, activity, output per run, materials, time and skills
 const recipeCache = {};
 async function recipeOf(typeId) {
@@ -7983,7 +7991,6 @@ async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
   const res = { bid, top, qty, name: recipes.get(top.type).name, topVol: recipes.get(top.type).vol || 0, topAct: recipes.get(top.type).act, jobs, shop, matCost, unpriced, fees, sell: (await pricesIn([top.type], validPricing(cfg.sellAt, "jsv")).catch(() => ({})))[top.type] ?? null, sellSrc: priceSrc[top.type], sysM: mss[0] && mss[0].sys, sysR, sysSci, locs, shipments, cfg: JSON.parse(JSON.stringify(cfg)), at: Date.now(),
     toggles: [...recipes.values()].filter(r => r.bp && r.type !== top.type && depthOf.has(r.type)).map(r => ({ type: r.type, name: r.name, built: built(r.type) })) };
   res.inv = inv;
-  const ownTopRuns = ownTop && ownTop.bpc ? ownTop.runs : 0;
   res.invCost = inv && cfg.inv !== false && inv.runsNeeded > 0 && isFinite(inv.chosen.invCost) ? inv.chosen.invCost : 0;
   if (inv) { const dn = await skillNames([...inv.dcs.map(x => x.t), ...inv.missing]).catch(() => ({})); inv.dcs.forEach(x => x.name = dn[x.t] || "Type " + x.t); inv.missingNames = inv.missing.map(t => ({ t, name: dn[t] || (inv.srcs.find(s => s.id === t) || {}).name || "Type " + t })); }
   onStatus("Planning the hauling…");
@@ -8971,9 +8978,13 @@ function renderTodoMore() {
   // Empty job slots: one row per pilot, a column per kind of slot (✕ hides it), and finished jobs still holding a slot
   const off = state.misc.slotOff || {}, sl = slotsToFill(now);
   const hidden = Object.keys(off).filter(k => state.chars.some(c => k.startsWith(c.id + ":"))).length;
-  $("todo-sl-panel").hidden = !sl.length && !hidden; $("todo-sl-count").checked = !!state.misc.todoSlCount;
+  const sh = slotShow(), pil = state.chars.filter(hasJobData), kinds = "MSR".split("").filter(k => sh.K[k] !== false);
+  const filtered = Object.values(sh.K).includes(false) || pil.some(c => sh.C[c.id] === false);
+  $("todo-sl-panel").hidden = !sl.length && !hidden && !filtered; $("todo-sl-count").checked = !!state.misc.todoSlCount;
+  const chip = (attr, v, on, label) => `<button type="button" class="chip${on ? " on" : ""}" ${attr}="${esc(v)}" aria-pressed="${on}">${esc(label)}</button>`;
+  const showBar = `<div class="toolbar" style="margin:0 0 6px"><span class="label">Show</span>${"MSR".split("").map(k => chip("data-sl-k", k, sh.K[k] !== false, KIND_NAME[k])).join("")}<span class="muted">·</span>${pil.map(c => chip("data-sl-c", c.id, sh.C[c.id] !== false, c.name)).join("")}</div>`;
   const slCell = (x, k) => { const f = x.free.find(y => y[0] === k); return f ? `<td class="num" data-v="${f[1]}">${f[1]} <button type="button" class="link" data-slot-off="${esc(x.c.id + ":" + k)}" aria-label="Hide ${esc(x.c.name)}'s ${KIND_NAME[k].toLowerCase()} slots" title="Hide">✕</button></td>` : `<td class="num muted" data-v="0" title="${!x.can[k] ? `No ${k === "S" ? "Science" : "Reactions"} skill` : off[x.c.id + ":" + k] ? "Hidden" : "All busy"}">—</td>`; };
-  $("todo-sl").innerHTML = (sl.length ? `<div class="scroller"><table class="bp-table" id="todo-sl-table"><thead><tr><th scope="col">Pilot</th>${"MSR".split("").map(k => `<th scope="col" class="num">Empty ${KIND_NAME[k].toLowerCase()} slots</th>`).join("")}<th scope="col" class="num">Finished jobs to deliver</th></tr></thead><tbody>${sl.map(x => `<tr><th scope="row">${esc(x.c.name)}</th>${"MSR".split("").map(k => slCell(x, k)).join("")}<td class="num" data-v="${x.ready}">${x.ready || `<span class="muted">—</span>`}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0"><span class="pill good">Every slot is busy</span></p>`)
+  $("todo-sl").innerHTML = showBar + (sl.length ? `<div class="scroller"><table class="bp-table" id="todo-sl-table"><thead><tr><th scope="col">Pilot</th>${kinds.map(k => `<th scope="col" class="num">Empty ${KIND_NAME[k].toLowerCase()} slots</th>`).join("")}<th scope="col" class="num">Finished jobs to deliver</th></tr></thead><tbody>${sl.map(x => `<tr><th scope="row">${esc(x.c.name)}</th>${kinds.map(k => slCell(x, k)).join("")}<td class="num" data-v="${x.ready}">${x.ready || `<span class="muted">—</span>`}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0"><span class="pill good">${filtered ? "Every slot shown is busy" : "Every slot is busy"}</span></p>`)
     + (hidden ? `<p class="muted" style="margin:6px 0 0;font-size:.85rem">${hidden} kind${hidden === 1 ? "" : "s"} of slot hidden. <button type="button" class="link" data-slot-show="1">Show them again</button></p>` : "");
   // Structures whose fuel runs out soon (Corporation page)
   const fl = fuelLow(); $("todo-fuel-panel").hidden = !fl.length;
@@ -9003,7 +9014,7 @@ function renderTodoPi() {
   const C = state.misc.pi; if (!C || !Object.values(C.alloc || {}).some(n => n > 0)) { box.innerHTML = `<p class="muted" style="margin:0">No PI plan yet: give planets to a P4 on PI Management.</p>`; return; }
   if (C.scope === "sys") piHaulEnsure().then(ch => { if (ch && !$("page-todo").hidden) renderTodo(); }, () => null);   // stock counted in the delivery system only
   const E = piEnv(), { need } = piNeeds(E), stock = piStock();
-  const rows = [...need].map(([t, q]) => ({ t, n: piName(t), q: Math.max(0, Math.ceil(q) - (stock.get(t) || 0)), g: piTier(t) })).filter(x => x.q > 0);
+  const rows = [...need].map(([t, q]) => ({ t, n: piName(t), q: piRound(Math.max(0, Math.ceil(q) - (stock.get(t) || 0)), C), g: piTier(t) })).filter(x => x.q > 0);
   box.innerHTML = rows.length ? todoBuyList(rows, "todoPi", "data-todo-pi", `, for ${E.days} day${E.days === 1 ? "" : "s"} of stock`, [[1, "P1", "todo-pi-p1"], [2, "P2", "todo-pi-p2"]]).html
     : `<p class="muted" style="margin:0"><span class="pill good">Nothing to buy</span> Your stock covers the plan.</p>`;
 }
@@ -9025,6 +9036,7 @@ document.addEventListener("change", (e) => { const k3 = e.target.dataset && e.ta
 document.addEventListener("change", (e) => { const k2 = e.target.dataset && e.target.dataset.todoOrd; if (!k2) return; const d = state.misc.todoOrd = state.misc.todoOrd || {}; if (e.target.checked) d[k2] = Date.now(); else delete d[k2]; saveMisc(); setTimeout(renderTodo, 0); });
 $("todo-sq-idle").addEventListener("change", (e) => { state.misc.todoSqIdle = e.target.checked; saveMisc(); renderTodo(); todoBadge(); });
 $("todo-sl-count").addEventListener("change", (e) => { state.misc.todoSlCount = e.target.checked; saveMisc(); todoBadge(); });
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-sl-k],[data-sl-c]"); if (!b) return; const sh = slotShow(), [g, v] = b.dataset.slK ? ["K", b.dataset.slK] : ["C", b.dataset.slC]; if (sh[g][v] === false) delete sh[g][v]; else sh[g][v] = false; saveMisc(); renderTodo(); todoBadge(); });
 document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-slot-off],[data-slot-show]"); if (!b) return; if (b.dataset.slotShow) state.misc.slotOff = {}; else (state.misc.slotOff = state.misc.slotOff || {})[b.dataset.slotOff] = true; saveMisc(); renderTodo(); todoBadge(); });
 document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-todo-reset]"); if (!b) return; state.misc[b.dataset.todoReset] = {}; saveMisc(); renderTodo(); });
 document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.todoRx; if (!k) return; const d = state.misc.todoRx = state.misc.todoRx || {}; if (e.target.checked) d[k] = Date.now(); else delete d[k]; saveMisc(); setTimeout(renderTodo, 0); });
@@ -9113,12 +9125,15 @@ function renderFcNav() {
 // EvE News: the channels picked in Settings (state.misc.news): the EVE launcher's news list (launcher.eveonline.com) and any RSS, Atom or JSON feed
 // added there, all read through the launcher's /proxy. Each channel is kept for an hour; links go to the article itself, without the launcher's tracking.
 const NEWS_FEED = "https://launcher.eveonline.com/resources/eve-online/news_v4/en.json";
+const REDDIT_FEED = "https://www.reddit.com/r/Eve/top/.rss?t=day&limit=5";   // the day's 5 most upvoted; its JSON API refuses reads without a Reddit login; the feed allows about one read a minute
 const newsUrl = (u) => { u = String(u || "").replace(/^cache\+/, "").replace(/[?&]utm_source=.*$/, ""); return /^https:\/\//.test(u) ? u : ""; };
 const newsCat = (k) => { k = String(k || "").replace(/-/g, " "); return k ? k[0].toUpperCase() + k.slice(1) : ""; };
 const newsText = (h) => h ? (new DOMParser().parseFromString(String(h).replace(/<(br|\/p|\/li|\/div|\/h\d)\b[^>]*>/gi, "$& "), "text/html").body.textContent || "").replace(/\s+/g, " ").trim() : "";
 // Channels: the launcher's list can't be removed (untick it to hide it); the categories it gives can be hidden one by one (hideCats)
 const newsCfg = () => { const C = state.misc.news = state.misc.news || {};
   if (!C.v) Object.assign(C, { v: 1, hideCats: [], channels: [{ id: "launcher", name: "EVE launcher news", url: NEWS_FEED, on: true }, { id: "patch", name: "Patch notes", url: "https://www.eveonline.com/rss/patch-notes", on: false }, { id: "forums", name: "EVE forums: latest topics", url: "https://forums.eveonline.com/latest.rss", on: false }] });
+  if (C.v < 2) { C.v = 2; if (!C.channels.some(x => x.id === "reddit")) C.channels.push({ id: "reddit", name: "Reddit r/Eve: top today", url: REDDIT_FEED, on: true }); }
+  if (C.v < 3) { C.v = 3; const r = C.channels.find(x => x.id === "reddit"); if (r && r.url === "https://www.reddit.com/r/Eve/top/.rss?t=day") r.url = REDDIT_FEED; }   // v2 read all 25
   return C; };
 // Cache (localStorage "news"): per channel { at, url, title, items }; the old single-feed cache becomes the launcher's
 const newsCache = () => { let c = ls.get("eve-industry-news", null) || {}; if (c.v !== 2) c = { v: 2, ch: Array.isArray(c.items) && c.items.length ? { launcher: { at: c.at || 0, url: NEWS_FEED, items: c.items } } : {} }; return c; };
@@ -9137,7 +9152,7 @@ function newsParse(text) {
     const html = txt(e, "description", "summary", "encoded", "content");
     const media = [...e.getElementsByTagName("*")].find(c => (c.localName === "thumbnail" || (c.localName === "content" && (/^image\//.test(c.getAttribute("type") || "") || c.getAttribute("medium") === "image"))) && c.getAttribute("url")) || [...e.children].find(c => c.localName === "enclosure" && /^image\//.test(c.getAttribute("type") || ""));
     const img = media ? media.getAttribute("url") : ([...html.matchAll(/<img[^>]+src=["']([^"']+)/gi)].map(m => m[1]).find(u => !/emoji/i.test(u)) || "");   // not a post's emoji
-    return { title: newsText(txt(e, "title")), at: Date.parse(txt(e, "pubDate", "published", "updated", "date")) || 0, cat: "", desc: clip(newsText(html)), img: newsUrl(img.replace(/^\/\//, "https://")), url: newsUrl(l ? l.getAttribute("href") || l.textContent.trim() : "") };
+    return { title: newsText(txt(e, "title")), at: Date.parse(txt(e, "pubDate", "published", "updated", "date")) || 0, cat: "", desc: clip(newsText(html).replace(/\s*submitted by \/u\/\S+ \[link\] \[comments\]$/, "")), img: newsUrl(img.replace(/^\/\//, "https://")), url: newsUrl(l ? l.getAttribute("href") || l.textContent.trim() : "") };
   }).filter(x => x.title && x.url);
   return { title: newsText(txt(ch, "title")), items };
 }
@@ -9282,7 +9297,7 @@ function renderRxNav() {
 }
 // Left navigation for the build plan
 function renderPlanNav() {
-  navRender("plan-nav", [["plan-title", "Blueprint & summary"], ["pl-pc", "Public contracts"], ["pl-time", "Timeline"], ["pl-who", "Who builds what"], ["pl-pilots", "Per pilot"], ["pl-stock", "Materials you own"], ["pl-ore", "Ore to buy"], ["pl-shop", "Materials to buy"], ["pl-inv", "Invention"], ["pl-haul", "Hauling"], ["pl-toggle", "Build or buy"], ["pstr-title", "Structures & settings"]]);
+  navRender("plan-nav", [["plan-title", "Blueprint & summary"], ["pl-mats", "Materials needed"], ["pl-pc", "Public contracts"], ["pl-time", "Timeline"], ["pl-who", "Who builds what"], ["pl-pilots", "Per pilot"], ["pl-stock", "Materials you own"], ["pl-ore", "Ore to buy"], ["pl-shop", "Materials to buy"], ["pl-inv", "Invention"], ["pl-haul", "Hauling"], ["pl-toggle", "Build or buy"], ["pstr-title", "Structures & settings"]]);
 }
 // Copy a cargo list
 document.addEventListener("click", async (e) => { const b = e.target.closest && e.target.closest("button[data-copy]"); if (!b) return; try { await navigator.clipboard.writeText(b.dataset.copy); toast(b.dataset.copyMsg || "List copied"); } catch (err) { const t = document.createElement("textarea"); t.value = b.dataset.copy; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); toast("List copied"); } catch (e2) { toast("Couldn't copy"); } t.remove(); } });
@@ -9349,7 +9364,7 @@ function renderBuildInner(page) {
     const oreTable = O && O.use.length ? `<h3 style="margin:12px 0 6px;font-size:1rem">Ore to reprocess <span class="muted" style="font:400 .85rem var(--f-body)">suggested mix from your hangars, reprocessed in the system where its minerals are used, at your best refinery there</span></h3>
       <div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Ore</th><th scope="col">Reprocessed in</th><th scope="col" class="num">Yield</th><th scope="col" class="num">Batches</th><th scope="col" class="num">Units to reprocess</th><th scope="col">Taken from</th></tr></thead><tbody>${O.use.map(u => `<tr><th scope="row">${icon(u.t)} ${esc(u.name)}</th><td style="white-space:normal;font-size:.85rem">${esc(u.sysName)}<div class="label">${esc(u.ref.name)} (${esc(u.ref.how)})</div></td><td class="num" title="${esc(u.pilot ? `${u.pilot}${u.sk ? `, ${u.sk}` : ""}` : "")}">${(u.y * 100).toFixed(1)}%${u.pilot ? `<div class="label">${esc(u.pilot)}</div>` : ""}</td><td class="num">${u.batches.toLocaleString()}</td><td class="num"><b>${u.units.toLocaleString()}</b>${u.hauled ? `<div class="label">${u.hauled.toLocaleString()} hauled there, compressed</div>` : ""}</td><td style="white-space:normal;font-size:.85rem">${u.where.map(w => `${w.q.toLocaleString()} in ${esc(w.name)}${w.sys && sysN2(w.sys) ? ` (${esc(sysN2(w.sys))})` : ""}`).join("<br>")}</td></tr>`).join("")}</tbody></table></div>
       <div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Gives</th><th scope="col" class="num">Still needed</th><th scope="col" class="num">From the ore</th><th scope="col" class="num">Left over</th></tr></thead><tbody>${O.out.map(o => `<tr><th scope="row">${icon(o.t)} ${esc(o.name)}</th><td class="num">${o.want ? o.want.toLocaleString() : "—"}</td><td class="num">${o.made.toLocaleString()}</td><td class="num">${o.made - o.used > 0 ? (o.made - o.used).toLocaleString() : "—"}</td></tr>`).join("")}</tbody></table></div>` : "";
-    const oreAway = O && (O.away.length || O.noSys || (O.noRef || []).length) ? `<div class="notice" style="display:grid;gap:4px;margin-top:6px"><b>Ore you own, not used</b>${(O.noRef || []).map(x => `<span data-no-refinery="${x.sys}"><span class="pill bad">No refinery detected</span> in <button type="button" class="link" data-map-goto="${x.sys}">${esc(x.name)}</button>: ${esc(x.ores.join(", "))} not reprocessed there. Add your Athanor or Tatara in that system (corporation structures or imported industry structures) and plan again.</span>`).join("")}${O.noSys ? `<span>Set the structures' systems: your ore is reprocessed where its minerals are used.</span>` : ""}${O.away.map(x => `<span>${esc(x.name)}: ${x.q.toLocaleString()} in ${esc(x.where)}${x.sys && sysName(x.sys) ? ` (<button type="button" class="link" data-map-goto="${x.sys}">${esc(sysName(x.sys))}</button>)` : ""}</span>`).join("")}${O.away.length ? `<span class="muted" style="font-size:.8rem">Move it to ${esc(SU.dSys ? SU.dSys.name : "the delivery system")} or a structure's system and plan again to use it.</span>` : ""}</div>` : "";
+    const oreAway = O && (O.away.length || O.noSys || (O.noRef || []).length) ? `<div class="notice" style="display:grid;gap:4px;margin-top:6px"><b>Ore you own, not used</b>${(O.noRef || []).map(x => `<span><span class="pill bad">No refinery detected</span> in <button type="button" class="link" data-map-goto="${x.sys}">${esc(x.name)}</button>: ${esc(x.ores.join(", "))} not reprocessed there. Add your Athanor or Tatara in that system (corporation structures or imported industry structures) and plan again.</span>`).join("")}${O.noSys ? `<span>Set the structures' systems: your ore is reprocessed where its minerals are used.</span>` : ""}${O.away.map(x => `<span>${esc(x.name)}: ${x.q.toLocaleString()} in ${esc(x.where)}${x.sys && sysName(x.sys) ? ` (<button type="button" class="link" data-map-goto="${x.sys}">${esc(sysName(x.sys))}</button>)` : ""}</span>`).join("")}${O.away.length ? `<span class="muted" style="font-size:.8rem">Move it to ${esc(SU.dSys ? SU.dSys.name : "the delivery system")} or a structure's system and plan again to use it.</span>` : ""}</div>` : "";
     const RV = r.reserved, rvNote = RV ? `<details class="notice" style="margin:0 0 6px"><summary>Kept for ${RV.orders} ongoing order${RV.orders === 1 ? "" : "s"}: ${RV.items.length} item${RV.items.length === 1 ? "" : "s"} not offered to this build</summary><div style="font-size:.85rem;margin-top:4px">${RV.items.map(x => `${esc(x.name)} ${x.q.toLocaleString()}`).join(" · ")}</div><div class="muted" style="font-size:.8rem;margin-top:4px">From the Planned and In progress orders on Orders management. Mark an order Done once its jobs have used its materials, so they aren't kept twice.</div></details>` : "";
     return `<h3 id="pl-stock" style="margin:16px 0 6px">Materials you already own</h3>${rvNote}${used.length ? `<div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">Already at the structure</th><th scope="col" class="num">In ${esc(SU.dSys ? SU.dSys.name : "the delivery system")}</th><th scope="col" class="num">Still to buy</th><th scope="col" class="num">Market value used</th></tr></thead><tbody>${used.map(x => `<tr><th scope="row">${icon(x.type)} ${esc(x.name)}</th><td class="num">${x.need.toLocaleString()}</td><td class="num">${avCell(x.availLocal, x.fromLocal)}</td><td class="num">${avCell(x.availD, x.fromD)}</td><td class="num">${x.qty.toLocaleString()}</td><td class="num">${isk((x.fromLocal + x.fromD) * x.price)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0">None of the materials to buy are in your hangars at the structures or in the delivery system.</p>`}${compTable}${oreTable}${oreAway}
       ${used.length || comps.length || (O && O.use.length) ? `<p class="muted" style="margin:4px 0 0;font-size:.8rem">Stock you use isn't free: it's counted at market value in the margin, since you could have sold it instead.</p>` : ""}
@@ -9406,11 +9421,21 @@ function renderBuildInner(page) {
   const maxD = Math.max(...a.parts.map(x => x.j.depth));
   const sch = scheduleParts([...a.parts, ...sciParts(r, a.parts)]);
   const VW = buildState.plan.viewing;
+  // Materials needed (user's request): everything the build uses, raw materials (from your stock or bought; ore bought stands for the minerals it gives) and components made on the way
+  const cu = new Map(((r.stockUse || {}).comps || []).map(x => [x.type, x]));
+  const raw = r.shop.filter(x => !x.ore).map(x => { const need = x.need ?? x.qty, ore = x.fromBuyOre || 0; return { t: x.type, name: x.name, need, own: need - x.qty - ore, buy: x.qty, ore, vol: x.vol || 0 }; });
+  const comp = [...r.jobs.filter(j => j.type !== r.top.type).map(j => { const u = cu.get(j.type); return { t: j.type, name: j.name, need: u ? u.need : j.made - j.extra, own: u ? u.fromLocal + u.fromD : 0, made: j.made, vol: j.vol || 0 }; }),
+    ...[...cu.values()].filter(u => !r.jobs.some(j => j.type === u.type)).map(u => ({ t: u.type, name: u.name, need: u.need, own: u.fromLocal + u.fromD, made: 0, vol: u.vol }))];
+  const mRow = (x, last) => `<tr><th scope="row">${icon(x.t)} <button type="button" class="copyname" data-copy="${esc(x.name)}" data-copy-msg="${esc(x.name)} copied" title="Click to copy the name">${esc(x.name)}</button></th><td class="num">${x.need.toLocaleString()}</td><td class="num">${x.own > 0 ? x.own.toLocaleString() : "—"}</td><td class="num">${last}</td><td class="num">${Math.round(x.need * x.vol).toLocaleString()} m³</td></tr>`;
+  const matsBox = raw.length || comp.length ? `<h3 id="pl-mats" style="margin:16px 0 6px">Materials needed ${raw.length ? `<button type="button" class="cargo" data-copy="${esc(raw.map(x => `${x.name}\t${x.need}`).join("\n"))}" data-copy-msg="Raw materials copied">Copy raw materials</button>` : ""}</h3><div class="scroller"><table class="bp-table" id="pl-mats-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Needed</th><th scope="col" class="num">From your stock</th><th scope="col" class="num">To buy or build</th><th scope="col" class="num">Volume</th></tr></thead><tbody>
+      ${raw.length ? `<tr class="group"><th colspan="5" scope="colgroup">Raw materials · ${raw.length}</th></tr>${raw.map(x => mRow(x, x.buy ? `${x.buy.toLocaleString()}${x.ore ? `<div class="label">−${x.ore.toLocaleString()} from ore</div>` : ""}` : x.ore ? `<span class="muted">from ore</span>` : "—")).join("")}` : ""}
+      ${comp.length ? `<tr class="group"><th colspan="5" scope="colgroup">Components built on the way · ${comp.length}</th></tr>${comp.map(x => mRow(x, x.made ? `<span class="muted">build</span> ${x.made.toLocaleString()}` : "—")).join("")}` : ""}</tbody>
+      <tfoot><tr class="total"><th scope="row" colspan="4">Raw materials volume</th><td class="num">${Math.round(raw.reduce((a, x) => a + x.need * x.vol, 0)).toLocaleString()} m³</td></tr></tfoot></table></div>` : "";
   box.innerHTML = tiles + (VW ? `<div class="notice" style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span>The order <b>${VW.qty.toLocaleString()} × ${esc(VW.name)}</b> as it was sent on ${fmtDate(VW.at)}: prices, stock and jobs from that day.</span><button type="button" class="primary" data-replan="1">Plan it again with today's data</button></div>` : `<div class="toolbar" style="margin-top:8px"><button type="button" data-send-order="1">Send to Orders management</button></div>`) + `<div class="slot-tiles" style="margin-top:8px">
       <div class="slot-tile"><div class="label">Estimated time</div><span class="big-num">${fmtDur(sch.span)}</span><div class="muted">until the last job ends, each job starting when its inputs are made and a slot is free${r.invCost ? ", copying and invention included" : ""} (hauling not counted)</div></div>
       <div class="slot-tile"><div class="label">Jobs</div><span class="big-num">${a.parts.length}</span><div class="muted">${pilots.size} pilot${pilots.size === 1 ? "" : "s"}${noSlot.length ? ` · ${noSlot.length} waiting for a slot` : ""}</div></div></div>
     ${noSkill.length || notOwned.length ? `<div class="notice" style="display:grid;gap:4px;margin-top:8px">${noSkill.length ? `<span style="color:var(--bad)">Nobody has the skills for: ${noSkill.map(p => esc(p.j.name)).join(", ")}.</span>` : ""}${notOwned.length ? `<span>No blueprint or formula owned for: ${notOwned.map(j => esc(j.name)).join(", ")}${notOwned.some(j => j.act === "M") ? " (ME assumed as set in the settings)" : ""}.</span>` : ""}</div>` : ""}
-    ${pcBox}
+    ${matsBox}${pcBox}
     <h3 id="pl-time" style="margin:16px 0 6px">Timeline</h3>${timelineSvg(sch)}
     <h3 id="pl-who" style="margin:16px 0 6px">Who builds what</h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Stage</th><th scope="col">Item</th><th scope="col">Job</th><th scope="col" class="num">Runs</th><th scope="col">Blueprint</th><th scope="col">Pilot</th><th scope="col">Slot</th><th scope="col" class="num">Duration</th><th scope="col" class="num">Job fee</th></tr></thead><tbody>${a.parts.map(p => {
       const stage = maxD - p.j.depth + 1;
@@ -9532,9 +9557,11 @@ async function pnlWallet(key, meta, jPath, tPath, access, personalOnly) {
 async function pnlContents(w, path, access) {
   const D = pnlData; if (!w) return;
   const ids = [...new Set(Object.values(w.j).filter(e => PNL_REF[e[1]] === "cprice" && e[6] === "contract_id" && e[5]).map(e => e[5]))].filter(c => !D.cont[c]);
+  let limited = false;   // rate-limited by ESI: the rest at the next sync
   await pool(ids, 3, async (cid) => {
+    if (limited) return;
     try { const L = await esiAuthGet(path(cid), access), inc = L.filter(i => i.is_included), use = inc.length ? inc : L; D.cont[cid] = { i: use.map(i => [i.type_id, i.quantity]) }; }
-    catch (e) { if (e.status === 404 || e.status === 403) D.cont[cid] = { gone: e.status }; }   // too old or not yours to read: not asked again
+    catch (e) { if (e.status === 404 || e.status === 403) D.cont[cid] = { gone: e.status }; if (e.status === 429 || e.status === 420) limited = true; }   // too old or not yours to read: not asked again
   });
 }
 // One pilot's wallet and its corporation's divisions (read at most every 30 minutes unless forced; `corps` = corporations already read this round)
@@ -10413,6 +10440,75 @@ document.addEventListener("click", (e) => {
   idbShow(+b.dataset.idbOpen);
 });
 
+/* ---------- tests page ---------- */
+// Attribute boosters (cerebral accelerators) from CCP's game data: published group 303 items with attribute bonuses (175–179), their duration (330, ms,
+// +20% per Biology level) and expiry (2422, days since 1970). Priced in a pricing ("pr:<id>") or at a market's cheapest sell order ("st:<id>" / "cit:<id>")
+const BOOST_MONTH = 720;   // hours in a month (30 days)
+const BOOST_ATTR = [[175, "Charisma"], [176, "Intelligence"], [177, "Memory"], [178, "Perception"], [179, "Willpower"]];
+function boostCfg() { const c = state.misc.boost = state.misc.boost || {}; if (c.v !== 1) Object.assign(c, { v: 1, at: "pr:jsv", bio: null }); return c; }
+let boostList = null, boostBusy = false, boostErr = ""; const boostPrice = {};   // per place: { busy, p: { type: price or null }, err }
+function boostAt() { const at = String(boostCfg().at || ""), [k, id] = at.split(":");
+  return k === "pr" && pricings().some(p => p.id === at.slice(3)) || k === "st" && TRADE_HUBS.some(h => String(h.id) === id) || k === "cit" && citadelMarkets().some(c => String(c.id) === id) ? at : "pr:jsv"; }
+const boostBio = () => { const b = boostCfg().bio; return b != null ? b : Math.max(0, ...state.chars.map(c => lv(c, "Biology"))); };
+async function boostLoad() {
+  if (boostList || boostBusy) return; boostBusy = true; boostErr = ""; renderBoost();
+  try {
+    const D = await idbLoad(); if (!D) throw new Error("CCP's game data can't be read right now");
+    const L = await pool(D.L.filter(x => x.g === 303 && x.p), 8, async (x) => { const t = await getJSON(REF + "/types/" + x.id).catch(() => null); if (!t) return null;
+      const b = BOOST_ATTR.map(([a]) => dogma(t, a) || 0), ms = dogma(t, 330), ex = dogma(t, 2422);
+      return b.some(v => v > 0) && ms > 0 ? { t: x.id, n: x.n, b, ms, exp: ex ? ex * 864e5 : null, mkt: t.market_group_id != null } : null; });
+    boostList = L.filter(Boolean);
+  } catch (e) { boostErr = netMsg(e); }
+  boostBusy = false; renderBoost(); boostPrices();
+}
+async function boostPrices() {
+  const at = boostAt(); if (!boostList || boostPrice[at]) return;
+  const ids = boostList.filter(x => x.mkt && !(x.exp && x.exp < Date.now())).map(x => x.t), E = boostPrice[at] = { busy: true, p: {} }; renderBoost();
+  try {
+    if (at.startsWith("pr:")) E.p = await pricesIn(ids, at.slice(3));
+    else { const B = await marketBooks(at, ids, (d, n) => { $("boost-status").textContent = `Reading prices… ${d} of ${n}`; }, ["sell"]); for (const t of ids) { const s = (B.get(t) || {}).sells || []; E.p[t] = s.length ? s[0][0] : null; } }
+  } catch (e) { E.err = netMsg(e); }
+  E.busy = false; renderBoost();
+}
+function boostRows() {
+  const P = (boostPrice[boostAt()] || {}).p || {}, mult = 1 + 0.2 * boostBio(), now = Date.now();
+  return boostList.map(x => { const h = x.ms / 3600e3 * mult, s = [...x.b].sort((a, b) => b - a), sp = 60 * BOOST_MONTH * (s[0] + s[1] / 2), old = x.exp != null && x.exp < now, p = x.mkt && !old && P[x.t] > 0 ? P[x.t] : null;
+    return { ...x, h, sp, p, old, perM: p == null ? null : p / h * BOOST_MONTH, perSp: p == null ? null : p / h * BOOST_MONTH / sp }; });
+}
+function renderBoost() {
+  const bar = $("boost-bar"), box = $("boost-table"), sum = $("boost-summary"), note = $("boost-note"); if (!box) return;
+  const C = boostCfg(), at = boostAt(), bio = boostBio(), E = boostPrice[at] || {};
+  if (!bar.contains(document.activeElement)) {
+    const who = (l) => state.chars.filter(c => lv(c, "Biology") === l).map(c => c.name);
+    bar.innerHTML = `<label class="label" for="boost-at">Buy at</label><select id="boost-at" data-boost="at" style="max-width:320px"><optgroup label="Pricings">${pricings().map(p => `<option value="pr:${esc(p.id)}"${"pr:" + p.id === at ? " selected" : ""}>${esc(p.name)}</option>`).join("")}</optgroup>${marketOptions(at)}</select>
+      <label class="label" for="boost-bio">Biology</label><select id="boost-bio" data-boost="bio"><option value=""${C.bio == null ? " selected" : ""}>Your best pilot's (${bio ? ROMAN[bio] : "none"})</option>${[0, 1, 2, 3, 4, 5].map(l => { const w = who(l); return `<option value="${l}"${C.bio === l ? " selected" : ""}>${l ? "Level " + ROMAN[l] : "Not trained"}${w.length ? ` · ${esc(w.join(", "))}` : ""}</option>`; }).join("")}</select>
+      <button type="button" data-boost-refresh="1"${!boostList || E.busy ? " disabled" : ""}>Refresh prices</button>`;
+  }
+  $("boost-status").textContent = boostBusy ? "Reading the boosters from CCP's game data…" : E.busy ? "Reading prices…" : "";
+  const clear = (msg) => { box.innerHTML = msg ? `<tbody><tr><td class="empty">${msg}</td></tr></tbody>` : ""; sum.innerHTML = ""; note.innerHTML = ""; };
+  if (boostErr) return clear(`The boosters couldn't be read: ${esc(boostErr)}`);
+  if (!boostList) { if (!boostBusy) setTimeout(boostLoad, 0); return clear("Reading the boosters…"); }
+  if (!boostList.length) return clear("No attribute booster in the game data.");
+  if (!boostPrice[at]) setTimeout(boostPrices, 0);
+  const rows = boostRows(), ok = rows.filter(r => r.perM != null), [k, id] = at.split(":"), where = k === "pr" ? pricingName(at.slice(3)) : marketName(at);
+  const warn = (r) => r.old ? ` <span class="pill bad">Expired ${esc(fmtDate(r.exp))}</span>` : r.exp ? ` <span class="pill mid" title="It can't be injected after this date">⚠ Expires ${esc(fmtDate(r.exp))}</span>` : "";
+  // The best booster for each attribute: the least ISK a month per point it adds there
+  sum.innerHTML = BOOST_ATTR.map(([, name], i) => { const pt = (r) => r.perM / r.b[i], best = ok.filter(r => r.b[i] > 0).reduce((a, r) => !a || pt(r) < pt(a) ? r : a, null);
+    return `<div class="slot-tile"><div class="label">Best for ${name}</div><span class="big-num">${best ? `${isk(best.perM)} <small>ISK a month</small>` : "—"}</span><div class="muted">${best ? `${esc(best.n)} · +${best.b[i]} for ${fmtDur(best.h * 3600)} · ${isk(pt(best))} a month per point${warn(best)}` : "no booster with a price"}</div></div>`; }).join("");
+  const miss = E.busy ? [] : rows.filter(r => r.mkt && !r.old && r.p == null);
+  note.innerHTML = (E.err ? `<div class="notice" style="color:var(--bad);border-color:var(--bad)">Prices at ${esc(where)} couldn't be read: ${esc(E.err)}</div>` : "")
+    + (k === "pr" ? noPriceNote(at.slice(3), miss.map(r => ({ t: r.t, name: r.n })), "they show no ISK a month") : miss.length ? `<div class="notice" style="margin-top:6px">${miss.length} booster${miss.length === 1 ? " has" : "s have"} no sell order at ${esc(where)}: they show no ISK a month.</div>` : "");
+  const attrs = (b) => b.every(x => x === b[0]) ? `+${b[0]} to all` : BOOST_ATTR.map(([, n], i) => b[i] ? `${n.slice(0, 3)} +${b[i]}` : "").filter(Boolean).join(", ");
+  const why = (r) => r.old ? "expired" : !r.mkt ? "not on the market" : E.busy ? "…" : "no price";
+  const v = (r, x, f) => x == null ? `<td class="num" data-v=""><span class="muted">${why(r)}</span></td>` : `<td class="num" data-v="${x}">${f(x)}</td>`;
+  const groups = [["On the market", rows.filter(r => r.mkt && !r.old)], ["Not sold on the market", rows.filter(r => !r.mkt && !r.old)], ["Expired", rows.filter(r => r.old)]].filter(g => g[1].length);
+  box.innerHTML = `<thead><tr><th scope="col">Booster</th><th scope="col">Attributes</th><th scope="col" class="num" title="With the Biology level chosen above">Lasts</th><th scope="col" class="num">Price</th><th scope="col" class="num" title="Price ÷ the hours it lasts × 720 (30 days, a new one injected each time one runs out)">ISK a month</th><th scope="col" class="num" title="What a skill gains when its primary and secondary attributes are the two the booster adds most to, over 30 days">Extra SP a month</th><th scope="col" class="num">ISK per SP</th></tr></thead>`
+    + `<tbody>${groups.map(([g, L]) => `<tr class="group"><th colspan="7" scope="colgroup">${g} <span class="muted num">${L.length}</span></th></tr>` + [...L].sort((a, b) => (a.perSp ?? Infinity) - (b.perSp ?? Infinity) || a.n.localeCompare(b.n)).map(r => `<tr><th scope="row" data-v="${esc(r.n)}">${icon(r.t, 20)} <button type="button" class="copyname" data-copy="${esc(r.n)}" data-copy-msg="${esc(r.n)} copied">${esc(r.n)}</button>${warn(r)}</th>
+      <td data-v="${r.b.reduce((a, x) => a + x, 0)}">${attrs(r.b)}</td><td class="num" data-v="${r.h}">${fmtDur(r.h * 3600)}</td>${v(r, r.p, isk)}${v(r, r.perM, isk)}<td class="num" data-v="${r.sp}">${Math.round(r.sp).toLocaleString()}</td>${v(r, r.perSp, (x) => x.toFixed(x < 10 ? 2 : 0))}</tr>`).join("")).join("")}</tbody>`;
+}
+document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.boost; if (!k) return; const C = boostCfg(); C[k] = k === "bio" ? (e.target.value === "" ? null : +e.target.value) : e.target.value; saveMisc(); e.target.blur(); renderBoost(); });
+document.addEventListener("click", (e) => { if (!(e.target.closest && e.target.closest("[data-boost-refresh]"))) return; delete boostPrice[boostAt()]; renderBoost(); });
+
 /* ---------- roles ---------- */
 function saveRoles() { ls.set("eve-industry-roles", state.roles); }
 // Requirements of one role item as {skill: level}, or null while a ship's data is still loading
@@ -10445,7 +10541,7 @@ function renderRoles() {
     const able = rows.filter(x => x.ok), closest = rows.filter(x => !x.ok && isFinite(x.gap)).sort((a, b) => a.gap - b.gap).slice(0, 3);
     const items = r.items.map((it, i) => { const pending = it.kind === "ship" && !itemReq(it); const missing = it.kind === "ship" && (state.misc.types || {})[it.name] && state.misc.types[it.name].missing;
       return `<span class="chip${pending ? "" : " on"}" style="${missing ? "color:var(--bad)" : ""}"${it.kind === "skills" ? ` title="${esc(Object.entries(it.req).map(([n, l]) => `${n} ${ROMAN[l]}`).join("\n"))}"` : ""}>${esc(itemLabel(it))}${missing ? " (unknown ship)" : pending ? " (loading)" : ""} <button class="link" data-role-del-item="${r.id}:${i}" aria-label="Remove requirement" style="padding:0 2px">✕</button></span>`; }).join("");
-    return `<article class="fit" data-role="${r.id}">
+    return `<article class="fit">
       <div class="bp-head"><div><div class="pilot-name">${esc(r.name)}</div><div class="label">${r.mode === "any" ? "Any one of" : "All of"} ${r.items.length} requirement${r.items.length === 1 ? "" : "s"}</div></div><button class="link" data-role-del="${r.id}">Remove role</button></div>
       <div class="chips">${items || `<span class="muted">No requirements yet</span>`}</div>
       <form class="row-form role-add" data-role-add="${r.id}">

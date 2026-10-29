@@ -46,7 +46,7 @@ Everything with a date: industry jobs finishing (manufacturing, reactions, copyi
 Every pilot's in-game calendar (needs the **Calendar** permission), each event once, with every pilot's answer (✓ accepted, ? maybe, ✗ declined, · no answer), in local and EVE time. Events stay until they end.
 
 ## EvE News
-The EVE launcher's news, and any other channel you turn on in **Settings → EvE News channels**: patch notes, EVE forums' latest topics, or any RSS / Atom / JSON feed you add by its link. All channels in one list, newest first. **Refresh** reads them again (otherwise each is kept an hour). Needs the launcher.
+The EVE launcher's news, and any other channel you turn on in **Settings → EvE News channels**: patch notes, EVE forums' latest topics, **Reddit r/Eve: top today** (the day's 5 most upvoted posts, on by default), or any RSS / Atom / JSON feed you add by its link. All channels in one list, newest first. **Refresh** reads them again (otherwise each is kept an hour). Needs the launcher.
 
 ## Time zones
 EVE time first, then your cities. Change the list in **Settings → Time zones**. When a city's day isn't EVE's day, the weekday shows; hover for the date and UTC offset.

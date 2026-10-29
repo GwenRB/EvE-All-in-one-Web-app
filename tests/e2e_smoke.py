@@ -144,7 +144,7 @@ async def tabs_and_menus(t):
     t.eq(await t.js("getComputedStyle(document.querySelector('.tabs .tabgrp:has(button[data-tab=omega]) .tabmenu')).display"), "none", "a menu closes on a click elsewhere")
     t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=prices]) button[data-tab]')].map(b=>b.dataset.tab)"), ["prices", "trading", "suppliers", "contracts", "cbrowse", "shortages", "pnl", "lp"], "Market menu pages, the Contracts browser, Profit and loss and LP store included")
     t.eq(await t.js("[...document.querySelectorAll('.tabs .tabgrp:has(button[data-tab=misc]) button[data-tab]')].map(b=>b.dataset.tab)"), ["misc", "corp", "intel", "itemdb"], "the Other menu holds Misc, Corporation, Intel and the Item database")
-    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-2)"), ["settings", "notes"], "Settings and Notes end the bar")
+    t.eq(await t.js("[...document.querySelectorAll('.tabs > button[data-tab]')].map(b=>b.dataset.tab).slice(-3)"), ["settings", "notes", "tests"], "Settings, Notes and Tests end the bar")
     await t.tab("misc"); h = await t.js("document.querySelector('#page-misc h2').textContent"); t.ok(h.endswith("Blueprint calculator"), "Misc's first panel is the Blueprint calculator", h)
 
 @scenario
@@ -160,7 +160,10 @@ async def build_plan(t):
     t.ok(any(j[0] == "Fake Component" and j[2].startswith("M:") and j[2] != "M:s1" for j in r["jobs"]) or True, "components go where they're cheapest")
     t.ok(await t.js("document.querySelectorAll('#plan-out svg[aria-label=\"Build timeline\"] rect').length") > 0, "the timeline is drawn")
     nav = await t.js("[...document.querySelectorAll('#plan-nav a')].map(a=>a.textContent)")
-    t.ok("Timeline" in nav and "Hauling" in nav and "Materials to buy" in nav, "Build planning's left rail", nav)
+    t.ok("Timeline" in nav and "Hauling" in nav and "Materials to buy" in nav and "Materials needed" in nav, "Build planning's left rail", nav)
+    mats = t.show("materials needed", await t.js("[[...document.querySelectorAll('#pl-mats-table tr.group')].map(r=>r.innerText.split(' · ')[0].replace(/[▾▸]/g,'').trim()), [...document.querySelectorAll('#pl-mats-table tbody tr:not(.group)')].map(r=>[r.cells[0].innerText.trim(), r.cells[1].innerText.trim()])]"))
+    want = t.show("shop", await t.js("buildState.plan.res.shop.filter(x=>!x.ore).map(x=>[x.name,(x.need??x.qty).toLocaleString()])"))
+    t.ok([g.lower() for g in mats[0]] == ["raw materials", "components built on the way"] and all(w in mats[1] for w in want) and any(m[0] == "Fake Component" for m in mats[1]), "Materials needed lists every raw material and the components built", [mats, want])
     # stock in hangars is used first
     await t.pg.check("#plan-stock"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy && !!buildState.plan.res.stockUse", 20)
     su = t.show("stock use", await t.js("buildState.plan.res.stockUse.items.map(x=>[x.name,x.need,x.fromLocal,x.fromD,x.qty,x.elsewhere.map(e=>e.name+':'+e.q)])"))
@@ -175,7 +178,7 @@ async def build_plan(t):
     await t.pg.click("#plan-out [data-btoggle='4051']"); await asyncio.sleep(0.3); await t.until("!buildState.plan.busy", 20)
     t.ok("Nitrogen Fuel Block" in await t.js("buildState.plan.res.jobs.map(j=>j.name)"), "a bought item can be built instead")
     await t.pg.select_option("#plan-out select[data-bwho='500']", "b"); await asyncio.sleep(0.3)
-    who = await t.js("[...document.querySelectorAll('#plan-out table')[0].querySelectorAll('tbody tr')].map(r=>r.innerText.replace(/\\s+/g,' ')).filter(t=>t.includes('Component'))")
+    who = await t.js("[...document.querySelector('#pl-who + .scroller table').querySelectorAll('tbody tr')].map(r=>r.innerText.replace(/\\s+/g,' ')).filter(t=>t.includes('Component'))")
     t.ok(any("Ender Beta" in w for w in who), "picking who builds a job", who)
     await t.pg.click("#plan-out [data-haul-map]"); await asyncio.sleep(0.4)
     t.ok(await t.js("!document.getElementById('page-map').hidden && Array.isArray(mapUI.haul) && mapUI.haul.length>0"), "the hauling shows on the map")
@@ -305,7 +308,11 @@ async def todo_page(t):
 async def overview_news(t):
     await t.pg.set_viewport_size({"width": 1920, "height": 1000}); await t.tab("forecast", 0.6)
     nw = t.show("news", await t.js("(()=>{const n=document.getElementById('fc-nav').getBoundingClientRect(), f=document.querySelector('.fleet-panel').getBoundingClientRect(), z=document.querySelector('.tz-panel').getBoundingClientRect(); return {slides:document.querySelectorAll('.news-show').length, items:document.querySelectorAll('.news-list li').length, links:[...document.querySelectorAll('.news-list a')].map(a=>a.href).join(' '), navLeft:n.left, navTop:n.top, fleetTop:f.top, fleetW:f.width, newsW:document.querySelector('.news-panel').getBoundingClientRect().width, tzLeft:z.left, tzRight:z.right, tzTop:z.top, tzBottom:z.bottom, tz:[...document.querySelectorAll('#tz-list li')].map(l=>l.innerText.replace(/\\s+/g,' '))}})()"))
-    t.ok(not nw["slides"] and nw["items"] == 5, "the launcher's news list shows (no slideshow)", nw)
+    t.ok(not nw["slides"] and nw["items"] == 6, "the launcher's news and Reddit's top post show (no slideshow)", nw)
+    rd = await t.js("[...document.querySelectorAll('.news-list li')].find(l=>l.innerText.includes('Buying 10 crates')).innerText.replace(/\\s+/g,' ')")
+    t.ok("Ten crates opened." in rd and "submitted by" not in rd and "Reddit r/Eve" in rd, "the Reddit post shows its text, not Reddit's footer", rd)
+    mig = await t.js("(()=>{const keep=state.misc.news; state.misc.news={v:2, hideCats:[], channels:[{id:'reddit', name:'R', url:'https://www.reddit.com/r/Eve/top/.rss?t=day', on:true}]}; const u=newsCfg().channels[0].url; state.misc.news=keep; return u})()")
+    t.ok(mig.endswith("limit=5"), "an older save's Reddit channel reads only the day's top 5", mig)
     t.ok("utm_" not in nw["links"], "news links lose the launcher's tracking")
     t.ok(len(nw["tz"]) == 6 and nw["tz"][0].startswith("EVE time"), "6 clocks, EVE time first", nw["tz"])
     t.ok(nw["tzLeft"] >= 0 and nw["tzRight"] <= nw["navLeft"] and abs(nw["tzTop"] - nw["navTop"]) < 2 and nw["tzBottom"] <= nw["fleetTop"], "time zones sit left of the navigation", nw)
@@ -317,9 +324,9 @@ async def overview_news(t):
     await t.js("window.scrollTo(0,0)")
     await t.js("()=>{newsCfg().channels.find(x=>x.id==='patch').on=true; saveMisc(); return newsEnsure(true)}"); await asyncio.sleep(0.3)
     rss = t.show("rss", await t.js("({items:document.querySelectorAll('.news-list li').length, first:document.querySelector('.news-list li').innerText.replace(/\\s+/g,' ')})"))
-    t.ok(rss["items"] == 6 and "Version 9.99" in rss["first"] and "Greetings, New patch." in rss["first"], "an RSS channel is merged in, a shared article once", rss)
+    t.ok(rss["items"] == 7 and "Version 9.99" in rss["first"] and "Greetings, New patch." in rss["first"], "an RSS channel is merged in, a shared article once", rss)
     await t.js("()=>{newsCfg().hideCats=['patch-notes']; saveMisc(); renderNews()}")
-    t.eq(await t.js("document.querySelectorAll('.news-list li').length"), 5, "hiding a launcher category hides its articles")
+    t.eq(await t.js("document.querySelectorAll('.news-list li').length"), 6, "hiding a launcher category hides its articles")
     await t.js("()=>{newsCfg().hideCats=[]; saveMisc(); renderNews()}")
     # Settings: rename a channel, move it up: an article both channels carry shows under the higher one
     await t.tab("settings", 0.4)
@@ -328,7 +335,7 @@ async def overview_news(t):
     shared = "[...document.querySelectorAll('.news-list li')].find(l=>l.innerText.includes('News 1')).innerText"
     t.ok("EVE launcher news" in await t.js(shared), "a shared article shows under the higher channel (launcher first)")
     await t.pg.click("[data-nwc-move='patch|-1']"); await asyncio.sleep(0.2)
-    t.eq(await t.js("newsCfg().channels.map(x=>x.id)"), ["patch", "launcher", "forums"], "moving a channel up")
+    t.eq(await t.js("newsCfg().channels.map(x=>x.id)"), ["patch", "launcher", "forums", "reddit"], "moving a channel up")
     t.ok("CCP patch notes" in await t.js(shared), "after the move it shows under the renamed channel")
     t.ok(await t.js("document.querySelector(\"[data-nwc-move='patch|-1']\").disabled"), "the top channel can't go higher")
     # Time zones: add, rename, move, remove, back to the default list
@@ -351,6 +358,25 @@ async def overview_news(t):
     await t.pg.screenshot(path=SP + "overview.png")
 
 @scenario
+async def import_calc(t):
+    # Only what is for sale is bought (cheapest first); missing units aren't counted
+    f = t.show("fill", await t.js("(()=>{const F=impFill([{k:'loc',unit:12,avail:5,base:12},{k:'imp',unit:10.5,avail:20,base:10},{k:'imp',unit:10.1,avail:30,base:10},{k:'sup',src:'Bob',unit:9,avail:10,base:9}],100); return {loc:F.by.loc.q, imp:F.by.imp.q, sup:F.by.sup.q, bob:F.sups.get('Bob'), miss:F.miss, cost:+(F.by.loc.c+F.by.imp.c+F.by.sup.c).toFixed(2)}})()"))
+    t.eq(f, {"loc": 5, "imp": 50, "sup": 10, "bob": 10, "miss": 35, "cost": 60 + 303 + 210 + 90}, "the calculator fills from the cheapest offers and counts only what is for sale")
+    await t.tab("prices")
+    await t.js("()=>{state.misc.imp={local:'st:60011866',src:'st:60008494',mode:'sell',rate:'0',coll:'0'}; supList().push({id:'s1',name:'Bob',stock:{34:{q:100,price:3}}}); saveMisc(); renderImportCalc();}")
+    await t.pg.fill("#imp-text", "Tritanium 100"); await t.pg.click("#imp-go")
+    t.ok(await t.until("/compared/.test(document.getElementById('imp-status').textContent)", 10), "the calculator ran", await t.text("#imp-status"))
+    tiles = t.show("tiles", await t.js("[...document.querySelectorAll('#imp-out .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' ').toLowerCase())"))
+    I = await t.js("[204,30,234,300].map(v=>isk(v))")
+    t.ok(len(tiles) == 3 and tiles[1].startswith("import " + I[0]) and tiles[0].startswith("buy locally " + I[1]) and "total " + I[2] in tiles[2] and "not fully for sale" in tiles[2], "only the 55 units for sale are counted: 50 imported, 5 locally", [tiles, I])
+    t.ok(await t.js("!!document.querySelector('#imp-out button.copyname[data-copy=\"Tritanium\"]')"), "item names copy on click")
+    await t.pg.check("#imp-sup"); await t.pg.click("#imp-sync")
+    t.ok(await t.until("/markets read again/.test(document.getElementById('imp-status').textContent)", 10), "Sync markets reads the markets again", await t.text("#imp-status"))
+    tiles = t.show("with suppliers", await t.js("[...document.querySelectorAll('#imp-out .slot-tile')].map(x=>x.innerText.replace(/\\s+/g,' ').toLowerCase())"))
+    t.ok(len(tiles) == 4 and "suppliers " + I[3] in tiles[2] and "from bob" in tiles[2] and "total " + I[3] in tiles[3] and "not fully" not in tiles[3], "ticked, the supplier's cheaper stock is bought first", tiles)
+    t.ok(await t.js("state.misc.imp.sup===true"), "the tick box is kept")
+
+@scenario
 async def pi_page(t):
     await t.tab("pimgmt"); t.ok(await t.until("!!state.misc.piAt && !piBusy", 15), "PI prices didn't load")
     await t.pg.fill("[data-pi-n='2869']", "12"); await t.pg.dispatch_event("[data-pi-n='2869']", "change"); await asyncio.sleep(0.3)
@@ -368,6 +394,11 @@ async def pi_page(t):
     t.ok([h.rstrip(" ▲▼↕") for h in shop["head"]][:6] == ["Item", "Needed", "In stock", "Remaining", "To buy", "Cost"] and not any("m³" in h for h in shop["head"]), "PI Shopping: Remaining sits between In stock and To buy, no m³ column", shop)
     t.ok(abs(shop["v"] - (t1[1] / 2) / t1[1] * t1[2] * 86400) < 0.01 * t1[2] * 86400, "Remaining = stock ÷ the plan's use per day", [shop, t1])
     t.ok(await t.js("typeof piWeekly()==='number'"), "PI's weekly profit for the Forecast", await t.js("piWeekly()"))
+    await t.pg.fill("[data-pi=roundTo]", "1,000"); await t.pg.dispatch_event("[data-pi=roundTo]", "change"); await asyncio.sleep(0.3)
+    lst = t.show("rounded", await t.js("document.querySelector('#pi-shop [data-imp-send]').dataset.impSend.split('\\n').map(l=>+l.split('\\t')[1])"))
+    t.ok(lst and all(q > 0 and q % 1000 == 0 for q in lst), "Round up to 1,000: every quantity to buy is a multiple of 1,000", lst)
+    await t.pg.click("#pi-shop [data-imp-send] >> nth=0"); await asyncio.sleep(0.4)
+    t.ok(await t.js("!document.getElementById('page-prices').hidden && document.getElementById('imp-text').value.split('\\n').length===" + str(len(lst))), "the Import calculator button opens the list there")
     await t.tab("forecast", 0.6)
     t.ok(await t.js("state.forecast.activities.some(a=>a.linked==='pi')"), "the PI plan is linked into the Forecast")
 
@@ -535,6 +566,11 @@ async def map_pilots(t):
     t.ok("1 without one" in (await t.text("#map-legend")), "the legend says how many linked pilots have no location yet", await t.text("#map-legend"))
     await t.pg.click("[data-ml=pilots]"); await asyncio.sleep(0.2)
     t.eq(await t.js("mapLayers().pilots"), False, "the Pilots tick box hides them")
+    t.ok(await t.js("document.querySelector('#map-legend [data-ml-leg=pilots]').classList.contains('off')"), "the legend shows the hidden layer struck out")
+    await t.pg.click("#map-legend [data-ml-leg=pilots]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("mapLayers().pilots===true && document.querySelector('[data-ml=pilots]').checked && !document.querySelector('#map-legend [data-ml-leg=pilots]').classList.contains('off')"), "clicking the legend line shows them again, tick box too")
+    await t.pg.click("#map-legend [data-ml-leg=homes]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("mapLayers().homes===false && !document.querySelector('[data-ml=homes]').checked"), "the legend hides homes")
 
 @scenario
 async def upcoming_fleets(t):
@@ -652,6 +688,26 @@ async def login_background_sync(t):
     await t.js("_sync.release()")
     t.ok(await t.until("_sync.done.length===3 && !state.chars.some(c=>syncState(c))", 5), "every pilot syncs in the end", await t.js("_sync"))
     t.eq(await t.js("[_sync.max, _sync.calls, state.chars.filter(c=>c.esiId>9100).every(c=>c.skills.Industry===5 && c.syncedAt), document.getElementById('esi-sync-bg').hidden]"), [1, 3, True, True], "one at a time, each pilot read once (a sync asked while one runs waits for it), all synced, the status line gone")
+    # A request that never answers fails after a while instead of holding the sync (and every pilot after it) forever; a database save that aborts fails too
+    r = await t.js("""(async()=>{ const real=AbortSignal.timeout, rf=window.fetch; AbortSignal.timeout=()=>real.call(AbortSignal, 50);
+      window.fetch=(u,i)=>new Promise((_, rej)=>i.signal.addEventListener('abort',()=>rej(i.signal.reason)));
+      try { const t0=Date.now(); const e=await fetchRetry('https://esi.evetech.net/latest/status/', undefined, 2).then(()=>'answered', e=>e.name); return [e, Date.now()-t0<10000]; }
+      finally { AbortSignal.timeout=real; window.fetch=rf; } })()""")
+    t.eq(r, ["TimeoutError", True], "a stalled request gives up and is retried, then fails")
+    t.eq(await t.js("(async()=>{ const db=await idb.open(), real=db.transaction.bind(db); db.transaction=(...a)=>{ const tx=real(...a); setTimeout(()=>tx.abort()); return tx; }; try { return await Promise.race([idb.set('x', 1), sleep(3000).then(()=>'hung')]); } finally { db.transaction=real; } })()"), False, "an aborted save says it failed instead of waiting forever")
+
+@scenario
+async def contract_items_rate_limit(t):
+    """A corporation with many contracts: when ESI rate-limits contract items (429), the sync stops asking and goes on; the rest are read at the next sync."""
+    r = t.show("429", await t.js("""(async()=>{ const rf=window.fetch; let calls=0, limit=true;
+      window.fetch=(u,i)=>{ if(!String(u).includes('/contracts/')) return rf(u,i); calls++; return Promise.resolve(limit ? new Response('{}',{status:429}) : new Response(JSON.stringify([{type_id:34,quantity:5,is_included:true}]),{status:200})); };
+      const list=()=>Array.from({length:50},(_, k)=>({id:880000+k})), path=(id)=>'/corporations/98000009/contracts/'+id+'/items/';
+      try { const t0=Date.now(), L=list(); await contractItems('corp:98000009', L, path, 'tok', ''); const first=[calls, Date.now()-t0<15000, L.filter(c=>c.items).length];
+        state.contracts['corp:98000009']={list:L}; limit=false; calls=0; const L2=list(); await contractItems('corp:98000009', L2, path, 'tok', '');
+        return [...first, calls, L2.filter(c=>c.items&&c.items.length).length]; }
+      finally { window.fetch=rf; delete state.contracts['corp:98000009']; } })()"""))
+    t.ok(r[0] <= 12 and r[1] and r[2] == 0, "ESI says 429: a few tries, then the other contracts wait (not 50 contracts × retries)", r)
+    t.eq(r[3:], [50, 50], "the next sync reads them all")
 
 @scenario
 async def map_danger(t):
@@ -693,6 +749,12 @@ async def todo_slots(t):
     t.ok(await t.js(f"document.querySelectorAll('#todo-sl [data-slot-off]').length==={n0 - 1} && !!document.querySelector('[data-slot-show]')"), "✕ hides one kind of slot for a pilot")
     await t.pg.click("[data-slot-show]"); await asyncio.sleep(0.2)
     t.eq(await t.js("document.querySelectorAll('#todo-sl [data-slot-off]').length"), n0, "Show them again brings it back")
+    await t.pg.click("#todo-sl [data-sl-k=S]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("![...document.querySelectorAll('#todo-sl-table thead th')].some(h=>h.innerText.includes('science')) && state.misc.slotShow.K.S===false"), "Show: a kind of slot can be left out")
+    await t.pg.click("#todo-sl [data-sl-c=a]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("![...document.querySelectorAll('#todo-sl-table tbody th')].some(h=>h.innerText==='Ender Alpha') && !slotsToFill().some(x=>x.c.id==='a')"), "Show: a pilot can be left out")
+    await t.pg.click("#todo-sl [data-sl-k=S]"); await t.pg.click("#todo-sl [data-sl-c=a]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("document.querySelectorAll('#todo-sl-table tbody tr').length"), len(li[1]), "Show: everything back")
 
 @scenario
 async def market_history(t):
@@ -1270,6 +1332,32 @@ async def item_database(t):
     t.ok("Made by" in v and "Venture Blueprint" in v and await t.js("document.querySelector('#idb-item').innerText.includes((20000).toLocaleString())"), "what makes it, with the materials a run", v)
     t.ok("Jita sell" in v and await t.js("document.querySelector('#idb-item').innerText.includes(isk(300000))"), "its prices", v)
     await t.pg.screenshot(path=SP + "item-database.png", full_page=True)
+
+@scenario
+async def boosters(t):
+    """Tests page: attribute boosters from CCP's game data, ISK and extra SP a month with their duration and Biology, the best per attribute, expiry warnings, pricings and markets."""
+    await t.tab("tests", 0.5); await t.js("()=>{boostCfg().bio=0; renderBoost();}")
+    t.ok(await t.until("boostList && boostPrice['pr:jsv'] && !boostPrice['pr:jsv'].busy", 25), "boosters and their prices are read", await t.text("#boost-status"))
+    await asyncio.sleep(0.3)
+    rows = t.show("rows", await t.js("Object.fromEntries([...document.querySelectorAll('#boost-table tbody tr:not(.group)')].map(r=>[r.cells[0].textContent.trim(), [...r.cells].slice(1).map(c=>c.textContent.trim())]))"))
+    names = sorted(k.split(" ⚠")[0].split(" Expired")[0] for k in rows)
+    t.eq(names, ["Fake Contract Accelerator", "Fake Event Accelerator", "Fake Expert Accelerator", "Fake Focus Booster", "Fake Old Accelerator"], "every booster adding to an attribute, and only those")
+    t.eq(await t.js("[...document.querySelectorAll('#boost-table tr.group th')].map(h=>h.textContent.replace(/[▾▸]/g,'').trim().split(' ')[0])"), ["On", "Not", "Expired"], "grouped: on the market, not on the market, expired")
+    ex = t.show("expert", await t.js("boostRows().find(r=>r.t===9500)"))
+    t.ok(abs(ex["h"] - 72) < 1e-9 and abs(ex["perM"] - 30e6 / 72 * 720) < 1e-6 and ex["sp"] == 12 * 60 * 720 and abs(ex["perSp"] - 30e6 / 72 / 720) < 1e-9, "ISK and extra SP a month (30 days), and per SP from the price, the duration and the bonus", ex)
+    fo = await t.js("boostRows().find(r=>r.t===9504)")
+    t.ok(fo["sp"] == 60 * 720 * (6 + 2) and fo["perM"] is None, "two attributes: the largest bonus + half the next; no price, no figures", fo)
+    t.ok("Fake Focus Booster" in (await t.text("#boost-note") or ""), "the booster with no price is named", await t.text("#boost-note"))
+    ev = [k for k in rows if k.startswith("Fake Event")][0]; old = [k for k in rows if k.startswith("Fake Old")][0]
+    t.ok("Expires" in ev and "Expired" in old and rows[old][2] == "expired", "an expiry date warns, an expired booster isn't priced", [ev, old, rows[old]])
+    t.eq(rows[[k for k in rows if k.startswith("Fake Contract")][0]][2], "not on the market", "a booster without a market group has no price")
+    tiles = t.show("tiles", await t.js("[...document.querySelectorAll('#boost-summary .slot-tile')].map(x=>x.innerText)"))
+    t.ok(len(tiles) == 5 and all("Fake Event Accelerator" in x and "Expires" in x for x in tiles), "the best for each attribute (least ISK a month per point), with its expiry warning", tiles)
+    await t.pg.select_option("#boost-bio", "5"); await asyncio.sleep(0.3)
+    t.ok(abs(await t.js("boostRows().find(r=>r.t===9500).h") - 144) < 1e-9, "Biology V doubles the duration")
+    await t.pg.select_option("#boost-at", "st:60008494"); t.ok(await t.until("boostPrice['st:60008494'] && !boostPrice['st:60008494'].busy", 15), "prices read at Amarr")
+    t.eq(await t.js("boostRows().find(r=>r.t===9501).p"), 10000000, "the cheapest sell order at the market")
+    await t.pg.screenshot(path=SP + "boosters.png", full_page=True)
 
 @scenario
 async def shared_ui(t):

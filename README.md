@@ -66,7 +66,7 @@ Tab bar: **Overview · To-Do · Map · Industry ▾ · Planets · Market ▾ · 
 - **Forecast:** where your ISK is heading. Manual weekly activities, plus plans linked from Reactions and PI (kept up to date), planned builds from Orders management dated by their timeline, and your actual profit from Profit and loss. Omega costs are counted; click a legend line to hide it and take it out of the totals.
 - **Calendar** of jobs (manufacturing, reactions, copying, invention, research) and fleets.
 - **Upcoming events:** every pilot's in-game calendar, each event once with every pilot's answer.
-- **EvE News:** the EVE launcher's news, patch notes, forums, or any RSS/Atom/JSON feed you add.
+- **EvE News:** the EVE launcher's news, patch notes, forums, Reddit r/Eve's 5 top posts of the day, or any RSS/Atom/JSON feed you add.
 - **Time zones:** EVE time and your own list of cities.
 
 ### To-Do
