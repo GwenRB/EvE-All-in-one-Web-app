@@ -289,7 +289,7 @@ th:hover .sort-ind, .sort-btn:focus-visible .sort-ind { opacity: .55 }
 .fold-h { cursor: pointer; user-select: none } .fold-h:hover { color: var(--accent) }
 .fold-ind { display: inline-block; width: 1.1em; font-size: 1.15em; line-height: 1; color: var(--muted) }
 .fold-note { color: var(--muted); text-transform: none; letter-spacing: 0; font: 400 .8rem var(--f-body) }
-tr.fold-hid { display: none }
+tr.fold-hid, .sec-hid { display: none !important }
 .panel.folded > :not(.bp-head):not(h2), .panel.folded > .bp-head p, .panel.folded > .bp-head > :not(:first-child) { display: none }
 .panel.folded { gap: 0 }
 [aria-sort=ascending] .sort-ind, [aria-sort=descending] .sort-ind { opacity: 1; color: var(--accent) }
@@ -2846,10 +2846,10 @@ document.addEventListener("click", async (e) => {
 // ---------- Reactions management: slots, picks, shopping and jobs for moon reactions
 const RX_PROD_GROUPS = [428, 429], FUEL_GRP = 1136, GOO_GRP = 427;
 // Structure, rigs, system, tax and import cost as set in Build planning (read only)
-function rxFromBuild(C) { const b = buildCfg(), r = b.r || {};
+function rxFromBuild(C) { const b = buildCfg(), r = b.rs[0] || {};
   Object.assign(C, { sys: r.sys || C.sys || "", struct: r.type === "Tatara" ? "Tatara" : "Athanor", tax: r.tax ?? 0, rigs: (r.rigs || []).filter(x => x.n).map(x => ({ n: x.n })), name: r.name || "", pick: r.pick || "", rateIn: b.impRate ?? 1000, collIn: b.impColl ?? 1, rateOut: C.rateOut ?? b.impRate ?? 1000, collOut: C.collOut ?? b.impColl ?? 1 }); return C; }
 const rxCfg = () => { const C = state.misc.rxn = state.misc.rxn || {};
-  if (C.v === 1 && !C.rigs) { const r = buildCfg().r || {}; C.rigs = (r.type || "Athanor") === C.struct ? (r.rigs || []).filter(x => x.n).map(x => ({ n: x.n })) : []; C.v = 2; }   // old ME/TE tier settings: rigs are now picked by name, as in Build planning
+  if (C.v === 1 && !C.rigs) { const r = buildCfg().rs[0] || {}; C.rigs = (r.type || "Athanor") === C.struct ? (r.rigs || []).filter(x => x.n).map(x => ({ n: x.n })) : []; C.v = 2; }   // old ME/TE tier settings: rigs are now picked by name, as in Build planning
   if (C.v === 2) { C.sort = "name"; C.v = 3; }
   if (C.deliv == null) { const h = buildCfg().haul || {}; C.deliv = h.from || ""; C.haulMode = h.mode === "courier" ? "courier" : "jf"; C.hRate = h.rate ?? 1000; C.hColl = h.coll ?? 1; }
   if (C.v === 3) { C.sellHow = C.outOrders === false ? "instant" : "orders"; C.rateIn = C.rateOut = C.rate ?? 1000; C.collIn = C.collOut = C.coll ?? 1; C.started = {}; C.v = 4; }   // selling: contract / immediate / sell order; hauling in and out apart   // tables now alphabetical by default
@@ -4453,7 +4453,9 @@ function panelApply(p) { const shut = !!(state.misc.panels || {})[panelKey(p)], 
 function panelFold(p, shut) { const f = state.misc.panels = state.misc.panels || {}, k = panelKey(p); if (!!f[k] === shut) return; if (shut) f[k] = 1; else delete f[k]; saveMisc(); panelApply(p); }
 document.addEventListener("click", (e) => {
   const h = e.target.closest && e.target.closest(".fold-h"); if (!h || e.target.closest("button:not(.fold-h), a, input, select, label")) return;
-  if (h.tagName === "H2") { const p = h.closest(".panel"); panelFold(p, !p.classList.contains("folded")); } else groupToggle(h);
+  if (h.tagName === "H2") { const p = h.closest(".panel"); panelFold(p, !p.classList.contains("folded")); }
+  else if (h.tagName === "H3") { const f = state.misc.panels = state.misc.panels || {}, k = "sec:" + h.id; if (f[k]) delete f[k]; else f[k] = 1; saveMisc(); secDecorate(h.parentElement); }
+  else groupToggle(h);
 });
 document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("fold-h")) { e.preventDefault(); e.target.click(); } });
 
@@ -7655,19 +7657,23 @@ function buildCfg() {
   const c = state.misc.build = { price: "jbv", sellAt: "jsv", compMe: 10, compTe: 20, reactions: true, split: true, who: {}, buy: [], make: [], ...(state.misc.build || {}) };
   // Structures: one for manufacturing, one for reactions (older single settings carried over)
   if (!c.m) c.m = { type: c.struct || "Raitaru", sys: c.sys || "", tax: +c.tax || 0, rigs: [...(c.meRig && c.meRig !== "none" ? [{ kind: "me", tier: c.meRig, cover: "all" }] : []), ...(c.teRig && c.teRig !== "none" ? [{ kind: "te", tier: c.teRig, cover: "all" }] : [])] };
-  if (!c.r) c.r = { type: c.rStruct || "Athanor", sys: c.rSys || "", tax: +c.rTax || 0, rigs: !c.rRig || c.rRig === "none" ? [] : [{ kind: "me", tier: c.rRig, cover: "all" }] };
+  // Any structure can be removed (an empty list; older saves: null), so only a missing setting gets the default
+  if (c.r === undefined && !Array.isArray(c.rs)) c.r = { type: c.rStruct || "Athanor", sys: c.rSys || "", tax: +c.rTax || 0, rigs: !c.rRig || c.rRig === "none" ? [] : [{ kind: "me", tier: c.rRig, cover: "all" }] };
   if (!c.haul) c.haul = { from: "Jita", mode: "jf", rate: 1000, coll: 1, product: true, on: true };
   if (c.haul.maxGates == null) c.haul.maxGates = 4;
   // Several manufacturing structures (the first one comes from the older single setting), and one for blueprint work
   if (!Array.isArray(c.ms)) c.ms = [{ id: "s1", ...c.m }];
   for (const st of c.ms) { if (!st.id) st.id = "s" + Math.random().toString(36).slice(2, 7); st.rigs = st.rigs || []; }
-  if (!c.ms.length) c.ms = [{ id: "s1", type: "Raitaru", sys: "", tax: 0, rigs: [] }];
-  if (!c.sci) c.sci = { type: c.ms[0].type, sys: "", tax: 0 };
+  if (c.sci === undefined && !Array.isArray(c.scis)) c.sci = { type: (c.ms[0] || {}).type || "Raitaru", sys: "", tax: 0 };
+  // Several reactors and invention structures, like manufacturing (the older single one becomes the first)
+  if (!Array.isArray(c.rs)) c.rs = c.r ? [{ id: "r1", ...c.r }] : [];
+  if (!Array.isArray(c.scis)) c.scis = c.sci ? [{ id: "i1", ...c.sci }] : [];
+  delete c.r; delete c.sci;
+  for (const [L, k] of [[c.rs, "r"], [c.scis, "i"]]) for (const st of L) { if (!st.id) st.id = k + Math.random().toString(36).slice(2, 7); st.rigs = st.rigs || []; }
   c.where = c.where || {};
   // Ore bought and reprocessed instead of minerals: which ores, and the places you reprocess at (structure, rig, system, tax, who); the older single place becomes the first
   c.ore = { on: false, only: "comp", ...(c.ore || {}) };
   if (!Array.isArray(c.ore.places)) { const o = c.ore; o.places = [{ id: "P", type: o.type || "Tatara", rig: o.rig || 0, sys: o.sys || "", tax: o.tax || 0, who: o.who || "", ...(o.name ? { name: o.name } : {}), ...(o.pick ? { pick: o.pick } : {}) }]; for (const k of ["type", "rig", "sys", "tax", "who", "name", "pick"]) delete o[k]; }
-  if (!c.ore.places.length) c.ore.places = [{ id: "P", type: "Tatara", rig: 0, sys: "", tax: 0, who: "" }];
   if (!c.priceV2) { if (c.price === "jita") c.price = "jbv"; c.sellAt = c.sellAt || "jsv"; c.priceV2 = 1; }
   if (c.price === "jita") c.price = "jsv";
   if (c.price === "avg") c.price = "jbv";
@@ -7761,8 +7767,8 @@ async function inventionPlan(topBid, topType, qty, sysM, cfg, ctx = {}) {
   // Fees: 2% of the product's estimated value, at the system's invention and copying indices, less the structure's role bonus and its cost rigs
   const t2 = await getJSON(REF + "/blueprints/" + topBid), t2m = ((t2.activities || {}).manufacturing || {}), per = (Object.values(t2m.products || {})[0] || {}).quantity || 1;
   const eivT2 = Object.values(t2m.materials || {}).reduce((s, x) => s + x.quantity * ((state.adjPrices || {})[x.type_id] || 0), 0);
-  const idx = (sysM && sysM.idx) || {}, tax = (+(cfg.sci || {}).tax || 0) / 100, disc = 1 - ((STRUCTS[(cfg.sci || {}).type] || {}).cost || 0) / 100, sec = sysM ? sysM.sec : null;
-  const rInv = sciBonus(cfg.sci, "inv", sec), rCopy = sciBonus(cfg.sci, "copy", sec);
+  const idx = (sysM && sysM.idx) || {}, tax = (+(ctx.sci || {}).tax || 0) / 100, disc = 1 - ((STRUCTS[(ctx.sci || {}).type] || {}).cost || 0) / 100, sec = sysM ? sysM.sec : null;
+  const rInv = sciBonus(ctx.sci, "inv", sec), rCopy = sciBonus(ctx.sci, "copy", sec);
   const invFee = 0.02 * eivT2 * ((idx.invention || 0) * disc * (1 - rInv.cost / 100) + tax + 0.04);
   const copyFeeOf = (s) => s.relic ? 0 : 0.02 * s.eivT1 * ((idx.copying || 0) * disc * (1 - rCopy.cost / 100) + tax + 0.04);
   // The final job where it would be built (best structure, with role bonus and rigs) and by your fastest pilot: materials and time per run, to weigh a decryptor's ME and TE
@@ -7824,15 +7830,18 @@ async function pcCheck(r, region, say) {
 }
 // Explode a blueprint into jobs and a shopping list, place each manufacturing job in the best structure, then price the hauling
 async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
-  const cfg = buildCfg(), own = ownedBps();
+  const cfg = buildCfg(), own = ownedBps(), setup = (m) => Object.assign(new Error(m), { setup: true });
+  if (!cfg.ms.length) throw setup("Set up a manufacturing structure first (Build planning → Structures and settings).");
   await loadRigData().catch(() => null);   // real rig bonuses (names are read without them otherwise)
   const top = await blueprintProduct(bid); if (!top) throw new Error("this blueprint makes nothing that can be built");
   onStatus("Reading the build tree…");
-  const recipes = new Map(), buyForced = new Set(cfg.buy.map(Number)), makeForced = new Set(cfg.make.map(Number));
+  const recipes = new Map(), noStruct = new Set(), buyForced = new Set(cfg.buy.map(Number)), makeForced = new Set(cfg.make.map(Number));
   const shouldBuild = (r, depth) => {
     if (!r.bp) return false;
     if (depth === 0) return true;
     if (buyForced.has(r.type)) return false;
+    // No reactor: reactions are bought, and marked when they'd have been built
+    if (r.act === "R" && !cfg.rs.length) { if (cfg.reactions || makeForced.has(r.type)) noStruct.add(r.type); return false; }
     if (makeForced.has(r.type)) return true;
     if (r.act === "R" && !cfg.reactions) return false;
     if (r.group === FUEL_BLOCK_GROUP) return false;
@@ -7847,23 +7856,26 @@ async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
     await pool(r.mats, 4, (m) => load(m.t, depth + 1));
   }
   await load(top.type, 0);
+  if (recipes.get(top.type).act === "R" && !cfg.rs.length) throw setup("Set up a reactor first (Build planning → Structures and settings): this is a reaction.");
   const built = (t) => shouldBuild(recipes.get(t), depthOf.get(t));
-  // Structures: every manufacturing structure with its system; one reaction structure; one for blueprint work
-  const mss = [];
+  // Structures: every manufacturing structure and reactor with its system (a reactor or invention structure without one: the first manufacturing structure's)
+  const mss = [], rss = [], sysOf = (st) => (st.sys || cfg.ms[0].sys) ? industrySystem(st.sys || cfg.ms[0].sys).catch(() => null) : null;
   for (const st of cfg.ms) mss.push({ st, sys: st.sys ? await industrySystem(st.sys).catch(() => null) : null, S: STRUCTS[st.type] || STRUCTS.Station });
-  const sysR = (cfg.r.sys || (cfg.ms[0] || {}).sys) ? await industrySystem(cfg.r.sys || cfg.ms[0].sys).catch(() => null) : null;
-  const sysSci = (cfg.sci.sys || (cfg.ms[0] || {}).sys) ? await industrySystem(cfg.sci.sys || cfg.ms[0].sys).catch(() => null) : null;
-  const RS = RSTRUCTS[cfg.r.type] || RSTRUCTS.Athanor;
+  for (const st of cfg.rs) rss.push({ st, sys: await sysOf(st), S: { me: 0, te: (RSTRUCTS[st.type] || RSTRUCTS.Athanor).te, cost: 0 } });
   await refreshPrices(false);
-  // Invention for a tech 2/3 blueprint you don't own as a BPO
-  const ownTop = own.get(bid); let inv = null;
-  if (top.invented && !(ownTop && ownTop.bpo)) { onStatus("Working out the invention…"); inv = await inventionPlan(bid, top.type, qty, sysSci, cfg, { ownedRuns: ownTop && ownTop.bpc ? ownTop.runs : 0, topRecipe: recipes.get(top.type), mss }).catch(() => null); }
+  // Invention for a tech 2/3 blueprint you don't own as a BPO (nor plan with ME/TE you set): at the invention structure where it comes out cheapest
+  const ownTop = own.get(bid), tw = (cfg.bpSet || {})[bid]; let inv = null;
+  if (top.invented) bpInvented.add(bid);
+  if (top.invented && !(ownTop && ownTop.bpo) && !tw) { onStatus("Working out the invention…");
+    for (const sci of cfg.scis.length ? cfg.scis : [null]) { const sys = sci ? await sysOf(sci) : null, p = await inventionPlan(bid, top.type, qty, sys, cfg, { sci, ownedRuns: ownTop && ownTop.bpc ? ownTop.runs : 0, topRecipe: recipes.get(top.type), mss }).catch(() => null);
+      if (p && (!inv || p.chosen.net < inv.chosen.net)) { inv = p; inv.st = sci; inv.sys = sys; } } }
+  if (!cfg.scis.length && inv && inv.runsNeeded > 0 && cfg.inv !== false) throw Object.assign(setup("Set up an invention structure first (Build planning → Structures and settings): this item needs invented copies."), { inv: true });
   // Rough unit value of a material, to compare structures
   const guess = (t) => (jitaCache[t] || {}).b || (jitaCache[t] || {}).p || (state.adjPrices || {})[t] || 0;
   const need = new Map([[top.type, qty]]), usedAt = new Map(), jobs = [], buy = new Map();
   const addUse = (t, loc, q) => { const u = usedAt.get(t) || new Map(); u.set(loc, (u.get(loc) || 0) + q); usedAt.set(t, u); };
   // Your stock (build planning only): components you own are used before building more
-  const locs = { R: sysR }; for (const c of mss) locs["M:" + c.st.id] = c.sys;
+  const locs = {}; for (const c of mss) locs["M:" + c.st.id] = c.sys; for (const c of rss) locs["R:" + c.st.id] = c.sys;
   const dSys = opts.useStock && cfg.haul.from ? await industrySystem(cfg.haul.from).catch(() => null) : null, have = opts.useStock ? stockByType() : null, compUse = [];
   // Stock that ongoing orders will use is taken out first (from the delivery system and the structures' systems first, where they'd use it)
   let reserved = null;
@@ -7891,41 +7903,37 @@ async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
     const isR = r.act === "R", runs = Math.ceil(n / r.per), o = own.get(r.bp);
     let me, te, meSrc;
     if (isR) { me = 0; te = 0; meSrc = "reaction"; }
-    else if (t === top.type && cfg.topMe !== "" && cfg.topMe != null) { me = +cfg.topMe; te = +cfg.topTe || 0; meSrc = "set by you"; }
+    else if (t === top.type && tw) { me = +tw.me || 0; te = +tw.te || 0; meSrc = top.invented && !(o && o.bpo) ? "test copy, set by you (no invention)" : "set by you"; }
     else if (o && o.bpo) { me = o.me; te = o.te; meSrc = "your BPO"; }
     else if (o && o.bpc && !(t === top.type && inv && inv.runsNeeded > 0 && cfg.inv !== false)) { me = o.bpcMe; te = o.bpcTe; meSrc = "your BPC"; }
     else if (t === top.type && top.invented) { me = 2 + (inv ? inv.chosen.me : 0); te = 4 + (inv ? inv.chosen.te : 0); meSrc = `invented copy${inv && inv.chosen.id ? " with " + inv.chosen.n : ""}`;
       if (o && o.bpc) { me = Math.min(me, o.bpcMe); te = Math.min(te, o.bpcTe); meSrc = `your BPCs (${inv.ownedRuns} runs) + invented copies, the lower ME counted`; } }
     else { me = +cfg.compMe || 0; te = +cfg.compTe || 0; meSrc = "assumed"; }
     const eiv = r.mats.reduce((s, m) => s + m.q * runs * ((state.adjPrices || {})[m.t] || 0), 0);
-    // Where: the reaction structure, or the manufacturing structure that makes it cheapest (materials + fee), unless you picked one
+    // Where: the reactor or manufacturing structure that makes it cheapest (materials + fee), unless you picked one
     const place = (cand) => {
       const sec = cand.sys && cand.sys.sec, rME = rigBonus(cand.st, "me", r, isR, sec), rTE = rigBonus(cand.st, "te", r, isR, sec);
       const matMult = (1 - me / 100) * (isR ? 1 : 1 - cand.S.me / 100) * (1 - rME.pct / 100);
       const qtys = r.mats.map(m => ({ t: m.t, q: Math.max(runs, Math.ceil(Math.round(m.q * runs * matMult * 100) / 100)) }));
       const sci = cand.sys ? (cand.sys.idx[isR ? "reaction" : "manufacturing"] || 0) : 0;
       const fee = eiv * (sci * (1 - (isR ? 0 : cand.S.cost) / 100) + (+cand.st.tax || 0) / 100 + 0.04);
-      const timeMult = (1 - te / 100) * (isR ? 1 - RS.te / 100 : 1 - cand.S.te / 100) * (1 - rTE.pct / 100);
+      const timeMult = (1 - te / 100) * (1 - cand.S.te / 100) * (1 - rTE.pct / 100);
       return { cand, qtys, fee, time: r.time * runs * timeMult, rigMe: rME.pct, est: qtys.reduce((s, x) => s + x.q * guess(x.t), 0) + fee, sci };
     };
-    let pick;
-    if (isR) pick = { ...place({ st: cfg.r, sys: sysR, S: { me: 0, te: RS.te, cost: 0 } }), loc: "R" };
-    else {
-      const opts = mss.map((cand, i) => ({ ...place(cand), loc: "M:" + cand.st.id, i }));
-      const forced = cfg.where[t] && opts.find(x => x.loc === "M:" + cfg.where[t]);
-      pick = forced || [...opts].sort((a, b) => a.est - b.est || a.time - b.time)[0];
-      pick.alts = opts;
-    }
+    const cands = (isR ? rss : mss).map((cand, i) => ({ ...place(cand), loc: (isR ? "R:" : "M:") + cand.st.id, i }));
+    const forced = cfg.where[t] && cands.find(x => x.loc.slice(2) === cfg.where[t]);
+    const pick = forced || [...cands].sort((a, b) => a.est - b.est || a.time - b.time)[0];
+    pick.alts = cands;
     for (const x of pick.qtys) { need.set(x.t, (need.get(x.t) || 0) + x.q); addUse(x.t, pick.loc, x.q); }
     jobs.push({ qtys: pick.qtys, type: t, name: r.name, act: r.act, bp: r.bp, runs, per: r.per, extra: runs * r.per - n, me, te, meSrc, own: o || null, time: pick.time, skillIds: r.skillIds, fee: pick.fee, depth: depthOf.get(t), sci: pick.sci, rigMe: pick.rigMe, vol: r.vol, made: runs * r.per, loc: pick.loc, mats: r.mats.map(m => m.t),
-      where: isR ? `${cfg.r.type}${sysR ? " in " + sysR.name : ""}` : `${pick.cand.st.type}${pick.cand.sys ? " in " + pick.cand.sys.name : ""}`, alts: pick.alts ? pick.alts.map(a => ({ loc: a.loc, label: `${a.cand.st.type}${a.cand.sys ? " in " + a.cand.sys.name : ""}`, est: a.est })) : null, forced: !!(cfg.where[t] && !isR) });
+      where: `${pick.cand.st.type}${pick.cand.sys ? " in " + pick.cand.sys.name : ""}`, alts: pick.alts.map(a => ({ loc: a.loc, label: `${a.cand.st.type}${a.cand.sys ? " in " + a.cand.sys.name : ""}`, est: a.est })), forced: !!forced });
   }
   const ids = [...new Set(jobs.flatMap(j => Object.keys(j.skillIds).map(Number)))], names = await skillNames(ids).catch(() => ({}));
   for (const j of jobs) j.req = Object.fromEntries(Object.entries(j.skillIds).map(([sid, l]) => [names[sid] || "Skill #" + sid, l]));
   onStatus("Pricing materials…");
   const buyIds = [...buy.keys()], { prices, src: priceSrc } = await buyPrices([...buyIds, top.type, ...compUse.map(x => x.type)], cfg);
   for (const x of compUse) x.price = prices[x.type] ?? null;
-  const shop = buyIds.map(t => { const r = recipes.get(t), u = usedAt.get(t) || new Map(); return { type: t, name: r.name, qty: buy.get(t), price: prices[t] ?? null, psrc: priceSrc[t], buildable: !!r.bp, vol: r.vol || 0, at: [...u.entries()], forR: u.get("R") || 0, forM: [...u.entries()].filter(([k]) => k !== "R").reduce((s, [, q]) => s + q, 0) }; }).sort((a, b) => b.qty * b.price - a.qty * a.price);
+  const shop = buyIds.map(t => { const r = recipes.get(t), u = usedAt.get(t) || new Map(); return { type: t, name: r.name, qty: buy.get(t), price: prices[t] ?? null, psrc: priceSrc[t], buildable: !!r.bp, nos: noStruct.has(t), vol: r.vol || 0, at: [...u.entries()], forR: [...u.entries()].filter(([k]) => k[0] === "R").reduce((s, [, q]) => s + q, 0), forM: [...u.entries()].filter(([k]) => k[0] !== "R").reduce((s, [, q]) => s + q, 0) }; }).sort((a, b) => b.qty * b.price - a.qty * a.price);
   // Materials you already own (build planning only): stock in a structure's system is used there, stock in the delivery system is used and hauled, stock elsewhere is pointed out
   let stockUse = null;
   if (opts.useStock) {
@@ -7984,7 +7992,7 @@ async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
   // Where to buy each material: the cheapest mix of your suppliers, the local market and Jita (with hauling to the delivery system)
   // Ore bought instead of minerals (Build planning setting): the cheapest mix of ores and minerals for what's still to buy, reprocessed where you said
   let oreBuy = null; const OC = cfg.ore || {};
-  if (OC.on && shop.some(x => x.qty > 0)) {
+  if (OC.on && (OC.places || []).length && shop.some(x => x.qty > 0)) {
     onStatus("Looking for ore to buy…");
     oreBuy = await planOreBuy(cfg, shop, guess, onStatus, locs).catch(e => ({ none: `The ore couldn't be read (${netMsg(e)}).`, ores: [] }));
     if (oreBuy.ores.length) { const { prices: op, src: os } = await buyPrices([...new Set(oreBuy.ores.map(o => o.t))], cfg), byT = new Map();
@@ -8014,7 +8022,7 @@ async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
   for (const x of shop) { const from = Object.entries(x.fromBuyOreAt || (x.fromBuyOre ? { P: x.fromBuyOre } : {})).map(([k, q]) => [k, q]);
     for (const [loc, q] of x.at) { const n = Math.min(q, x.need != null ? x.need : x.qty) - ((x.local || {})[loc] || 0) - ((x.fromOreAt || {})[loc] || 0); if (n <= 0) continue; let r = n;
       for (const f of from) { const k = Math.min(r, f[1]); if (k <= 0) continue; f[1] -= k; r -= k; shipments.push({ from: f[0], to: loc, phase: 0.5, item: { type: x.type, name: x.name, qty: k, unit: x.vol, price: x.price, cat: "From reprocessing" } }); }
-      if (r > 0) shipments.push({ from: "D", to: loc, phase: 0, item: { type: x.type, name: x.name, qty: r, unit: x.vol, price: x.price, cat: x.ore ? "Ore to reprocess" : loc === "R" ? "Reaction inputs" : "Materials" } }); } }
+      if (r > 0) shipments.push({ from: "D", to: loc, phase: 0, item: { type: x.type, name: x.name, qty: r, unit: x.vol, price: x.price, cat: x.ore ? "Ore to reprocess" : loc[0] === "R" ? "Reaction inputs" : "Materials" } }); } }
   if (oreBuy && oreBuy.ores.length) for (const f of oreBuy.used || [oreBuy.fac]) locs[f.key] = f.sys || (cfg.haul.from ? await industrySystem(cfg.haul.from).catch(() => null) : null);
   for (const j of jobs) { if (j === topJob) continue; const u = usedAt.get(j.type); if (!u) continue; const cu = compUse.find(x => x.type === j.type); for (const [loc, q0] of u) { const q = q0 - (cu ? (cu.cl[loc] || 0) + (cu.cd[loc] || 0) : 0); if (loc !== j.loc && q > 0) shipments.push({ from: j.loc, to: loc, phase: 1 + (maxD - j.depth), item: { type: j.type, name: j.name, qty: q, unit: j.vol, price: guess(j.type), cat: j.act === "R" ? "Reaction products" : "Components" } }); } }
   // Your own ore in the delivery system goes to the system where its minerals are used, to be reprocessed there
@@ -8022,9 +8030,12 @@ async function computeBuild(bid, qty, onStatus = () => {}, opts = {}) {
   // Owned components in the delivery system go out with the materials
   for (const x of compUse) for (const [loc, q] of Object.entries(x.cd)) if (q > 0) shipments.push({ from: "D", to: loc, phase: 0, item: { type: x.type, name: x.name, qty: q, unit: x.vol, price: x.price, cat: "Owned components" } });
   if (cfg.haul.product && topJob) shipments.push({ from: topJob.loc, to: "D", phase: 99, item: { type: top.type, name: recipes.get(top.type).name, qty, unit: recipes.get(top.type).vol || 0, price: prices[top.type] || 0, cat: "Finished product" } });
-  const res = { bid, top, qty, name: recipes.get(top.type).name, topVol: recipes.get(top.type).vol || 0, topAct: recipes.get(top.type).act, jobs, shop, matCost, unpriced, fees, sell: (await pricesIn([top.type], validPricing(cfg.sellAt, "jsv")).catch(() => ({})))[top.type] ?? null, sellSrc: priceSrc[top.type], sysM: mss[0] && mss[0].sys, sysR, sysSci, locs, shipments, cfg: JSON.parse(JSON.stringify(cfg)), at: Date.now(),
-    toggles: [...recipes.values()].filter(r => r.bp && r.type !== top.type && depthOf.has(r.type)).map(r => ({ type: r.type, name: r.name, built: built(r.type) })) };
+  const res = { bid, top, qty, name: recipes.get(top.type).name, topVol: recipes.get(top.type).vol || 0, topAct: recipes.get(top.type).act, jobs, shop, matCost, unpriced, fees, sell: (await pricesIn([top.type], validPricing(cfg.sellAt, "jsv")).catch(() => ({})))[top.type] ?? null, sellSrc: priceSrc[top.type], sysM: mss[0] && mss[0].sys, locs, shipments, cfg: JSON.parse(JSON.stringify(cfg)), at: Date.now(),
+    toggles: [...recipes.values()].filter(r => r.bp && r.type !== top.type && depthOf.has(r.type)).map(r => ({ type: r.type, name: r.name, built: built(r.type), nos: noStruct.has(r.type) })) };
   res.inv = inv;
+  // Structures the plan would use but you removed: what's bought instead
+  const nos = shop.filter(x => x.nos).length;
+  res.missing = [...(nos ? [`no reactor: ${nos} reaction${nos === 1 ? " is" : "s are"} bought instead (marked)`] : []), ...(OC.on && !(OC.places || []).length ? ["no refinery: ore isn't bought instead of minerals"] : [])];
   res.invCost = inv && cfg.inv !== false && inv.runsNeeded > 0 && isFinite(inv.chosen.invCost) ? inv.chosen.invCost : 0;
   if (inv) { const dn = await skillNames([...inv.dcs.map(x => x.t), ...inv.missing]).catch(() => ({})); inv.dcs.forEach(x => x.name = dn[x.t] || "Type " + x.t); inv.missingNames = inv.missing.map(t => ({ t, name: dn[t] || (inv.srcs.find(s => s.id === t) || {}).name || "Type " + t })); }
   onStatus("Planning the hauling…");
@@ -8772,7 +8783,7 @@ function fillSysList() {
   dl.innerHTML = first.join("") + (m ? mapData.systems.filter(s => !bySys.has(s.n)).map(s => `<option value="${esc(s.n)}">`).join("") : "");
 }
 // Settings live at state.misc.build: ms (manufacturing structures), r (reactions), sci (blueprint work), haul, prices
-const stOf = (key) => { const c = buildCfg(); if (key === "r") return c.r; if (key === "sci") return c.sci; const i = c.ms.findIndex(x => x.id === key.slice(3)); return i >= 0 ? c.ms[i] : null; };
+const stOf = (key) => { const c = buildCfg(), i = key.indexOf(":"), L = { ms: c.ms, rs: c.rs, sci: c.scis }[key.slice(0, i)]; return (L || []).find(x => x.id === key.slice(i + 1)) || null; };
 // Imports made before ids were checked: give every structure its own id (a sheet may show ids rounded, so several looked alike)
 function fixIndyIds() {
   const L = (state.misc.indy || {}).list || [], seen = new Set(); let changed = false;
@@ -8810,14 +8821,14 @@ function structBlock(key, kind, title, extra = "") {
   return `<div class="sblock"><h4 style="margin:0;display:flex;gap:10px;align-items:baseline">${title}${extra}</h4>
     <div class="toolbar">${structPicker(key, re)}
       <label class="label">Type</label><select data-bsk="${key}" data-bsf="type">${Object.keys(types).filter(k => kind === "rxn" || !CITADEL_TYPES.has(k) || buildCfg().citTypes || k === st.type).map(k => opt(k, st.type)).join("")}</select>
-      <label class="label">System</label><input type="text" data-bsk="${key}" data-bsf="sys" value="${esc(st.sys)}" list="build-sys" placeholder="${key === "r" || key === "sci" ? "Same as manufacturing" : "For the cost index"}" style="width:150px">
+      <label class="label">System</label><input type="text" data-bsk="${key}" data-bsf="sys" value="${esc(st.sys)}" list="build-sys" placeholder="${key.startsWith("ms:") ? "For the cost index" : "Same as manufacturing"}" style="width:150px">
       <label class="label">Facility tax %</label><input type="text" data-bsk="${key}" data-bsf="tax" value="${esc(st.tax)}" inputmode="decimal" style="width:60px"></div>
     ${S.rigs ? `<div class="toolbar"><span class="label">${isSci ? "Laboratory rigs" : "Rigs"}</span>${(st.rigs || []).map(chip).join("") || `<span class="muted" style="font-size:.85rem">None</span>`}
       ${(st.rigs || []).length < 3 ? `${picker}${left.length ? `<button type="button" data-bsk="${key}" data-rigadd="1">Add rig</button>` : ""}` : `<span class="muted" style="font-size:.85rem">3 rig slots used</span>`}</div>` : ""}
   </div>`;
 }
-// Build planning settings: buying ore instead of minerals, and where you reprocess it
-function oreBlock(c) {
+// Build planning settings: the refineries where bought ore is reprocessed (one block each, like the other structures)
+function refineryBlocks(c) {
   const O = c.ore, opt = (v, cur, label) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(label || v)}</option>`;
   // Known refineries: your corporation's structures and the imported ones (with their rigs)
   const m = mapIndex(), sysName = (id) => (m && m.byId.get(id) || {}).n || "";
@@ -8828,19 +8839,24 @@ function oreBlock(c) {
     const picker = known.length ? `<select data-bore-pick="${esc(pl.id)}" aria-label="Use a known refinery" style="max-width:260px"><option value="">Use a known refinery…</option>${known.map(k => `<option value="${esc(k.v)}"${pl.pick === k.v ? " selected" : ""}>${esc(k.n)} (${esc(k.type)}${refineRig(k.rigs) ? `, rig +${refineRig(k.rigs)}` : ""})</option>`).join("")}</select>` : "";
     const ms = pl.sys ? m && m.byName.get(pl.sys.trim().toLowerCase()) : m && c.haul.from && m.byName.get(c.haul.from.trim().toLowerCase());
     const sm = refineSecMod(ms ? ms.s : null), base = refineryBase(type, rigOk ? +pl.rig || 0 : 0, sm), ex = pilotYield(base, null, pl.who);
-    return `<div class="toolbar"><span class="label">${O.places.length > 1 ? `Place ${i + 1}` : "Where you reprocess"}</span>${picker}
+    return `<div class="sblock"><h4 style="margin:0;display:flex;gap:10px;align-items:baseline">${pl.name ? esc(pl.name) : `Refinery ${O.places.length > 1 ? i + 1 : ""}`} <button type="button" class="link" data-bore-del="${esc(pl.id)}" style="font-weight:400">Remove</button></h4>
+      <div class="toolbar">${picker}
         <label class="label">Facility</label><select ${f("type")} aria-label="Facility">${opt("Tatara", type)}${opt("Athanor", type)}${opt("Station", type, "NPC station")}${opt("Other", type, "Other structure")}</select>
         ${rigOk ? `<label class="label">Reprocessing rig</label><select ${f("rig")} aria-label="Reprocessing rig">${opt(0, +pl.rig || 0, "None")}${opt(1, +pl.rig || 0, "Tech I (+1)")}${opt(3, +pl.rig || 0, "Tech II (+3)")}</select>` : ""}
         <label class="label">System</label><input type="text" ${f("sys")} value="${esc(pl.sys)}" list="build-sys" placeholder="Delivery system" aria-label="System" style="width:140px">
         <label class="label">Tax %</label><input type="text" ${f("tax")} value="${esc(pl.tax)}" inputmode="decimal" aria-label="Tax %" style="width:50px">
-        <label class="label">Pilot</label><select ${f("who")} aria-label="Pilot"><option value="">Best for each ore</option>${[...state.chars].sort((a, b) => a.name.localeCompare(b.name)).map(x => opt(x.id, pl.who, x.name)).join("")}</select>
-        ${O.places.length > 1 ? `<button type="button" class="link" data-bore-del="${esc(pl.id)}">Remove</button>` : ""}</div>
-      <p class="muted" style="margin:0;font-size:.85rem">${pl.name ? `<b>${esc(pl.name)}</b>: ` : ""}${(base * 100).toFixed(1)}% before skills${rigOk && +pl.rig ? (ms ? ` (${sm ? `+${Math.round(sm * 100)}% for ${sm > 0.1 ? "null-sec" : "low-sec"}` : "high-sec"})` : " (security unknown: high-sec counted)") : ""}${ex.c ? ` · ${esc(ex.c.name)} gets ${(ex.y * 100).toFixed(1)}% before the ore's own processing skill` : ""}</p>`; };
+        <label class="label">Pilot</label><select ${f("who")} aria-label="Pilot"><option value="">Best for each ore</option>${[...state.chars].sort((a, b) => a.name.localeCompare(b.name)).map(x => opt(x.id, pl.who, x.name)).join("")}</select></div>
+      <p class="muted" style="margin:0;font-size:.85rem">${(base * 100).toFixed(1)}% before skills${rigOk && +pl.rig ? (ms ? ` (${sm ? `+${Math.round(sm * 100)}% for ${sm > 0.1 ? "null-sec" : "low-sec"}` : "high-sec"})` : " (security unknown: high-sec counted)") : ""}${ex.c ? ` · ${esc(ex.c.name)} gets ${(ex.y * 100).toFixed(1)}% before the ore's own processing skill` : ""}</p></div>`; };
+  return O.places.map(place).join("") + `<div class="toolbar"><button type="button" data-bore-add="1">Add a refinery</button> <span class="muted" style="font-size:.85rem">${O.places.length ? "Where you reprocess the ore you buy (Ore instead of minerals): each ore goes where it comes out cheapest." : `None: ore isn't bought instead of minerals.`}</span></div>`;
+}
+// Build planning settings: buying ore instead of minerals (reprocessed at the refineries above)
+function oreBlock(c) {
+  const O = c.ore, opt = (v, cur, label) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(label || v)}</option>`;
   return `<div class="sblock"><h4 style="margin:0">Ore instead of minerals</h4>
       <div class="toolbar"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-bset="ore.on"${O.on ? " checked" : ""}> Buy ore and reprocess it when that's cheaper than buying the minerals</label>
         <label class="label">Ores</label><select data-bset="ore.only">${opt("comp", O.only, "Compressed only")}${opt("all", O.only, "Any ore")}</select></div>
-      ${O.on ? O.places.map(place).join("") + `<div class="toolbar"><button type="button" data-bore-add="1">Add a reprocessing place</button><span class="muted" style="font-size:.85rem">each ore goes where it comes out cheapest</span></div>` : ""}
-      <p class="muted" style="margin:0;font-size:.8rem">Ore takes far less room than the minerals it gives (compressed ore most of all). For the minerals still to buy, the cheapest mix of ores and minerals bought as they are is worked out at once, with the same sources and import cost as above, plus the reprocessing tax (on the minerals' estimated value) and, when hauling is counted, an estimate of moving the ore to the place and its minerals on to the structures. With several places, each ore is reprocessed where it comes out cheapest (yield, tax, hauling). Yield = facility × (1 + 3% × Reprocessing) × (1 + 2% × Reprocessing Efficiency) × (1 + 2% × the ore's processing skill) × the RX-80x implant. Ore is bought in whole batches, chosen for the minerals the build needs; the minerals left over go into your stock for later builds and count at what buying them costs (they come off the build cost, and count when choosing between ore and minerals). Your own ore in hangars is used first (Materials you own), reprocessed in the system where its minerals are used, at your best refinery there; with no refinery known in that system it isn't reprocessed, and the plan warns "No refinery detected". Ore is always hauled compressed: ore that isn't counts at the room its compressed form takes.</p></div>`;
+      ${O.on && !O.places.length ? `<p class="notice" style="margin:0;font-size:.85rem">No refinery set up: add one above, or the minerals are bought.</p>` : ""}
+      <p class="muted" style="margin:0;font-size:.8rem">Ore takes far less room than the minerals it gives (compressed ore most of all). For the minerals still to buy, the cheapest mix of ores and minerals bought as they are is worked out at once, with the same sources and import cost as above, plus the reprocessing tax (on the minerals' estimated value) and, when hauling is counted, an estimate of moving the ore to the place and its minerals on to the structures. With several refineries, each ore is reprocessed where it comes out cheapest (yield, tax, hauling). Yield = facility × (1 + 3% × Reprocessing) × (1 + 2% × Reprocessing Efficiency) × (1 + 2% × the ore's processing skill) × the RX-80x implant. Ore is bought in whole batches, chosen for the minerals the build needs; the minerals left over go into your stock for later builds and count at what buying them costs (they come off the build cost, and count when choosing between ore and minerals). Your own ore in hangars is used first (Materials you own), reprocessed in the system where its minerals are used, at your best refinery there; with no refinery known in that system it isn't reprocessed, and the plan warns "No refinery detected". Ore is always hauled compressed: ore that isn't counts at the room its compressed form takes.</p></div>`;
 }
 function renderBuildSettings(force) {
   const box = $("plan-structs"); if (!box || (!force && box.contains(document.activeElement))) return;
@@ -8848,12 +8864,15 @@ function renderBuildSettings(force) {
   const c = buildCfg(), h = c.haul, opt = (v, cur, label) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(label || v)}</option>`;
   const markets = Object.values(state.misc.structs || {}).filter(s => !s.hidden && /^\d+$/.test(s.id));
   const indy = (state.misc.indy || {}).list || [], homeSys = ((state.misc.map || {}).homes || []).map(id => (indy.find(x => x.sys === id) || {}).sysName).filter(Boolean), indySys = [...new Set([...homeSys, ...[...new Set(indy.map(x => x.sysName))].sort()])];
-  box.innerHTML = (indySys.length ? `<div class="sblock"><h4 style="margin:0">Set with imported structures</h4><div class="toolbar"><span class="muted" style="font-size:.85rem">Use every imported structure of a system, with its rigs and tax:</span><select id="indy-sys" aria-label="System">${indySys.map(n => `<option>${esc(n)}</option>`).join("")}</select><button type="button" id="indy-use">Use them</button></div><p class="muted" style="margin:0;font-size:.8rem">The engineering complexes with manufacturing rigs become the manufacturing structures (each job goes where it's cheapest), the refinery with the best reaction rigs does the reactions, and the first engineering complex with laboratory rigs (or the first one) does copying and invention.</p></div>` : "")
-    + c.ms.map((st, i) => structBlock("ms:" + st.id, "mfg", st.name ? esc(st.name) : `Manufacturing structure ${c.ms.length > 1 ? i + 1 : ""}`, c.ms.length > 1 ? ` <button type="button" class="link" data-msdel="${st.id}" style="font-weight:400">Remove</button>` : "")).join("")
-    + `<div class="toolbar"><button type="button" id="ms-add">Add a manufacturing structure</button> <span class="muted" style="font-size:.85rem">Each job goes to the structure where it comes out cheapest (materials after ME, role bonus and rigs, plus the job fee), unless you pick one in the plan.</span>
+  box.innerHTML = (indySys.length ? `<div class="sblock"><h4 style="margin:0">Set with imported structures</h4><div class="toolbar"><span class="muted" style="font-size:.85rem">Use every imported structure of a system, with its rigs and tax:</span><select id="indy-sys" aria-label="System">${indySys.map(n => `<option>${esc(n)}</option>`).join("")}</select><button type="button" id="indy-use">Use them</button></div><p class="muted" style="margin:0;font-size:.8rem">The engineering complexes with manufacturing rigs become the manufacturing structures (each job goes where it's cheapest), the refineries with reaction rigs (or all of them) become the reactors, and the engineering complexes with laboratory rigs (or the first one) the invention structures.</p></div>` : "")
+    + c.ms.map((st, i) => structBlock("ms:" + st.id, "mfg", st.name ? esc(st.name) : `Manufacturing structure ${c.ms.length > 1 ? i + 1 : ""}`, ` <button type="button" class="link" data-msdel="${st.id}" style="font-weight:400">Remove</button>`)).join("")
+    + `<div class="toolbar"><button type="button" id="ms-add">Add a manufacturing structure</button> <span class="muted" style="font-size:.85rem">${c.ms.length ? "" : `<span style="color:var(--bad)">None: set one up to plan builds.</span> `}Each job goes to the structure where it comes out cheapest (materials after ME, role bonus and rigs, plus the job fee), unless you pick one in the plan.</span>
         <label style="display:flex;gap:6px;align-items:center;font-size:.85rem"><input type="checkbox" data-bset="citTypes"${c.citTypes ? " checked" : ""}> Also offer citadels (Astrahus, Fortizar, Keepstar) as manufacturing structures</label></div>`
-    + structBlock("r", "rxn", `Reaction structure${c.r.name ? ` · ${esc(c.r.name)}` : ""}`)
-    + structBlock("sci", "sci", `Invention${c.sci.name ? ` · ${esc(c.sci.name)}` : ""}`, ` <span class="muted" style="font-size:.8rem;font-weight:400">Structure for copying and invention: its system's cost indices, its tax, its role bonus and its laboratory rigs set the fees and the times</span>`)
+    + c.rs.map((st, i) => structBlock("rs:" + st.id, "rxn", st.name ? esc(st.name) : `Reactor ${c.rs.length > 1 ? i + 1 : ""}`, ` <button type="button" class="link" data-bsdel="rs:${st.id}" style="font-weight:400">Remove</button>`)).join("")
+    + `<div class="toolbar"><button type="button" data-bsadd="rs">Add a reactor</button> <span class="muted" style="font-size:.85rem">${c.rs.length ? "Each reaction goes to the reactor where it comes out cheapest, unless you pick one in the plan." : "None: reactions are bought."}</span></div>`
+    + c.scis.map((st, i) => structBlock("sci:" + st.id, "sci", st.name ? esc(st.name) : `Invention structure ${c.scis.length > 1 ? i + 1 : ""}`, ` <button type="button" class="link" data-bsdel="sci:${st.id}" style="font-weight:400">Remove</button>`)).join("")
+    + `<div class="toolbar"><button type="button" data-bsadd="sci">Add an invention structure</button> <span class="muted" style="font-size:.85rem">${c.scis.length ? "Copying and invention go to the structure where they come out cheapest: its system's cost indices, its tax, its role bonus and its laboratory rigs set the fees and the times." : "None: items that need invented copies can't be planned (unless you plan on a test copy)."}</span></div>`
+    + refineryBlocks(c) + oreBlock(c)
     + `<div class="sblock"><h4 style="margin:0">Blueprints and prices</h4>
       <div class="toolbar"><label class="label">Component blueprints you don't own</label><span class="muted" style="font-size:.85rem">ME</span><input type="text" data-bset="compMe" value="${esc(c.compMe)}" inputmode="numeric" style="width:44px"><span class="muted" style="font-size:.85rem">TE</span><input type="text" data-bset="compTe" value="${esc(c.compTe)}" inputmode="numeric" style="width:44px">
         <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-bset="reactions"${c.reactions ? " checked" : ""}> Build reactions</label>
@@ -8867,7 +8886,6 @@ function renderBuildSettings(force) {
         <label class="label">Local market</label><select data-bset="localMkt"><option value="none"${c.localMkt === "none" ? " selected" : ""}>None</option>${citadelMarkets().map(m => `<option value="cit:${m.id}"${(c.localMkt || (defaultCitadel() ? "cit:" + defaultCitadel().id : "")) === "cit:" + m.id ? " selected" : ""}>${esc(m.name)}</option>`).join("")}</select>
         <label class="label">Import cost from Jita</label><input type="text" data-bset="impRate" value="${esc(c.impRate ?? 1000)}" inputmode="decimal" style="width:70px" aria-label="ISK per m³"><span class="muted" style="font-size:.85rem">ISK/m³ +</span><input type="text" data-bset="impColl" value="${esc(c.impColl ?? 1)}" inputmode="decimal" style="width:44px" aria-label="Collateral %"><span class="muted" style="font-size:.85rem">% collateral</span></div>
       <p class="muted" style="margin:0;font-size:.8rem">Each material to buy is checked across your suppliers (at the pricing set on the Suppliers page), the local market's sell orders and Jita 4-4 sell orders. Jita, and suppliers who hand over in Jita, get the import cost added (ISK per m³, plus collateral on the price) unless the delivery system is Jita. The cheapest source is used first, then the next one when its stock runs out.</p></div>`
-    + oreBlock(c)
     + `<div class="sblock"><h4 style="margin:0">Hauling</h4>
       <div class="toolbar"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-bset="haul.on"${h.on ? " checked" : ""}> Count hauling in the cost</label>
         <label class="label">Delivery system</label><input type="text" data-bset="haul.from" value="${esc(h.from)}" list="build-sys" placeholder="Where you buy, e.g. Jita" style="width:140px">
@@ -8877,7 +8895,7 @@ function renderBuildSettings(force) {
 </div>
       <p class="muted" style="margin:0;font-size:.8rem">The ship starts in the delivery system and must end there. It brings what you buy to the structures that use it, then moves each product to where it's used next as soon as it's made, and finally the finished item home. Loads bigger than the hold take extra trips and every empty trip back is counted. Each step picks the cheaper of mixed tours (several stops per trip, in the best order) or separate runs. Moves jump, with gates only to and from a high-sec or incursion end (or when no jump route exists). Pilots with the ship in their hangars come first. Fatigue isn't counted.</p></div>`;
 }
-const settingsSummary = () => { const c = buildCfg(); return `${c.ms.map(st => `${esc(st.type)}${st.sys ? " in " + esc(st.sys) : ""}`).join(" + ")} · reactions: ${c.reactions ? `${esc(c.r.type)}${c.r.sys ? " in " + esc(c.r.sys) : ""}` : "bought"} · ${c.haul.on ? `hauling from ${esc(c.haul.from || "?")}` : "no hauling"} · materials at ${esc(pricingName(validPricing(c.price)))}${c.ore.on ? ` · ore reprocessed at ${c.ore.places.map(pl => `${esc(pl.name || ({ Station: "an NPC station", Other: "a structure" })[pl.type] || pl.type)}${pl.sys ? " in " + esc(pl.sys) : ""}`).join(" or ")}` : ""}`; };
+const settingsSummary = () => { const c = buildCfg(); return `${c.ms.map(st => `${esc(st.type)}${st.sys ? " in " + esc(st.sys) : ""}`).join(" + ") || "no manufacturing structure"} · reactions: ${c.reactions && c.rs.length ? c.rs.map(st => `${esc(st.type)}${st.sys ? " in " + esc(st.sys) : ""}`).join(" + ") : "bought"} · ${c.haul.on ? `hauling from ${esc(c.haul.from || "?")}` : "no hauling"} · materials at ${esc(pricingName(validPricing(c.price)))}${c.ore.on && c.ore.places.length ? ` · ore reprocessed at ${c.ore.places.map(pl => `${esc(pl.name || ({ Station: "an NPC station", Other: "a structure" })[pl.type] || pl.type)}${pl.sys ? " in " + esc(pl.sys) : ""}`).join(" or ")}` : ""}`; };
 function rerunBuilds() { for (const p of ["plan", "quote"]) if (buildState[p].res) runBuild(p); }
 document.addEventListener("change", (e) => {
   const d = e.target.dataset || {}, c = buildCfg();
@@ -8889,36 +8907,39 @@ document.addEventListener("change", (e) => {
   if (d.bset) { const [a, b] = d.bset.split("."), v = e.target.type === "checkbox" ? e.target.checked : e.target.value; if (b) c[a][b] = v; else c[a] = v; saveMisc(); e.target.blur(); renderBuildSettings(true); rerunBuilds(); return; }
   if (d.bsk && d.bsf) {
     const st = stOf(d.bsk); if (!st) return;
-    if (d.bsf === "pick" && e.target.value.startsWith("indy:")) { const x = ((state.misc.indy || {}).list || []).find(y => "indy:" + y.id === e.target.value); if (x) { applyIndy(st, x, d.bsk === "r", d.bsk === "sci"); st.pick = e.target.value; } }
+    if (d.bsf === "pick" && e.target.value.startsWith("indy:")) { const x = ((state.misc.indy || {}).list || []).find(y => "indy:" + y.id === e.target.value); if (x) { applyIndy(st, x, d.bsk.startsWith("rs:"), d.bsk.startsWith("sci:")); st.pick = e.target.value; } }
     else if (d.bsf === "pick" && !e.target.value) { delete st.pick; delete st.name; }
-    else if (d.bsf === "pick") { st.pick = e.target.value; const s = (state.misc.structs || {})[e.target.value]; if (s) { const t = Object.keys(d.bsk === "r" ? RSTRUCTS : STRUCTS).find(k => (s.typeName || "").includes(k)); if (t) st.type = t; const m = mapIndex(); st.sys = (m && m.byId.get(s.system) || {}).n || s.systemName || st.sys; st.name = s.name || ""; } }
+    else if (d.bsf === "pick") { st.pick = e.target.value; const s = (state.misc.structs || {})[e.target.value]; if (s) { const t = Object.keys(d.bsk.startsWith("rs:") ? RSTRUCTS : STRUCTS).find(k => (s.typeName || "").includes(k)); if (t) st.type = t; const m = mapIndex(); st.sys = (m && m.byId.get(s.system) || {}).n || s.systemName || st.sys; st.name = s.name || ""; } }
     else { st[d.bsf] = e.target.value; if (d.bsf === "type" || d.bsf === "sys") { delete st.pick; delete st.name; } }
     saveMisc(); e.target.blur(); renderBuildSettings(true); rerunBuilds();
   }
 });
-// Reprocessing places: add one (a copy of the last, to change), remove one
+// Refineries: add one (a copy of the last, to change), remove one (any, even the last)
 document.addEventListener("click", (e) => {
   const t = e.target.closest && e.target.closest("[data-bore-add],[data-bore-del]"); if (!t) return; const O = buildCfg().ore;
   if (t.dataset.boreAdd) { const last = O.places[O.places.length - 1] || {}; O.places.push({ id: "p" + Date.now().toString(36), type: last.type || "Tatara", rig: last.rig || 0, sys: "", tax: last.tax || 0, who: "" }); }
-  else { O.places = O.places.filter(p => p.id !== t.dataset.boreDel); if (!O.places.length) O.places = [{ id: "P", type: "Tatara", rig: 0, sys: "", tax: 0, who: "" }]; }
+  else O.places = O.places.filter(p => p.id !== t.dataset.boreDel);
   saveMisc(); renderBuildSettings(true); rerunBuilds();
 });
 document.addEventListener("click", (e) => {
-  const t = e.target.closest && e.target.closest("[data-rigadd],[data-rigdel],[data-msdel],#ms-add,#indy-use"); if (!t) return;
+  const t = e.target.closest && e.target.closest("[data-rigadd],[data-rigdel],[data-msdel],[data-bsdel],[data-bsadd],#ms-add,#indy-use"); if (!t) return;
   const c = buildCfg();
   if (t.id === "indy-use") {
     const sys = $("indy-sys").value, xs = ((state.misc.indy || {}).list || []).filter(x => x.sysName === sys);
     const mfgRigged = (x) => (x.rigs || []).some(n => { const R = parseRig(n); return R && !R.rxn; }), allEcs = xs.filter(x => /Raitaru|Azbel|Sotiyo/i.test(x.type));
     const ecs = allEcs.some(mfgRigged) ? allEcs.filter(mfgRigged) : allEcs, refs = xs.filter(x => /Athanor|Tatara/i.test(x.type));
     if (ecs.length) c.ms = ecs.map((x, i) => { const st = { id: "s" + Date.now().toString(36) + i, type: "Raitaru", sys: "", tax: 0, rigs: [] }; applyIndy(st, x, false, false); st.pick = "indy:" + x.id; return st; });
-    const score = (x) => (x.rigs || []).reduce((t, n) => { const R = parseRig(n); return t + (R && R.rxn ? R.me * 10 + R.te + (R.cover.includes("rxn") ? 50 : 0) : 0); }, 0) + (/Tatara/i.test(x.type) ? 5 : 0);
-    if (refs.length) { const x = [...refs].sort((a, b) => score(b) - score(a))[0]; applyIndy(c.r, x, true, false); c.r.pick = "indy:" + x.id; }
-    const lab = allEcs.find(x => (x.rigs || []).some(n => /Laboratory|Invention|Blueprint Copy/i.test(n))) || ecs[0];
-    if (lab) { applyIndy(c.sci, lab, false, true); c.sci.pick = "indy:" + lab.id; }
-    c.where = {}; saveMisc(); renderBuildSettings(true); rerunBuilds(); toast(`${ecs.length} manufacturing structure${ecs.length === 1 ? "" : "s"}${refs.length ? " and a refinery" : ""} from ${sys}`); return;
+    const rxRigged = (x) => (x.rigs || []).some(n => { const R = parseRig(n); return R && R.rxn; }), rfs = refs.some(rxRigged) ? refs.filter(rxRigged) : refs;
+    const labRigged = (x) => (x.rigs || []).some(n => /Laboratory|Invention|Blueprint Copy/i.test(n)), labs = allEcs.some(labRigged) ? allEcs.filter(labRigged) : ecs.slice(0, 1);
+    const slot = (pre, isR, isSci) => (x, i) => { const st = { id: pre + Date.now().toString(36) + i, type: isR ? "Athanor" : "Raitaru", sys: "", tax: 0, rigs: [] }; applyIndy(st, x, isR, isSci); st.pick = "indy:" + x.id; return st; };
+    if (rfs.length) c.rs = rfs.map(slot("r", true, false));
+    if (labs.length) c.scis = labs.map(slot("i", false, true));
+    c.where = {}; saveMisc(); renderBuildSettings(true); rerunBuilds(); toast(`${ecs.length} manufacturing structure${ecs.length === 1 ? "" : "s"}${rfs.length ? ` and ${rfs.length} reactor${rfs.length === 1 ? "" : "s"}` : ""} from ${sys}`); return;
   }
   if (t.id === "ms-add") c.ms.push({ id: "s" + Date.now().toString(36), type: "Raitaru", sys: "", tax: 0, rigs: [] });
   else if (t.dataset.msdel) { c.ms = c.ms.filter(x => x.id !== t.dataset.msdel); for (const k of Object.keys(c.where)) if (c.where[k] === t.dataset.msdel) delete c.where[k]; }
+  else if (t.dataset.bsdel) { const [k, id] = t.dataset.bsdel.split(":"), L = k === "rs" ? "rs" : "scis"; c[L] = c[L].filter(x => x.id !== id); for (const w of Object.keys(c.where)) if (c.where[w] === id) delete c.where[w]; }
+  else if (t.dataset.bsadd) { const isR = t.dataset.bsadd === "rs"; c[isR ? "rs" : "scis"].push({ id: (isR ? "r" : "i") + Date.now().toString(36), type: isR ? "Athanor" : (c.ms[0] || {}).type || "Raitaru", sys: "", tax: 0, rigs: [] }); }
   else { const st = stOf(t.dataset.bsk); if (!st) return;
     if (t.dataset.rigadd) { const n = t.parentElement.querySelector("[data-rignew=name]").value; if (!n) return; st.rigs = [...(st.rigs || []), { n }]; }
     else st.rigs.splice(+t.dataset.rigdel, 1); }
@@ -8942,13 +8963,28 @@ async function runBuild(page) {
   st.busy = true; st.msg = "Reading the blueprint…"; renderBuild(page);
   const fromO = page === "plan" && st.fromOrder && ordList().find(o => o.id === st.fromOrder && (o.bp || "").toLowerCase() === name.toLowerCase() && o.qty === c[page + "Qty"]);
   if (page === "plan") { st.viewing = null; if (!fromO) st.fromOrder = null; }
+  st.testBid = null;
   try { st.res = await computeBuild(bid, c[page + "Qty"], (t) => { st.msg = t; renderBuild(page); }, { useStock: page === "plan" && !!c.useStock, reserve: page === "plan" && c.reserveOrders !== false, exclude: fromO ? fromO.id : null }); st.msg = ""; }
-  catch (e) { st.res = null; st.msg = `Couldn't work this out (${netMsg(e)}).`; }
+  catch (e) { st.res = null; st.msg = e.setup ? e.message : `Couldn't work this out (${netMsg(e)}).`; st.testBid = e.inv ? bid : null; }
   st.busy = false; renderBuild(page);
 }
 const fmtDur = (sec) => sec == null ? "—" : durLabel(sec / 60);
 const icon = (t, size = 24) => `<img src="https://images.evetech.net/types/${t}/icon?size=32" alt="" width="${size}" height="${size}" loading="lazy" style="vertical-align:middle;border-radius:3px" onerror="this.style.visibility='hidden'">`;
-function renderBuildOwn(p) { const sel = bp.names && bp.byName.get($(p + "-bp").value.trim().toLowerCase()), o = sel && ownedBps().get(sel); $(p + "-own").innerHTML = sel ? (o ? `<span class="pill good">${esc(ownedLabel(o))}</span>` : Object.keys(state.misc.ownedBps || {}).length ? `<span class="pill bad">Not owned</span>` : `<span class="muted" style="font-size:.8rem">Owned blueprints unknown (allow Blueprints on the ESI login)</span>`) : ""; }
+// The blueprint's ME and TE set by you (Build planning, per blueprint): owned or not; for an item that's invented, a test copy (no invention counted)
+const bpInvented = new Set();
+function bpSetDefault(bid) { const o = ownedBps().get(bid), c = buildCfg(); return o && o.bpo ? { me: o.me, te: o.te } : bpInvented.has(bid) ? { me: 2, te: 4 } : o && o.bpc ? { me: o.bpcMe, te: o.bpcTe } : { me: +c.compMe || 0, te: +c.compTe || 0 }; }
+function renderBuildOwn(p) { const sel = bp.names && bp.byName.get($(p + "-bp").value.trim().toLowerCase()), o = sel && ownedBps().get(sel), box = $(p + "-own"); if (box.contains(document.activeElement)) return;
+  const tw = sel && (buildCfg().bpSet || {})[sel], n = (k) => `<input type="text" data-bptw="${k}" data-bid="${sel}" data-page="${p}" value="${esc(tw[k])}" inputmode="numeric" aria-label="${k.toUpperCase()}" style="width:44px">`;
+  const tweak = !sel ? "" : tw ? ` <span class="label">${bpInvented.has(sel) && !(o && o.bpo) ? "Test copy" : "Blueprint"}</span> <span class="muted" style="font-size:.85rem">ME</span>${n("me")}<span class="muted" style="font-size:.85rem">TE</span>${n("te")} <button type="button" class="link" data-bptw-off="${sel}" data-page="${p}" style="font-size:.8rem">${o ? "Use yours" : "Clear"}</button>` : ` <button type="button" class="link" data-bptw-on="${sel}" data-page="${p}" style="font-size:.8rem">Set ME/TE</button>`;
+  box.innerHTML = (sel ? (o ? `<span class="pill good">${esc(ownedLabel(o))}</span>` : Object.keys(state.misc.ownedBps || {}).length ? `<span class="pill bad">Not owned</span>` : `<span class="muted" style="font-size:.8rem">Owned blueprints unknown (allow Blueprints on the ESI login)</span>`) : "") + tweak; }
+document.addEventListener("click", (e) => {
+  const t = e.target.closest && e.target.closest("[data-btest],[data-bptw-on],[data-bptw-off]"); if (!t) return;
+  const c = buildCfg(), bid = t.dataset.btest || t.dataset.bptwOn || t.dataset.bptwOff, page = t.dataset.page || "plan"; c.bpSet = c.bpSet || {};
+  if (t.dataset.bptwOff) delete c.bpSet[bid]; else { if (t.dataset.btest) bpInvented.add(+bid); c.bpSet[bid] = bpSetDefault(+bid); }
+  saveMisc(); $(page + "-own").innerHTML = ""; renderBuildOwn(page); runBuild(page);
+});
+document.addEventListener("change", (e) => { const d = e.target.dataset || {}; if (!d.bptw) return; const tw = (buildCfg().bpSet || {})[d.bid]; if (!tw) return;
+  tw[d.bptw] = Math.max(0, Math.min(d.bptw === "me" ? 10 : 20, parseInt(e.target.value, 10) || 0)); saveMisc(); e.target.blur(); renderBuildOwn(d.page); runBuild(d.page); });
 // When each job can run: after the jobs making its inputs, on the pilot's first free slot of that kind (running jobs included)
 function scheduleParts(parts) {
   const now = Date.now(), slots = new Map(), endOf = new Map(), out = [];
@@ -8966,7 +9002,7 @@ function scheduleParts(parts) {
 function sciParts(r, parts) {
   const I = r.inv; if (!I || !r.invCost || !I.invTime) return [];
   const c = state.chars.find(x => I.pilot && x.id === I.pilot.id) || state.chars.find(x => !missingFor(x, I.req || {}).length) || null;
-  const st = (STRUCTS[((r.cfg || {}).sci || {}).type] || {}).te || 0, ai = c ? 1 - 0.03 * lv(c, "Advanced Industry") : 1, sm = 1 - st / 100, rgI = 1 - ((I.rInv || {}).time || 0) / 100, rgC = 1 - ((I.rCopy || {}).time || 0) / 100;
+  const st = (STRUCTS[(I.st || (r.cfg || {}).sci || {}).type] || {}).te || 0, ai = c ? 1 - 0.03 * lv(c, "Advanced Industry") : 1, sm = 1 - st / 100, rgI = 1 - ((I.rInv || {}).time || 0) / 100, rgC = 1 - ((I.rCopy || {}).time || 0) / 100;
   const attempts = Math.max(1, Math.ceil(I.chosen.attempts - 1e-9)), slots = c ? Math.max(1, Math.min(attempts, slotsOf(c).S || 1)) : 1, out = [];
   const name = r.name + (I.relic ? " (from relics)" : "");
   const split = (k) => Math.floor(attempts / slots) + (k < attempts % slots ? 1 : 0);
@@ -8986,7 +9022,7 @@ function timelineSvg(sch) {
     const y = T + i * rowH, p = row.p, col = p.j.act === "R" ? "#3b82c4" : p.j.act === "C" || p.j.act === "I" ? "#8b5cf6" : "#d9822b", w = Math.max(2, x(row.end) - x(row.start));
     g += `<text x="${L - 8}" y="${y + 14}" text-anchor="end" font-size="11" fill="var(--ink)">${esc((p.c ? p.c.name : "nobody") + " · " + p.j.name).slice(0, 34)}</text>`;
     if (row.waited) g += `<line x1="${x(row.ready)}" x2="${x(row.start)}" y1="${y + 10}" y2="${y + 10}" stroke="var(--muted)" stroke-dasharray="2 3"/>`;
-    g += `<g><title>${esc(`${p.j.name} ×${p.runs} run${p.runs > 1 ? "s" : ""} · ${p.c ? p.c.name : "no pilot"}\nStarts after ${fmtDur(row.start)}, ends after ${fmtDur(row.end)} (${fmtDur(p.dur)})${row.waited ? "\nWaits for a free slot" : ""}`)}</title><rect x="${x(row.start)}" y="${y + 3}" width="${w}" height="${rowH - 7}" rx="3" fill="${col}" opacity="${p.c ? 0.9 : 0.35}"/>${w > 60 ? `<text x="${x(row.start) + 5}" y="${y + 14}" font-size="10" fill="#fff">${esc(fmtDur(p.dur))}</text>` : ""}</g>`;
+    g += `<g><title>${esc(`${p.j.name} ×${p.runs} run${p.runs > 1 ? "s" : ""} · ${p.c ? p.c.name : "no pilot"}\nStarts after ${fmtDur(row.start)}, ends after ${fmtDur(row.end)} (${fmtDur(p.dur)})${row.waited ? "\nWaits for a free slot" : ""}`)}</title><rect x="${x(row.start)}" y="${y + 3}" width="${w}" height="${rowH - 7}" rx="3" fill="${col}" opacity="${p.c ? 0.9 : 0.35}"/>${w > 60 ? `<text x="${x(row.start) + 5}" y="${y + 14}" font-size="10" fill="#fff">${esc(fmtDur(p.dur))}</text>` : x(row.end) + 64 < W ? `<text x="${x(row.end) + 4}" y="${y + 14}" font-size="10" fill="var(--muted)">${esc(fmtDur(p.dur))}</text>` : `<text x="${x(row.start) - 4}" y="${y + 14}" text-anchor="end" font-size="10" fill="var(--muted)">${esc(fmtDur(p.dur))}</text>`}</g>`;
   });
   return `<div class="scroller" style="padding:6px"><svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:640px;display:block" role="img" aria-label="Build timeline">${g}</svg></div><p class="muted" style="margin:4px 0 0;font-size:.8rem"><b style="color:#d9822b">■</b> Manufacturing · <b style="color:#3b82c4">■</b> Reactions · <b style="color:#8b5cf6">■</b> Copying and invention (when you don't hold enough copies; the expected number of attempts, rounded up, spread over the inventor's science slots) · Time from now. Each job starts when the jobs making its inputs are done and the pilot has a free slot (their running jobs count). Hauling time isn't included.</p>`;
 }
@@ -9337,9 +9373,18 @@ function renderPlanNav() {
 document.addEventListener("click", async (e) => { const b = e.target.closest && e.target.closest("button[data-copy]"); if (!b) return; try { await navigator.clipboard.writeText(b.dataset.copy); toast(b.dataset.copyMsg || "List copied"); } catch (err) { const t = document.createElement("textarea"); t.value = b.dataset.copy; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); toast("List copied"); } catch (e2) { toast("Couldn't copy"); } t.remove(); } });
 // Switch between your jump freighters and a freight service
 document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-haul-mode]"); if (!b) return; buildCfg().haul.mode = b.dataset.haulMode; saveMisc(); renderBuildSettings(true); rerunBuilds(); });
-// Where a location key points: delivery system, reaction structure or one of the manufacturing structures
-function locLabel(r, loc) { if (loc === "D") return `Delivery (${r.cfg.haul.from})`; if (loc === "P" || String(loc).startsWith("P:")) { const OB = r.oreBuy || {}, F = (OB.facs || []).find(f => f.key === loc) || (loc === "P" && OB.fac) || {}, sys = r.locs && r.locs[loc]; return `Reprocessing (${F.name || "ore"}${sys ? " in " + sys.name : ""})`; } if (loc === "R") return `Reactions (${r.cfg.r.type}${r.sysR ? " in " + r.sysR.name : ""})`; const st = (r.cfg.ms || []).find(x => "M:" + x.id === loc), sys = r.locs && r.locs[loc]; return st ? `${st.name || st.type}${sys ? " in " + sys.name : ""}` : loc; }
-function renderBuild(page) { renderBuildInner(page); if (page === "plan") renderPlanNav(); }
+// Where a location key points: delivery system, a reactor (older plans: "R") or one of the manufacturing structures
+function locLabel(r, loc) { if (loc === "D") return `Delivery (${r.cfg.haul.from})`; if (loc === "P" || String(loc).startsWith("P:")) { const OB = r.oreBuy || {}, F = (OB.facs || []).find(f => f.key === loc) || (loc === "P" && OB.fac) || {}, sys = r.locs && r.locs[loc]; return `Reprocessing (${F.name || "ore"}${sys ? " in " + sys.name : ""})`; } if (loc === "R" || String(loc).startsWith("R:")) { const st = (r.cfg.rs || []).find(x => "R:" + x.id === loc) || r.cfg.r || {}, sys = (r.locs && r.locs[loc]) || r.sysR; return `Reactions (${esc(st.name || st.type || "reactor")}${sys ? " in " + sys.name : ""})`; } const st = (r.cfg.ms || []).find(x => "M:" + x.id === loc), sys = r.locs && r.locs[loc]; return st ? `${st.name || st.type}${sys ? " in " + sys.name : ""}` : loc; }
+function renderBuild(page) { renderBuildInner(page); if (page === "plan") { secDecorate($("plan-out")); renderPlanNav(); } }
+// The plan's sections (Timeline, Per pilot…) fold from their title (▾ / ▸), remembered with the panels (state.misc.panels "sec:<id>")
+function secDecorate(box) {
+  const f = state.misc.panels || {};
+  for (const h of box.querySelectorAll(":scope > h3[id]")) {
+    if (!h.classList.contains("fold-h")) { h.classList.add("fold-h"); h.tabIndex = 0; h.setAttribute("role", "button"); h.title = "Click to fold or unfold"; const ind = document.createElement("span"); ind.className = "fold-ind"; ind.setAttribute("aria-hidden", "true"); h.prepend(ind); }
+    const shut = !!f["sec:" + h.id]; h.setAttribute("aria-expanded", String(!shut)); h.querySelector(".fold-ind").textContent = shut ? "▸" : "▾";
+    for (let n = h.nextElementSibling; n && !(n.tagName === "H3" && n.id); n = n.nextElementSibling) n.classList.toggle("sec-hid", shut);
+  }
+}
 function renderBuildInner(page) {
   const box = $(page + "-out"); if (!box) return;
   const st = buildState[page], c = buildCfg();
@@ -9353,11 +9398,11 @@ function renderBuildInner(page) {
   if (page === "quote" && document.activeElement !== $("quote-margin")) { $("quote-margin").value = c.margin != null ? c.margin : 15; $("quote-mmode").value = c.mmode || "price"; }
   renderBuildOwn(page);
   if (page === "plan") { $("plan-stock").checked = !!c.useStock; $("plan-reserve").checked = c.reserveOrders !== false; $("plan-reserve").disabled = !c.useStock; }
-  if (st.busy || st.msg) { box.innerHTML = `<p class="${st.busy ? "muted" : ""}" style="margin:8px 0 0">${esc(st.msg)}</p>`; if (st.busy) return; }
+  if (st.busy || st.msg) { box.innerHTML = `<p class="${st.busy ? "muted" : ""}" style="margin:8px 0 0">${esc(st.msg)}${!st.busy && st.testBid ? ` <button type="button" data-btest="${st.testBid}" data-page="${page}">Plan on a test copy instead</button>` : ""}</p>`; if (st.busy) return; }
   const r = st.res; if (!r) { if (!st.msg) box.innerHTML = `<p class="muted" style="margin:8px 0 0">Pick a blueprint and a quantity.</p>`; return; }
   const incomplete = (r.unpriced || []).length + ((r.inv && r.invCost && r.inv.missing) || []).length + (r.stockUnpriced || []).length;
   const per = r.total / r.qty, perFull = (r.fullTotal || r.total) / r.qty, margin = r.sell && !incomplete ? (r.sell - perFull) / r.sell : null, H = r.haul || { legs: [] };
-  const tiles = `<div class="slot-tiles" style="margin-top:10px">
+  const tiles = ((r.missing || []).length ? `<div class="notice" style="margin-top:10px">Some structures are missing: ${esc(r.missing.join("; "))}. <button type="button" class="link" data-goto-structs="1">Set them up</button></div>` : "") + `<div class="slot-tiles" style="margin-top:10px">
     <div class="slot-tile"><div class="label">Build cost</div><span class="big-num">${isk(r.total)}${incomplete ? `<span style="color:var(--bad);font-size:.8rem;margin-left:6px">incomplete</span>` : ""}</span><div class="muted">${incomplete ? `<span style="color:var(--bad)">${incomplete} item${incomplete === 1 ? "" : "s"} without a price, not counted</span><br>` : ""}${r.qty} × ${esc(r.name)} · ${isk(per)} each${r.stockValue ? `<br>+ ${isk(r.stockValue)} of your own stock = <b>${isk(r.fullTotal)}</b> (${isk(perFull)} each) as if everything were bought` : ""}</div></div>
     <div class="slot-tile"><div class="label">Materials</div><span class="big-num">${isk(r.matCost)}</span><div class="muted">${r.shop.length} item${r.shop.length === 1 ? "" : "s"} to buy · ${esc(pricingName(validPricing(r.cfg.price)))}${r.oreTax ? `<br>+ ${isk(r.oreTax)} reprocessing tax` : ""}${r.oreLeft ? `<br>− ${isk(r.oreLeft)} of left-over minerals kept` : ""}${(r.unpriced || []).length ? `<br><span style="color:var(--bad)">${r.unpriced.length} without a price: not counted</span>` : ""}</div></div>
     <div class="slot-tile"><div class="label">Job fees</div><span class="big-num">${isk(r.fees)}</span><div class="muted">${r.jobs.length} job${r.jobs.length === 1 ? "" : "s"} in ${new Set(r.jobs.map(j => j.loc)).size} structure${new Set(r.jobs.map(j => j.loc)).size === 1 ? "" : "s"}${r.sysM ? "" : " · set a system for the cost index"}</div></div>
@@ -9368,7 +9413,7 @@ function renderBuildInner(page) {
     const ch = I.chosen, rows = I.rows.filter(x => x.srcId === I.srcId), opt = (v, cur, l) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(l)}</option>`, sure = I.conf !== "avg";
     const att = (x) => !isFinite(x.attempts) ? "—" : sure ? String(x.attempts) : x.attempts.toFixed(1), hrs = (h) => h >= 48 ? (h / 24).toFixed(1) + " d" : h.toFixed(1) + " h";
     const decs = [...new Set(I.rows.map(x => x.n))];
-    return `<h3 id="pl-inv" style="margin:16px 0 6px">Invention <span class="muted" style="font:400 .85rem var(--f-body)">from ${esc(I.src)} · base chance ${(I.baseP * 100).toFixed(0)}%, ${I.baseRuns} run${I.baseRuns > 1 ? "s" : ""} per copy · ${I.pilot ? `best pilot ${esc(I.pilot.name)} (×${I.mult.toFixed(2)})` : `<span style="color:var(--bad)">nobody has the skills (${esc(Object.entries(I.req).map(([n, l]) => n + " " + ROMAN[l]).join(", "))})</span>`}</span></h3>
+    return `<h3 id="pl-inv" style="margin:16px 0 6px">Invention <span class="muted" style="font:400 .85rem var(--f-body)">${I.st ? `at ${esc(I.st.name || I.st.type)}${I.sys ? " in " + esc(I.sys.name) : ""} · ` : ""}from ${esc(I.src)} · base chance ${(I.baseP * 100).toFixed(0)}%, ${I.baseRuns} run${I.baseRuns > 1 ? "s" : ""} per copy · ${I.pilot ? `best pilot ${esc(I.pilot.name)} (×${I.mult.toFixed(2)})` : `<span style="color:var(--bad)">nobody has the skills (${esc(Object.entries(I.req).map(([n, l]) => n + " " + ROMAN[l]).join(", "))})</span>`}</span></h3>
     <p class="muted" style="margin:0 0 6px;font-size:.85rem">${I.runsTotal} run${I.runsTotal === 1 ? "" : "s"} to build${I.ownedRuns ? `: your copies cover ${Math.min(I.ownedRuns, I.runsTotal)}, invention covers ${I.runsNeeded}` : ""}. Each attempt uses ${I.dcs.map(x => `${x.q} × ${esc(x.name)}`).join(" + ")}${I.relic ? ` and the relic (${I.relicPrice == null ? "no price" : isk(I.relicPrice)})` : ""} (${isk(I.dcs.reduce((s, x) => s + x.q * (x.price || 0), 0) + (I.relicPrice || 0))}), plus fees of about ${isk(I.invFee + I.copyFee)}${I.relic ? "" : " (copy + invention)"}${I.rInv.cost || I.rCopy.cost ? ` after laboratory rigs` : ""}. ${r.invCost ? `Counted in the build cost: ${isk(r.invCost)}.` : I.runsNeeded ? `Not counted: invention is switched off.` : `Not counted: your copies cover every run.`}</p>
     <div class="toolbar" style="margin-bottom:6px"><label style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-bset="inv"${r.cfg.inv !== false ? " checked" : ""}> Count invention</label>
       ${I.srcs.length > 1 ? `<label class="label">Relic</label><select data-bset="relic">${opt("auto", I.autoSrc ? "auto" : I.srcId, "Best (auto)")}${I.srcs.map(s => opt(s.id, I.autoSrc ? "" : I.srcId, s.name)).join("")}</select>` : ""}
@@ -9404,12 +9449,11 @@ function renderBuildInner(page) {
       ${used.length || comps.length || (O && O.use.length) ? `<p class="muted" style="margin:4px 0 0;font-size:.8rem">Stock you use isn't free: it's counted at market value in the margin, since you could have sold it instead.</p>` : ""}
       ${away.length ? `<div class="notice" style="display:grid;gap:4px;margin-top:6px"><b>Owned, but not in the right place</b>${away.map(x => `<span>${esc(x.name)}: ${x.elsewhere.map(e => `${e.q.toLocaleString()} in ${esc(e.name)}${e.sys && sysName(e.sys) ? ` (<button type="button" class="link" data-map-goto="${e.sys}">${esc(sysName(e.sys))}</button>)` : ""}`).join(", ")}</span>`).join("")}<span class="muted" style="font-size:.8rem">Move them to ${esc(SU.dSys ? SU.dSys.name : "the delivery system")} or a structure's system and plan again to use them.</span></div>` : ""}`; })() : "";
   // Ore bought instead of minerals: the mix, what it gives, and what it saves in ISK and m³
-  const OB = r.oreBuy, oreBox = OB ? (() => {
+  const OB = r.oreBuy, oreBox = OB && OB.ores.length ? (() => {
     const facs = OB.facs || [OB.fac || {}], many = facs.length > 1, facTxt = (F) => `${F.named ? `${esc(F.name)} (${esc(F.how || "")})` : esc(F.how || "")}: ${((F.base || 0) * 100).toFixed(1)}% before skills${F.tax ? `, ${F.tax}% tax` : ""}`;
-    const head = `<h3 id="pl-ore" style="margin:16px 0 6px">Ore to buy <span class="muted" style="font:400 .85rem var(--f-body)">reprocessed at ${many ? `${facs.length} places` : facTxt(facs[0])}</span> <button type="button" class="link" data-goto-structs="1">Change</button></h3>${many ? `<ul class="muted" style="margin:0 0 6px;font-size:.85rem">${facs.map((F, i) => `<li>Place ${i + 1}: ${facTxt(F)}${OB.ores.length && !OB.ores.some(o => o.at === F.key) ? " · not used" : ""}</li>`).join("")}</ul>` : ""}`;
-    if (!OB.ores.length) return head + `<p class="muted" style="margin:0">${esc(OB.none || "No ore to buy.")}</p>`;
+    const head = `<h3 id="pl-ore" style="margin:16px 0 6px">Ore to buy <span class="muted" style="font:400 .85rem var(--f-body)">reprocessed at ${many ? `${facs.length} refineries` : facTxt(facs[0])}</span> <button type="button" class="link" data-goto-structs="1">Change</button></h3>${many ? `<ul class="muted" style="margin:0 0 6px;font-size:.85rem">${facs.map((F, i) => `<li>Refinery ${i + 1}: ${facTxt(F)}${OB.ores.length && !OB.ores.some(o => o.at === F.key) ? " · not used" : ""}</li>`).join("")}</ul>` : ""}`;
     const items = r.shop.filter(x => x.ore), unit = (t) => { const x = items.find(y => y.type === t); return !x || !x.qty ? null : x.best ? x.best.cost / x.qty : x.price; }, cost = (u) => unit(u.t) == null ? null : unit(u.t) * u.units;
-    const placeOf = (k) => { const i = facs.findIndex(F => F.key === k); return i < 0 ? "" : facs[i].named ? facs[i].name : `Place ${i + 1}`; };
+    const placeOf = (k) => { const i = facs.findIndex(F => F.key === k); return i < 0 ? "" : facs[i].named ? facs[i].name : `Refinery ${i + 1}`; };
     return head + `<p style="margin:0 0 6px">${OB.saving != null ? `Saves <b>${isk(OB.saving)}</b> against buying the minerals (${isk(OB.direct)}${OB.hDirect != null ? `, plus about ${isk(OB.hDirect)} of hauling against ${isk(OB.hOre)} for the ore` : ""})` : `The minerals it replaces have no price`} and <b>${Math.round(OB.volMin - OB.volOre).toLocaleString()} m³</b> of hauling: ${Math.round(OB.volOre).toLocaleString()} m³ of ore instead of ${Math.round(OB.volMin).toLocaleString()} m³ of minerals.${OB.leftVal ? ` Left-over minerals kept for later builds: <b>${isk(OB.leftVal)}</b>, taken off the build cost.` : ""}</p>
       <div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Ore</th>${many ? `<th scope="col">Reprocessed at</th>` : ""}<th scope="col" class="num">Yield</th><th scope="col" class="num">Batches</th><th scope="col" class="num">Units to buy</th><th scope="col" class="num">Volume</th><th scope="col" class="num">Cost</th><th scope="col" class="num">Tax</th></tr></thead><tbody>${OB.ores.map(u => `<tr><th scope="row">${icon(u.t)} <button type="button" class="copyname" data-copy="${esc(u.n)}" data-copy-msg="${esc(u.n)} copied">${esc(u.n)}</button></th>${many ? `<td>${esc(placeOf(u.at))}</td>` : ""}<td class="num" title="${esc(u.pilot ? `${u.pilot}${u.sk ? `, ${u.sk}` : ""}` : "")}">${(u.y * 100).toFixed(1)}%${u.pilot ? `<div class="label">${esc(u.pilot)}</div>` : ""}</td><td class="num">${u.batches.toLocaleString()}</td><td class="num"><button type="button" class="copyname" data-copy="${u.units}" data-copy-msg="${u.units} copied"><b>${u.units.toLocaleString()}</b></button></td><td class="num">${Math.round(u.units * u.vol).toLocaleString()} m³</td><td class="num">${cost(u) == null ? "—" : isk(cost(u))}</td><td class="num">${u.tax ? isk(u.tax) : "—"}</td></tr>`).join("")}</tbody>
         <tfoot><tr class="total"><th scope="row">Total</th>${many ? "<td></td>" : ""}<td></td><td></td><td></td><td class="num">${Math.round(OB.volOre).toLocaleString()} m³</td><td class="num"><b>${isk(items.reduce((a, x) => a + (x.best ? x.best.cost : x.price == null ? 0 : x.qty * x.price), 0))}</b></td><td class="num">${OB.tax ? isk(OB.tax) : "—"}</td></tr></tfoot></table></div>
@@ -9421,7 +9465,7 @@ function renderBuildInner(page) {
     const L = [...by.entries()].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]));
     return L.length ? `<div class="toolbar" style="margin:0 0 6px"><span class="muted" style="font-size:.85rem">Copy to clipboard:</span>${L.map(([k, l]) => `<button type="button" class="cargo" data-copy="${esc(l.join("\n"))}" data-copy-msg="${esc(k)}: ${l.length} item${l.length === 1 ? "" : "s"} copied" title="${esc(k === "Not found anywhere" ? "Nobody has these: buy them where you can" : `Everything to buy at ${k}`)}">${esc(k)} <span class="muted">· ${l.length}</span></button>`).join("")}</div>` : ""; })();
   const shopTable = `<h3 id="pl-shop" style="margin:16px 0 6px">Materials to buy</h3>${srcCopy}<div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Item</th><th scope="col" class="num">Quantity</th><th scope="col" class="num">Unit price</th><th scope="col" class="num">Total</th>${r.shop.some(x => x.best) ? `<th scope="col">Buy from</th>` : ""}<th scope="col" class="num">Volume</th><th scope="col">Goes to</th>${page === "plan" ? `<th scope="col"></th>` : ""}</tr></thead><tbody>${r.shop.map(x =>
-      `<tr><th scope="row">${icon(x.type)} ${esc(x.name)}</th><td class="num">${x.qty.toLocaleString()}${x.need != null && x.need - x.qty - (x.fromBuyOre || 0) > 0 ? `<div class="label" title="From your stock">−${(x.need - x.qty - (x.fromBuyOre || 0)).toLocaleString()} owned</div>` : ""}${x.fromBuyOre ? `<div class="label" title="From the ore you buy (Ore to buy)">−${x.fromBuyOre.toLocaleString()} from ore</div>` : ""}</td><td class="num">${x.price ? isk(x.price) : "—"}</td><td class="num">${x.best ? `${isk(x.best.cost)}${x.best.baseline - x.best.cost > 1 ? `<div class="label" style="color:var(--good)">−${isk(x.best.baseline - x.best.cost)}</div>` : ""}` : x.price ? isk(x.qty * x.price) : "—"}</td>${r.shop.some(y => y.best) ? `<td style="white-space:normal;font-size:.85rem;min-width:160px">${x.best ? x.best.plan.map(p => `${p.src === "Not found" ? `<span style="color:var(--bad)">${p.q.toLocaleString()} nowhere (${p.cost == null ? "no price: not counted" : "counted at your pricing"})</span>` : `${esc(p.src)} <span class="muted">${p.q.toLocaleString()} @ ${isk(p.cost / p.q)}</span>`}`).join("<br>") : `<span class="muted">—</span>`}</td>` : ""}<td class="num">${x.vol ? Math.round(x.qty * x.vol).toLocaleString() + " m³" : "—"}</td><td class="muted">${(x.at || []).map(([loc]) => esc(locLabel(r, loc))).join(" + ")}${x.price == null ? ` <span class="pill bad" title="No price in ${esc(pricingName(validPricing(r.cfg.price)))}">No price</span>` : ""}</td>${page === "plan" ? `<td>${x.buildable ? `<button type="button" class="link" data-bmake="${x.type}">Build it instead</button>` : ""}</td>` : ""}</tr>`).join("")}</tbody>
+      `<tr><th scope="row">${icon(x.type)} ${esc(x.name)}${x.nos ? ` <span class="pill mid" title="Built once you set up a reactor">No reactor</span>` : ""}</th><td class="num">${x.qty.toLocaleString()}${x.need != null && x.need - x.qty - (x.fromBuyOre || 0) > 0 ? `<div class="label" title="From your stock">−${(x.need - x.qty - (x.fromBuyOre || 0)).toLocaleString()} owned</div>` : ""}${x.fromBuyOre ? `<div class="label" title="From the ore you buy (Ore to buy)">−${x.fromBuyOre.toLocaleString()} from ore</div>` : ""}</td><td class="num">${x.price ? isk(x.price) : "—"}</td><td class="num">${x.best ? `${isk(x.best.cost)}${x.best.baseline - x.best.cost > 1 ? `<div class="label" style="color:var(--good)">−${isk(x.best.baseline - x.best.cost)}</div>` : ""}` : x.price ? isk(x.qty * x.price) : "—"}</td>${r.shop.some(y => y.best) ? `<td style="white-space:normal;font-size:.85rem;min-width:160px">${x.best ? x.best.plan.map(p => `${p.src === "Not found" ? `<span style="color:var(--bad)">${p.q.toLocaleString()} nowhere (${p.cost == null ? "no price: not counted" : "counted at your pricing"})</span>` : `${esc(p.src)} <span class="muted">${p.q.toLocaleString()} @ ${isk(p.cost / p.q)}</span>`}`).join("<br>") : `<span class="muted">—</span>`}</td>` : ""}<td class="num">${x.vol ? Math.round(x.qty * x.vol).toLocaleString() + " m³" : "—"}</td><td class="muted">${(x.at || []).map(([loc]) => esc(locLabel(r, loc))).join(" + ")}${x.price == null ? ` <span class="pill bad" title="No price in ${esc(pricingName(validPricing(r.cfg.price)))}">No price</span>` : ""}</td>${page === "plan" ? `<td>${x.buildable && !x.nos ? `<button type="button" class="link" data-bmake="${x.type}">Build it instead</button>` : ""}</td>` : ""}</tr>`).join("")}</tbody>
       <tfoot><tr class="total"><th scope="row">Total</th><td></td><td></td><td class="num"><b>${isk(r.matCost)}</b>${(r.unpriced || []).length ? `<div class="label" style="color:var(--bad)">${r.unpriced.length} not counted</div>` : ""}</td>${r.shop.some(x => x.best) ? `<td></td>` : ""}<td class="num">${Math.round(r.shop.reduce((s, x) => s + x.qty * x.vol, 0)).toLocaleString()} m³</td><td></td>${page === "plan" ? "<td></td>" : ""}</tr></tfoot></table></div>${noPriceNote(validPricing(r.cfg.price), r.unpriced || [])}`;
   if (page === "quote") {
     const mg = Math.max(0, Math.min(99, parseFloat(c.margin != null ? c.margin : 15) || 0)), mode = c.mmode || "price";
@@ -9449,7 +9493,7 @@ function renderBuildInner(page) {
   const pcBox = `<h3 id="pl-pc" style="margin:16px 0 6px">Public contracts</h3><div class="toolbar" style="margin-bottom:6px"><label class="label" for="pc-region">Region</label><select id="pc-region" aria-label="Region">${TRADE_HUBS.map(h => `<option value="${h.region}"${+(c.pcRegion || 10000002) === h.region ? " selected" : ""}>${esc(regionName(h.region))}</option>`).join("")}</select><button type="button" data-pc-check="1"${PC && PC.busy ? " disabled" : ""}>${PC && PC.res ? "Check again" : "Check public contracts"}</button><span class="muted" id="pc-status" style="font-size:.85rem">${PC && PC.msg ? esc(PC.msg) : ""}</span></div>
     ${PC && PC.res ? pcRes(PC.res) : `<p class="muted" style="margin:0;font-size:.85rem">Looks for ${esc(r.name)}${r.inv ? " and copies of its blueprint" : ""} on a region's public contracts, to see whether buying beats building. It reads every public contract there, so it takes a moment.</p>`}`;
   const a = assignJobs(r);
-  const noSkill = a.parts.filter(p => !p.c), noSlot = a.parts.filter(p => p.c && !p.slot), notOwned = r.jobs.filter(j => !(j.own && (j.own.bpo || j.own.bpc)));
+  const noSkill = a.parts.filter(p => !p.c), noSlot = a.parts.filter(p => p.c && !p.slot), notOwned = r.jobs.filter(j => !(j.own && (j.own.bpo || j.own.bpc)) && !(j.type === r.top.type && /set by you/.test(j.meSrc)));
   const pilots = new Map(); for (const p of a.parts) if (p.c) { const e = pilots.get(p.c.id) || { c: p.c, M: 0, R: 0, dur: 0 }; e[p.j.act === "R" ? "R" : "M"]++; e.dur += p.dur || 0; pilots.set(p.c.id, e); }
   const ownCell = (j) => j.type === r.top.type && r.invCost ? `<span class="pill mid" title="Copies from invention, counted in the cost">From invention</span>` : j.act === "R" ? (j.own && (j.own.bpo || j.own.bpc) ? `<span class="pill good">Formula owned</span>` : `<span class="pill bad">Formula not owned</span>`) : j.own && j.own.bpo ? `<span class="pill good">BPO ME ${j.own.me}</span>` : j.own && j.own.bpc ? `<span class="pill ${j.own.runs < j.runs ? "bad" : "mid"}" title="${j.own.runs} runs on your copies, ${j.runs} needed">BPC ×${j.own.bpc}${j.own.runs < j.runs ? ` · ${j.own.runs}/${j.runs} runs` : ""}</span>` : `<span class="pill bad">Not owned</span>`;
   const maxD = Math.max(...a.parts.map(x => x.j.depth));
@@ -9479,10 +9523,10 @@ function renderBuildInner(page) {
     <h3 id="pl-who" style="margin:16px 0 6px">Who builds what</h3><div class="scroller"><table class="bp-table"><thead><tr><th scope="col">Stage</th><th scope="col">Item</th><th scope="col">Job</th><th scope="col" class="num">Runs</th><th scope="col">Blueprint</th><th scope="col">Pilot</th><th scope="col">Slot</th><th scope="col" class="num">Duration</th><th scope="col" class="num">Job fee</th></tr></thead><tbody>${a.parts.map(p => {
       const stage = maxD - p.j.depth + 1;
       const opts = p.able.map(c => `<option value="${c.id}"${p.c && p.c.id === c.id ? " selected" : ""}>${esc(c.name)} (${(efficiency(c, p.j.req, p.j.act === "R" ? "rxn" : "mfg").rank * 100).toFixed(0)}% time)</option>`).join("");
-      return `<tr><td class="num">${stage}</td><th scope="row">${icon(p.j.type)} ${esc(p.j.name)}${p.j.extra && p.runs === p.j.runs ? ` <span class="muted" style="font-size:.8rem" title="Made beyond what's needed">+${p.j.extra} spare</span>` : ""}</th><td>${p.j.act === "R" ? `Reaction <span class="muted" style="font-size:.8rem">${esc(p.j.where)}</span>` : p.j.alts && p.j.alts.length > 1 ? `Manufacturing <select data-bwhere="${p.j.type}" aria-label="Structure for ${esc(p.j.name)}" style="font-size:.8rem"><option value="">Best: ${esc(p.j.forced ? "auto" : p.j.where)}</option>${p.j.alts.map(a => `<option value="${a.loc.slice(2)}"${p.j.forced && a.loc === p.j.loc ? " selected" : ""}>${esc(a.label)} (≈${isk(a.est)})</option>`).join("")}</select>` : `Manufacturing <span class="muted" style="font-size:.8rem">${esc(p.j.where)}</span>`}</td><td class="num">${p.runs}${p.runs !== p.j.runs ? `<span class="muted" style="font-size:.8rem"> of ${p.j.runs}</span>` : ""}${p.j.type !== r.top.type && p.runs === p.j.runs ? `<div><button type="button" class="link" data-bbuy="${p.j.type}" style="font-size:.8rem;padding:0">Buy it instead</button></div>` : ""}</td><td>${ownCell(p.j)}${p.j.act === "M" ? ` <span class="muted" style="font-size:.8rem" title="${esc(p.j.meSrc.charAt(0).toUpperCase() + p.j.meSrc.slice(1))}${p.j.rigMe ? ` · rig −${p.j.rigMe.toFixed(1)}%` : ""}">ME ${p.j.me}</span>` : ""}</td><td>${p.c ? `<select data-bwho="${p.j.type}" aria-label="Pilot for ${esc(p.j.name)}"><option value="">Auto</option>${opts}</select>` : `<span class="pill bad">Missing skills</span>`}</td><td>${!p.c ? "—" : p.slot ? `<span class="pill good">Free ${p.j.act === "R" ? "R" : "M"} slot</span>` : `<span class="pill mid">Wait for a slot</span>`}</td><td class="num">${fmtDur(p.dur)}</td><td class="num">${isk(p.fee)}</td></tr>`; }).join("")}</tbody></table></div>
+      return `<tr><td class="num">${stage}</td><th scope="row">${icon(p.j.type)} ${esc(p.j.name)}${p.j.extra && p.runs === p.j.runs ? ` <span class="muted" style="font-size:.8rem" title="Made beyond what's needed">+${p.j.extra} spare</span>` : ""}</th><td>${p.j.act === "R" && !(p.j.alts && p.j.alts.length > 1) ? `Reaction <span class="muted" style="font-size:.8rem">${esc(p.j.where)}</span>` : p.j.alts && p.j.alts.length > 1 ? `${p.j.act === "R" ? "Reaction" : "Manufacturing"} <select data-bwhere="${p.j.type}" aria-label="Structure for ${esc(p.j.name)}" style="font-size:.8rem"><option value="">Best: ${esc(p.j.forced ? "auto" : p.j.where)}</option>${p.j.alts.map(a => `<option value="${a.loc.slice(2)}"${p.j.forced && a.loc === p.j.loc ? " selected" : ""}>${esc(a.label)} (≈${isk(a.est)})</option>`).join("")}</select>` : `Manufacturing <span class="muted" style="font-size:.8rem">${esc(p.j.where)}</span>`}</td><td class="num">${p.runs}${p.runs !== p.j.runs ? `<span class="muted" style="font-size:.8rem"> of ${p.j.runs}</span>` : ""}${p.j.type !== r.top.type && p.runs === p.j.runs ? `<div><button type="button" class="link" data-bbuy="${p.j.type}" style="font-size:.8rem;padding:0">Buy it instead</button></div>` : ""}</td><td>${ownCell(p.j)}${p.j.act === "M" ? ` <span class="muted" style="font-size:.8rem" title="${esc(p.j.meSrc.charAt(0).toUpperCase() + p.j.meSrc.slice(1))}${p.j.rigMe ? ` · rig −${p.j.rigMe.toFixed(1)}%` : ""}">ME ${p.j.me}</span>` : ""}</td><td>${p.c ? `<select data-bwho="${p.j.type}" aria-label="Pilot for ${esc(p.j.name)}"><option value="">Auto</option>${opts}</select>` : `<span class="pill bad">Missing skills</span>`}</td><td>${!p.c ? "—" : p.slot ? `<span class="pill good">Free ${p.j.act === "R" ? "R" : "M"} slot</span>` : `<span class="pill mid">Wait for a slot</span>`}</td><td class="num">${fmtDur(p.dur)}</td><td class="num">${isk(p.fee)}</td></tr>`; }).join("")}</tbody></table></div>
     ${pilots.size ? `<h3 id="pl-pilots" style="margin:16px 0 6px">Per pilot</h3><div class="chips">${[...pilots.values()].map(e => `<span class="chip on">${esc(e.c.name)}: ${e.M ? e.M + " M" : ""}${e.M && e.R ? ", " : ""}${e.R ? e.R + " R" : ""} · ${fmtDur(e.dur)}</span>`).join("")}</div>` : ""}
     ${stockBox}${oreBox}${shopTable}${invBox}${haulTable}
-    ${r.toggles.length ? `<h3 id="pl-toggle" style="margin:16px 0 6px">Build or buy</h3><p class="muted" style="margin:0 0 6px;font-size:.85rem">Components in the tree: click to switch between building and buying.</p><div class="chips">${r.toggles.map(t => `<button type="button" class="chip${t.built ? " on" : ""}" data-btoggle="${t.type}">${t.built ? "Build" : "Buy"}: ${esc(t.name)}</button>`).join("")}</div>` : ""}`;
+    ${r.toggles.length ? `<h3 id="pl-toggle" style="margin:16px 0 6px">Build or buy</h3><p class="muted" style="margin:0 0 6px;font-size:.85rem">Components in the tree: click to switch between building and buying.</p><div class="chips">${r.toggles.map(t => `<button type="button" class="chip${t.built ? " on" : ""}" data-btoggle="${t.type}">${t.built ? "Build" : "Buy"}: ${esc(t.name)}${t.nos ? " (no reactor)" : ""}</button>`).join("")}</div>` : ""}`;
 }
 // Public contracts check for the plan shown (kept until another blueprint is planned)
 document.addEventListener("change", (e) => { if (e.target.id !== "pc-region") return; buildCfg().pcRegion = +e.target.value; saveMisc(); });

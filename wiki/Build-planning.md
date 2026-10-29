@@ -4,22 +4,25 @@
 
 ## Plan a build
 1. Type a blueprint in the search box (for example *Sleipnir Blueprint*) and a **Quantity**.
-2. Click **Plan the build**.
-3. Read the result top to bottom, using the left navigation:
+2. Click **Plan the build**. To plan with other ME and TE on the blueprint (yours or not), click **Set ME/TE** next to it and type them; for an invented item that's a **test copy** (no invention counted). **Use yours** / **Clear** goes back.
+3. Read the result top to bottom, using the left navigation. Click a section's title to fold it away (it stays folded):
    - **Materials needed**: the summary of everything the build uses: each raw material (needed, from your stock, still to buy) and the components built on the way, each split into the items' groups (Mineral, Moon materials, Composite…). **Copy raw materials** copies the full list.
    - **Final build** and **Components to manufacture**: the build tree. Switch any component between **build** and **buy**.
    - **Materials you already own**, **Components you already own**: your stock is used first (from [Assets](Assets)).
    - **Materials to buy**: with where to buy each (Jita, a local citadel market, your [suppliers](Suppliers)) and a copy button per source, ready to paste in game.
    - **Invention** (T2/T3): see below.
    - **Hauling trips** or **Hauling by freight service**.
-   - **Timeline**, **Who builds what**, **Per pilot**: jobs spread over your pilots' free slots, given their skills and speed. Change the pilot of a job in the table.
+   - **Timeline**, **Who builds what**, **Per pilot**: jobs spread over your pilots' free slots, given their skills and speed (a short bar shows its time beside it). Change the pilot or the structure of a job in the table.
    - **Public contracts** and **Build or buy**: see below.
 4. Happy with it? **Send to Orders management** to commit to it (see [Orders management](Orders-management-and-Jobs)).
 
 ## Structures and settings
 The panel at the bottom: where you build, the rigs fitted, how materials are moved, how blueprints and prices are counted. It's shared with the **Quotation** on the [Misc](Misc) page. **Reset structures and settings** goes back to the defaults.
 
-- Each job goes to your **cheapest structure** for it: the structure's role bonus plus its best rig. Reactions go to the refinery.
+- The structures come in this order: **Manufacturing structures**, **Reactors**, **Invention structures**, **Refinery** (where bought ore is reprocessed), then **Ore instead of minerals**. Add as many of each as you like (**Add a reactor**, **Add an invention structure**…).
+- Each job goes to your **cheapest structure** for it: the structure's role bonus plus its best rig, plus the job fee. Reactions go to the cheapest reactor, invention to the cheapest invention structure (the plan says which). To move a job, pick another structure in **Who builds what**.
+- **Remove** takes any structure away, even the last one. Without a manufacturing structure the page asks you to set one up before planning. Planning a reaction needs a reactor, and an item that needs invented copies needs an invention structure, or click **Plan on a test copy instead**.
+- When another structure is missing, the plan says so at the top (**Some structures are missing**): with no reactor the reactions are bought, marked **No reactor** in Materials to buy; with no refinery the minerals are bought instead of ore.
 - Structures come from the **Citadels** panel on the Map (see [Map and jump planner](Map-and-jump-planner#citadels)): add yours there with their rigs.
 - **Hauling:** jump freighter round trips or a freight service rate.
 - **Keep what ongoing orders need:** stock already reserved by your ongoing orders isn't offered to this build (the plan says how many items it kept back).
@@ -35,10 +38,10 @@ The panel at the bottom: where you build, the rigs fitted, how materials are mov
 ## Ore instead of minerals (optional, off by default)
 Buys ore and reprocesses it when that's cheaper than buying the minerals.
 1. Turn on **Ore instead of minerals**.
-2. Add your **reprocessing places**: a known refinery, or a type (Tatara, Athanor, NPC station, other structure), its **Reprocessing rig**, **System** (for the security bonus) and **Tax %**.
+2. In the **Refinery** panel above it, set where you reprocess (**Add a refinery** for more): a known refinery, or a type (Tatara, Athanor, NPC station, other structure), its **Reprocessing rig**, **System** (for the security bonus) and **Tax %**.
 3. Pick the **Pilot**: the best one for each ore, or one pilot.
 
-The page then finds the cheapest mix of ore and minerals for what the build still needs, using every place at once (each ore goes where it comes out cheapest). Good to know:
+When ore comes out cheaper, the plan shows **Ore to buy**. The page finds the cheapest mix of ore and minerals for what the build still needs, using every refinery at once (each ore goes where it comes out cheapest). Good to know:
 - Compressed ore only, by default. All ore is **hauled compressed**.
 - Ore is rounded up to whole batches, and only kept when it costs less than the minerals it replaces.
 - **Left-over minerals** count at what buying them would cost and come off the build cost. Ore is never bought just for its left-overs.
