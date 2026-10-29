@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-29 · 52ff6f9 — Gather items on the Map, filter groups, industry jobs in Net worth
+## 2026-10-29 · 4b15bdc — Gather items on the Map, filter groups, industry jobs in Net worth
 
 ### Added
 - Map: **Gather items**, under the Jump planner. Pick items from your hangars and a start system. You get the shortest trip through the gates that stops in every system holding some of them, optionally back to the start. Each stop says what to pick up and where, and the stops are numbered on the map.
