@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-29 — Build planning: reactors, invention structures and refineries as lists, test copies, folding sections
+## 2026-10-29 · 5786ba0 — Build planning: reactors, invention structures and refineries as lists, test copies, folding sections
 
 ### Changed
 - Build planning: the **Refinery** is its own panel, set up like the other structures (known refinery, type, reprocessing rig, system, tax, pilot), and sits after the invention structures, followed by **Ore instead of minerals**.
