@@ -1297,6 +1297,22 @@ async def custom_filters(t):
     t.eq(sorted(await t.js(names)), ["Hydrocarbons", "Pyerite", "Rhea", "Tritanium"], "unticking a condition switches it off")
     await t.pg.click("#st-cf [data-cf-act=unsave]"); await asyncio.sleep(0.2)
     t.eq(await t.js("state.misc.cf.stock.saved.length"), 0, "a saved filter can be deleted")
+    # groups inside each other: (Item contains "e" and Quantity more than 1000) or Item is Rhea
+    await t.js("()=>{const c=cfCfg('stock'); c.match='any'; c.rules=[{g:1,match:'all',rules:[{f:'name',op:'has',a:'e'},{f:'q',op:'gt',a:'1000'}]},{f:'name',op:'is',a:'Rhea'}]; cfDraw('stock'); renderStock();}"); await asyncio.sleep(0.4)
+    t.eq(sorted(await t.js(names)), ["Pyerite", "Rhea"], "a group of conditions inside the filter: (A and B) or C")
+    ch = t.show("chips", await t.text("[data-cf-chips=stock]"))
+    t.ok("(" in ch and ")" in ch and " and " in ch and " or " in ch and "3 on" in (await t.text("#st-cf [data-cf-act=open]") or ""), "the chips show the brackets, and/or, and every condition is counted", ch)
+    await t.pg.click("#st-cf .cf-group [data-cf-act=add][data-i='0']"); await asyncio.sleep(0.2)
+    t.eq(await t.js("cfCfg('stock').rules[0].rules.length"), 3, "Add a condition inside a group adds it there")
+    await t.pg.click("#st-cf [data-cf-act=del][data-i='0.2']"); await asyncio.sleep(0.2)
+    await t.pg.click("#st-cf .cf-box > .toolbar [data-cf-act=addg]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("(()=>{const c=cfCfg('stock'); return [c.rules[0].rules.length, c.rules.length, c.rules[2].g, c.rules[2].match]})()"), [2, 3, 1, "all"], "✕ removes by its place; a new group matches the other way from the one holding it")
+    await t.pg.click("#st-cf .cf-box > .cf-group:nth-of-type(1) > .toolbar [data-cf-act=on]"); await asyncio.sleep(0.4)
+    t.eq(sorted(await t.js(names)), ["Rhea"], "unticking a group switches all of it off")
+    await t.pg.select_option("#st-cf .cf-box > .cf-group:nth-of-type(1) > .toolbar select[data-cf-act=match]", "any"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[cfCfg('stock').rules[0].match, cfCfg('stock').rules[0].off]"), ["any", True], "each group has its own all / any")
+    await t.js("document.getElementById('st-cf').scrollIntoView()"); await t.pg.screenshot(path=SP + "filter-groups.png")
+    await t.pg.click("#st-cf [data-cf-act=clear]"); await asyncio.sleep(0.3)
     # the same bar on Profit and loss, Intel, the skill matrix and the ships list
     await t.tab("overview", 0.4); t.ok(await t.js("!!document.querySelector('#matrix-cf [data-cf-act=open]')"), "the skill matrix has Filters")
     await t.js("()=>{cfCfg('matrix').rules=[{f:'name',op:'is',a:'Industry'}]; renderMatrix();}"); await asyncio.sleep(0.2)
@@ -1337,6 +1353,77 @@ async def net_worth(t):
     t.ok(await t.js("document.querySelector('#nw-summary .slot-tile').innerText.includes(isk(6000))") and "Only these owners" in (await t.text("#nw-note") or ""), "one owner: only its wallets, hangars and orders", t1)
     await t.pg.click("#nw-owners [data-nw-own='']"); await asyncio.sleep(0.3)
     t.eq(await t.js("state.forecast.nw.owners"), [], "Everyone again")
+
+@scenario
+async def net_worth_jobs(t):
+    """Net worth counts what running manufacturing and reaction jobs will deliver (by owner, unpriced products named) and the collateral of couriers you haul."""
+    await t.js("""()=>{const c=state.chars.find(x=>x.esiId===9001), now=Date.now(); c.corpId=98000001; c.wallet=1e9; state.corpNames[98000001]='Fake Corp';
+      c.jobs=[{id:1,installer:9001,corp:false,activity:11,bp:601,productId:600,runs:5,status:'active',start:now-3600e3,end:now+3600e3},{id:2,installer:9001,corp:false,activity:1,bp:32881,productId:32880,runs:3,status:'delivered',start:now-9e6,end:now-3600e3},
+        {id:3,installer:9001,corp:false,activity:1,bp:32881,productId:999999,runs:1,status:'active',start:now,end:now+3600e3},{id:4,installer:9001,corp:false,activity:8,bp:32881,productId:32881,runs:1,status:'active',start:now,end:now+3600e3}];
+      state.corpJobs[98000001]={syncedAt:now,via:'Ender Alpha',jobs:[{id:5,installer:9001,corp:true,activity:1,bp:32881,productId:32880,runs:2,status:'ready',start:now-9e6,end:now-60e3}]};
+      state.contracts['char:9001']={at:now,list:[{id:70,type:'courier',status:'in_progress',issuer:556,acceptor:9001,reward:5e6,collateral:1e8,expires:now+864e5}]}; saveLocal(); saveCorpJobs();}""")
+    await t.tab("forecast", 0.6)
+    t.ok(await t.until("!jobsLoading && (state.misc.bpOut||{})['601:11']===200 && (state.misc.bpOut||{})['32881:1']===1 && stockPrice(600)>0 && stockPrice(32880)>0", 15), "the products a run are read from the blueprints", await t.js("state.misc.bpOut"))
+    await t.js("renderNetWorth()")
+    j = t.show("jobs", await t.js("(()=>{const J=jobsWorth(); return {v:J.v, want:5*200*stockPrice(600)+2*stockPrice(32880), corp:2*stockPrice(32880), by:J.by, n:J.n, noPrice:J.noPrice, c:contractTotals().cin}})()"))
+    t.ok(abs(j["v"] - j["want"]) < 1 and j["n"] == 2, "running and ready manufacturing and reaction jobs count; delivered and copying jobs don't", j)
+    t.ok(abs(j["by"].get("corp:98000001", 0) - j["corp"]) < 1 and "char:9001" in j["by"], "a corporation's job counts for the corporation", j)
+    t.eq(j["noPrice"], [999999], "a product without a price is left out")
+    t.eq(j["c"], 1.05e8, "a courier you haul brings back its reward and its collateral")
+    nw = t.show("tiles", await t.js("({tile:document.querySelector('#nw-summary .slot-tile').innerText.replace(/\\s+/g,' '), legend:[...document.querySelectorAll('#nw-chart .lg')].map(b=>b.textContent.trim()), note:document.querySelector('#nw-note').innerText})"))
+    t.ok("jobs " in nw["tile"], "the Net worth tile names the jobs part", nw["tile"])
+    t.ok("no price" in nw["note"] and "industry jobs" in nw["note"], "the unpriced product is named", nw["note"])
+    p = t.show("today", await t.js("(()=>{recordSnapshot(true); const p=state.forecast.history.find(x=>x.d===dayKey(Date.now())); return {j:p.j, by:p.by}})()"))
+    t.ok(abs(p["j"] - j["v"]) < 1 and p["by"]["corp:98000001"][4] > 0, "a recorded day keeps the jobs part, per owner", p)
+
+@scenario
+async def map_gather(t):
+    """Gather items on the Map: every system holding some of the picked items, visited in the fewest gates, numbered on the map."""
+    t.eq(await t.js("tourOrder([[0,1,2,4],[1,0,3,3],[2,3,0,6],[4,3,6,0]], false)"), [0, 2, 1, 3], "reversing a stretch fixes the nearest-first order (8 instead of 10)")
+    await t.js("""()=>{const a=state.assets['char:9001']; a.rows.push({t:34,loc:60000004,h:'Hangar',q:700},{t:34,loc:61000000,h:'Hangar',q:5}); Object.assign(state.typeNames,{34:'Tritanium',35:'Pyerite',16633:'Hydrocarbons',28844:'Rhea'}); state.typeMeta[28844]=[902,6]; saveAssets();}""")
+    await map_(t)
+    pg = t.pg
+    for n in ["Tritanium", "Pyerite"]: await pg.fill("#gr-item", n); await pg.click("#gr-add"); await asyncio.sleep(0.1)
+    t.eq(await t.js("state.misc.map.gather.items"), [34, 35], "items are picked from the hangars by name")
+    await pg.fill("#gr-from", "Echo"); await pg.click("#gr-form button[type=submit]"); await asyncio.sleep(0.3)
+    g = t.show("gather", await t.js("({rows:[...document.querySelectorAll('#gr-out tbody tr')].map(r=>[...r.cells].map(c=>c.innerText.replace(/\\s+/g,' ').trim())), tiles:[...document.querySelectorAll('#gr-out .slot-tile .big-num')].map(x=>x.textContent), legs:(mapUI.haul||[]).map(h=>[h.label,h.ids.length]), label:mapUI.haulLabel, note:document.querySelector('#gr-out').innerText})"))
+    t.eq([r[1].split(" ")[0] for r in g["rows"]], ["Echo", "Delta", "Golf", "Bravo"], "every system holding the items, nearest first (Echo → Delta → Golf → Bravo)")
+    t.eq(g["tiles"], ["3", "5"], "3 stops, 5 gates")
+    t.ok("Tritanium × 100" in g["rows"][1][3] and "Delta station" in g["rows"][1][3], "each stop says what to pick up and where", g["rows"])
+    t.eq(g["legs"], [["1", 2], ["2", 3], ["3", 3]], "each leg is drawn on the map with its stop number")
+    t.ok(g["label"] == await t.js("GR_LABEL") and "isn't known" in g["note"] and "Location 61000000" in g["note"], "items where the system isn't known are named and left out", g["note"])
+    await pg.check("#gr-back"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[...document.querySelectorAll('#gr-out .slot-tile .big-num')].map(x=>x.textContent)"), ["3", "8"], "back to the start: 8 gates")
+    await pg.click("#gr-items [data-gr-del='35']"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[[...document.querySelectorAll('#gr-out .slot-tile .big-num')].map(x=>x.textContent), state.misc.map.gather.items]"), [["2", "6"], [34]], "removing an item plans again")
+    # Security: without null-sec, Delta's Tritanium is left out and the trip from Bravo stays out of null-sec
+    await pg.fill("#gr-item", "Pyerite"); await pg.click("#gr-add"); await pg.uncheck("#gr-back"); await pg.fill("#gr-from", "Bravo"); await pg.uncheck("[data-gr-sec=n]"); await pg.click("#gr-form button[type=submit]"); await asyncio.sleep(0.3)
+    s = t.show("no null-sec", await t.js("({rows:[...document.querySelectorAll('#gr-out tbody tr')].map(r=>r.cells[1].innerText.split(/\\s/)[0]), tiles:[...document.querySelectorAll('#gr-out .slot-tile .big-num')].map(x=>x.textContent), note:$('gr-out').innerText})"))
+    t.ok(s["rows"] == ["Bravo", "Golf"] and s["tiles"] == ["2", "2"] and "null-sec, which you didn't tick" in s["note"] and "Delta station" in s["note"], "unticked security: its stops are named and left out", s)
+    t.eq(await t.js("(()=>{const m=mapIndex(), n=(x)=>m.byName.get(x); return [gatePath(n('alpha'),n('golf'),(s)=>secKind(s)!=='l'), (gatePath(n('echo'),n('golf'),(s)=>secKind(s)!=='h')||[]).map(s=>s.n)]})()"), [None, ["Echo", "Delta", "Charlie", "Golf"]], "gate routes only fly through the ticked security (the stop itself always counts)")
+    # Jumps: a leg takes gates or jumps, whichever is quicker
+    t.eq(await t.js("(()=>{const m=mapIndex(), n=(x)=>m.byName.get(x), a=grLeg(n('foxtrot'),n('golf'),20,()=>true), b=grLeg(n('foxtrot'),n('golf'),5,()=>true); return [a.path.map(s=>s.n), a.jumps, a.gates, b.jumps, b.gates]})()"), [["Foxtrot", "Echo", "Golf"], 1, 1, 0, 4], "a gate to Echo (Foxtrot is in an incursion) and one 9 ly jump beat 4 gates; out of range it takes the gates")
+    await pg.check("[data-gr-sec=n]"); await pg.select_option("#gr-how", "jump"); await asyncio.sleep(0.4)
+    j = t.show("jumps", await t.js("({head:[...document.querySelectorAll('#gr-out thead th')].map(h=>h.innerText.split('\\n')[0].trim()), labels:[...document.querySelectorAll('#gr-out .slot-tile .label')].map(x=>x.textContent)})"))
+    t.ok("Route" in j["head"] and j["labels"] == ["Stops", "Gates", "Jumps", "Fuel"], "with a jump-capable ship: the route of each leg, jumps and fuel", j)
+    # Cargo: a 60,000 m³ hold (1 m³ an item here): Delta's 100,000 Tritanium takes two trips, the ship unloads at the start in between
+    await pg.select_option("#gr-how", "gates"); await asyncio.sleep(0.2)
+    t.ok(await t.js("[...$('gr-ship').options].some(o=>o.value==='t:28844') && [...$('gr-ship').options].some(o=>o.value==='range')"), "the cargo choice lists the ship under Range and the ships in your hangars")
+    await t.js("()=>{grVol.set(34,1); grVol.set(35,1); grVol.set(16633,1);}")
+    await pg.fill("#gr-from", "Echo"); await pg.fill("#gr-cargo", "60000"); await pg.dispatch_event("#gr-cargo", "change"); await asyncio.sleep(0.2)
+    await pg.click("#gr-form button[type=submit]"); await t.until("!!document.querySelector('#gr-out tbody')", 5)
+    c = t.show("cargo", await t.js("({rows:[...document.querySelectorAll('#gr-out tbody tr')].map(r=>[r.cells[1].innerText.split(/\\s/)[0], r.cells[3].innerText.replace(/\\s+/g,' ').slice(0,40), r.cells[4].innerText.replace(/\\D/g,'')]), tiles:[...document.querySelectorAll('#gr-out .slot-tile .big-num')].map(x=>x.textContent), back:$('gr-back').checked && $('gr-back').disabled, legs:mapUI.haul.length})"))
+    t.eq([r[0] for r in c["rows"]], ["Echo", "Delta", "Echo", "Delta", "Golf", "Bravo", "Echo"], "full hold: back to the start to unload, then back to finish Delta")
+    t.eq([r[2] for r in c["rows"]], ["", "60000", "0", "40000", "40700", "45700", "0"], "what's in the hold after each stop")
+    t.ok(c["rows"][2][1].startswith("Unload") and c["tiles"][:3] == ["3", "10", "2"] and c["back"] and c["legs"] == 6, "2 trips, 10 gates; with a hold every trip ends at the start", c)
+    # A station to empty: everything in Alpha station
+    t.ok(await t.js("[...$('gr-place').querySelectorAll('optgroup')].some(g=>g.label==='Alpha' && [...g.children].some(o=>o.value==='60000003' && o.textContent.startsWith('Alpha station')))"), "the stations dropdown is grouped by system")
+    await pg.select_option("#gr-place", "60000003"); await asyncio.sleep(0.3); await t.until("!!document.querySelector('#gr-out tbody')", 5)
+    st = t.show("station", await t.js("({places:state.misc.map.gather.places, chips:$('gr-places').innerText, left:[...$('gr-place').options].some(o=>o.value==='60000003'), rows:[...document.querySelectorAll('#gr-out tbody tr')].map(r=>r.cells[3].innerText)})"))
+    t.ok(st["places"] == [60000003] and "Everything in Alpha station" in st["chips"] and any("Hydrocarbons" in r for r in st["rows"]) and not st["left"], "a station to empty: everything in it is picked up, and it leaves the dropdown", st)
+    await t.js("document.getElementById('gr').scrollIntoView()"); await pg.screenshot(path=SP + "map-gather.png")
+    await pg.click("#gr-clear"); await asyncio.sleep(0.2)
+    t.ok(await t.js("!mapUI.haul && !$('gr-out').innerHTML"), "Clear removes the route from the map")
 
 @scenario
 async def contracts_browser(t):

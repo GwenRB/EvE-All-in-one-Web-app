@@ -10,6 +10,7 @@
 - Fixed time constants (3 min/jump, 1.5 min/gate, 10 min load/unload); cyno alts' positions aren't modelled.
 - Orders sent before route data existed must be re-sent from Build planning.
 - `findJumpRoute` scans every system for each expansion: memoized per route and range, but slow with many lanes/ranges.
+- Gather items (Map): the order is nearest first then 2-opt, short but not proven shortest; with jumps it compares legs by fixed minutes (no fatigue, no economizers), and every pair of stops runs a jump route search (slow with many stops). With a hold, trips are cut from one tour (route first, then trips), not planned trip by trip; goods only go to the start; a hangar ship's hold is its bare cargo hold; assembled ships count at their packaged volume; containers, ship cargo and blueprint copies aren't picked up.
 - Ideas: show the next trip on the To-Do page; play-hour windows per pilot; plan around jump bridges / Ansiblex.
 
 ## Build planning: ore instead of minerals
@@ -36,7 +37,7 @@
 
 ## Ideas from ESI (not built yet)
 Suggested on 2026-10-20 (built since: Profit and loss; skill queues on Skills, To-Do and Fittings; Upcoming events; LP store; danger on the Map; server status; empty job slots on To-Do; market history on the Trading board and LP store; client deliveries; public contracts vs building; fleets on the calendar; moon mining, structure fuel and running costs (Corporation page); in-game notifications (Intel page); customs office taxes (PI Management and Planets)). Each new ESI read needs its scope added to `ESI_SCOPE` / `SCOPE_USE` (new scopes start unticked), to the user's application on developers.eveonline.com, and a new login for every pilot.
-- **Market orders, what's left** (orders are read since Net worth: `c.orders`, `state.misc.corpOrders`): your orders against the Jita / citadel orders already read (undercut or not), order slots used vs the skill maximum, relist cost, order history (`/orders/history/`). Market menu. Also asked for by EVE Tycoon's undercut checks (below).
+- **Market orders, what's left** (orders are read since Net worth: `c.orders`, `state.misc.corpOrders`): your orders against the Jita / citadel orders already read (undercut or not), order slots used vs the skill maximum, relist cost, order history (`/orders/history/`). Market menu.
 - **Skill queues, what's left**: "when can this pilot build that blueprint" on the Skill check (`readyFor` does it for fittings); the same on Roles and the jump freighter table.
 - **Public contracts, what's left**: a blueprint copy is only found by its title (every copy has the same volume); buy orders and a client's courier contracts aren't checked; contracts can't be opened in game from the page (needs `esi-ui.open_window.v1`).
 - **Customs office taxes, what's left**: offices are only known per system (ESI gives no planet); offices of other corporations and standings-based rates aren't read (their tax stays unknown); a list of your offices with their reinforcement times (Corporation page).
@@ -52,26 +53,24 @@ Suggested on 2026-10-20 (built since: Profit and loss; skill queues on Skills, T
   - **Clone and implant planner** (clones and implants): which jump clone has the industry implants and where it is compared with your build structures.
 
 ## From jEveAssets (not built yet)
-Features of jEveAssets (the Java asset manager) the tool doesn't have, or only partly. Compared on 2026-10-25; built since: Filters (custom filters), Net worth (tracker), Contracts browser (all contracts across characters), Item database, market orders.
+Features of jEveAssets (the Java asset manager) the tool doesn't have, or only partly. Compared on 2026-10-25; built since: Filters (custom filters), Net worth (tracker, with industry jobs and courier collateral), Contracts browser (all contracts across characters), Item database, market orders, Routing (Gather items on the Map).
 - **Stockpiles** (jEveAssets: Stockpiles), on the blank Stock management page: a stock target per item (or a group of items) with a low-stock threshold, counted from assets, open market orders (buy orders still to fill), industry jobs (their products), stock reserved by Orders management and builds in progress → an alert and items to buy on To-Do, items to build to Build planning.
 - **Container names** (jEveAssets: rename containers): your containers' and ships' names from ESI (`/characters/{id}/assets/names/`, `/corporations/{id}/assets/names/`), shown in Assets' "Hangar or place"; and a name of your own for any container, kept in this browser.
 - **Exports** (jEveAssets: HTML, SQL and column-based exports): any table as CSV (the rows a table shows, after its filters and sort), copied or downloaded; maybe a printable HTML page.
 - **Reprocessed values** (jEveAssets: Reprocessed tool): what any item (modules, ships, scrap) gives when reprocessed, at your best yield (the Item database already shows what an item reprocesses into, before yield), and its worth against the item's own price (reprocess or sell?) on Assets and the Item database.
 - **Structures with unknown locations** (jEveAssets: structure hunt, edit locations by hand): set the system of a structure ESI won't name (no docking access), so its assets and contracts show where they are and count for hauling.
-- **Routing through assets** (jEveAssets: Routing): the shortest trip through every system holding some items you pick (for example to gather them).
-- **Filters, what's left** (jEveAssets: filters): groups of conditions inside each other ((A and B) or C); a condition that compares two columns; a filter shared between tables.
-- **Net worth, what's left** (jEveAssets: Tracker): the value of what industry jobs are making and contract collateral; per-owner days only from when owners were kept; days you never synced only have the wallets (from the journals); days are as good as what was read that day (hangars and orders at the last sync).
+- **Filters, what's left** (jEveAssets: filters): a condition that compares two columns; a filter shared between tables.
+- **Net worth, what's left** (jEveAssets: Tracker): per-owner days only from when owners were kept; days you never synced only have the wallets (from the journals); days are as good as what was read that day (hangars and orders at the last sync).
 - **Contracts browser, what's left** (jEveAssets: Contracts): auction bids (`/contracts/{id}/bids/`); contracts older than ESI's 30 days only exist here if a sync saw them; open a contract in game (`esi-ui.open_window.v1`).
 - **Market orders tool** (jEveAssets: Market Orders): see "Market orders, what's left" above (undercut, order slots, relist cost, history).
 - **Item database, what's left** (jEveAssets: Items): names in English only; several items side by side.
 
 ## From EVE Tycoon (not built yet)
-Features of EVE Tycoon (evetycoon.com, the web profit tracker for traders and industrialists; compared from its 2019–2020 forum thread) the tool doesn't have, or only partly. Compared on 2026-10-26; already here: transactions, jobs and blueprints from ESI, every pilot pooled, corporation wallets and jobs, a margin calculator (Misc → Quotation), market orders read (Net worth).
+Features of EVE Tycoon (evetycoon.com, the web profit tracker for traders and industrialists; compared from its 2019–2020 forum thread) the tool doesn't have, or only partly. Compared on 2026-10-26; built since: Market browser (the Trading board), clicking a price copies it (no % yet); already here: transactions, jobs and blueprints from ESI, every pilot pooled, corporation wallets and jobs, a margin calculator (Misc → Quotation), market orders read (Net worth).
 - **Profit per trade** (EVE Tycoon: profit tracking): each sale matched to what the items cost: the buys that brought them in, or the finished jobs that made them (their inputs in turn from buys or other jobs), across pilots (bought on one, built on a second, sold on a third). Profit per item and per sale on Profit and loss, which today is per activity only; replaces the "cost of goods sold" idea above.
 - **Fees per structure and period** (EVE Tycoon: custom broker fees): a broker fee (and sales tax) per citadel or station and per date range (an owner who changed the tax for a while), used by Profit and loss and the sell-order prices; today there's one "Broker fee in citadels %" for every citadel (Settings → Market taxes).
 - **Undercut checks** (EVE Tycoon: price undercut checks, private citadels included): see "Market orders, what's left" above; for citadels, against the citadel orders a citadel pricing already reads.
 - **Relist price copy** (EVE Tycoon: price copy): a button on a sale or an order that copies the price paid or sold at, plus a % you set, ready to paste in game.
-- **Market browser** (EVE Tycoon: market browser with filters): any item's order book (buy and sell orders) in a region or a citadel, with filters; today the Item database shows its prices and the Trading board watches a list.
 - **Phone layout** (EVE Tycoon: works on phones and tablets): the tool has narrow-screen rules but hasn't been checked at phone width; wide tables would need work.
 
 ## Data and other limits
