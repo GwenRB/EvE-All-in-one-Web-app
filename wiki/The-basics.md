@@ -30,8 +30,9 @@ From **11:00 EVE time** until the server is back, the header says so, and syncs,
 Tables with filters (Assets, Profit and loss, Intel, the skill matrix, Ships you can build, the Contracts browser, the Item database) have a **Filters** button under their search box:
 1. Click **Filters**: a first condition appears. Pick a **column**, what it should be (*contains*, *is*, *more than*, *between*, *in the last … days*, *is empty*…) and a **value**. Amounts take `1.5b`, `200m` or `12k`; text boxes suggest values from the table.
 2. **Add a condition** for more. With two or more, choose **Show rows that match all of them** or **any of them**.
-3. Untick a condition to switch it off for a moment; ✕ removes it. The conditions in use show as chips next to the button, with how many rows pass.
-4. Type a **Name** and **Save filter** to keep the set; load it again from **Saved filters…** (saved per table, in backups). **Clear** removes every condition.
+3. **Add a group** for conditions that go together, like *(Item contains "ore" and Quantity more than 1m) or Location is Jita*. A group has its own **all of them** / **any of them**, its own **Add a condition** and **Add a group** (groups can sit inside groups), and starts as the opposite of the one holding it. So for *(A and B) or C*, set the top to **any of them**, add a group (it starts as **all of them**) with A and B inside, then add C beside it.
+4. Untick a condition or a group to switch it off for a moment; ✕ removes it. The conditions in use show as chips next to the button, with brackets around groups and how many rows pass.
+5. Type a **Name** and **Save filter** to keep the set; load it again from **Saved filters…** (saved per table, in backups). **Clear** removes every condition.
 
 A value that isn't known (an item with no price, a missing date) never passes a comparison: use **is empty** to find those.
 

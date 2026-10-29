@@ -9,6 +9,20 @@ How entries are kept:
 
 ---
 
+## 2026-10-29 — Gather items on the Map, filter groups, industry jobs in Net worth
+
+### Added
+- Map: **Gather items**, under the Jump planner. Pick items from your hangars and a start system. You get the shortest trip through the gates that stops in every system holding some of them, optionally back to the start. Each stop says what to pick up and where, and the stops are numbered on the map.
+- Gather items: **Security** tick boxes (high-sec, low-sec, null-sec). Stops in the others are left out, and the route doesn't fly through them.
+- Gather items: **Travel by gates and jumps** with the ship chosen under Range. Each leg takes gates or jumps, whichever is quicker, and you see the jumps, light years and fuel.
+- Gather items: **empty a station**. Pick a station or structure from the **Stations** dropdown (grouped by system, with how many items it holds), and everything your hangars hold there is picked up.
+- Gather items: **Cargo**. Pick the ship under Range (fitted for hauling, with its pilot's skills), a ship from your hangars (its bare hold), or type the m³. When the hold is full, the trip goes back to the start to unload, then carries on, and each stop shows what's in the hold.
+- Filters: **groups of conditions**, each with its own "all of them" / "any of them", inside each other. For example: (Item contains "ore" and Quantity more than 1m) or Location is Jita.
+- Net worth: an **Industry jobs** part. It is what your running manufacturing and reaction jobs will deliver, priced like Assets. A product without a price is named and left out.
+
+### Changed
+- Net worth and the Forecast: a courier contract you are hauling now counts its collateral as well as its reward, since both come back when you deliver.
+
 ## 2026-10-29 · 3b15b21 — Trading board: a market browser, and a list of trade hubs
 
 ### Added

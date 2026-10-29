@@ -26,7 +26,8 @@ What you own, day by day, like a tracker. Each day keeps:
 - **Wallets:** every linked pilot and your corporation's divisions.
 - **Assets:** the hangars ticked on [Assets](Assets), plus stock you entered by hand on the Forecast.
 - **Sell orders** (price × what's left, before sales tax) and **Buy order escrow** (the ISK your buy orders already hold). Needs the **Market orders** permission (and **Corporation market orders** with the Accountant or Trader role for your corporation's).
-- **Contracts:** what active contracts will pay you or cost you.
+- **Contracts:** what active contracts will pay you or cost you. A courier contract you are hauling counts its reward and its collateral, since both come back when you deliver.
+- **Industry jobs:** what your running manufacturing and reaction jobs will deliver (runs × what a run makes), priced like Assets. A product without a price is named and left out.
 
 How to use it:
 1. Pick the span with **Show** (30 days, 90 days, a year, everything).
