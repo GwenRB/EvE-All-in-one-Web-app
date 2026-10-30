@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-30 — Faster page refreshes and contracts sync, Sovereignty map and shares, Intel kill panels
+## 2026-10-30 · 616e3fb — Faster page refreshes and contracts sync, Sovereignty map and shares, Intel kill panels
 
 ### Added
 - Sovereignty: a **Map** button by every alliance and coalition opens the map with its systems highlighted (a green ring, the rest dimmed) and framed; **Hide** in the map legend clears it.
