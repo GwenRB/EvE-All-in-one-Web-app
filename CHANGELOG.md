@@ -9,6 +9,24 @@ How entries are kept:
 
 ---
 
+## 2026-10-30 — Faster page refreshes and contracts sync, Sovereignty map and shares, Intel kill panels
+
+### Added
+- Sovereignty: a **Map** button by every alliance and coalition opens the map with its systems highlighted (a green ring, the rest dimmed) and framed; **Hide** in the map legend clears it.
+- Characters (Settings): the Last synced column says how long the last full sync took and which part took most of it (hover for every part).
+- Sovereignty: next to the systems of each alliance and coalition, its share of all the systems sovereignty can be held in (%); the Systems tile says it too.
+- Intel: a column on the right with **Most violent systems (3 hours)** (null-sec) and **Low-sec systems (3 hours)**, like DOTLAN's front page: the 10 systems with the most ships and pods killed. ESI gives an hour at a time, so the tool keeps each hourly reading while it's open and says when it counts fewer than 3 hours.
+
+### Changed
+- Each page's **Refresh from ESI** reads only what that page shows (Planets: planets; Jobs: jobs and structures; Wallets: wallets; Stock: hangars and contracts; Contracts browser: contracts) instead of syncing every pilot in full. Fewer ESI requests, done in seconds.
+- While a pilot syncs, the Characters page and the page's refresh button say who is read and which part (skills, wallet history, contracts, hangars…), not just "Syncing…". Contracts say how far they are ("contracts: items 40 of 300").
+- Contracts sync much faster: when ESI says to slow down reading contract items, the sync no longer waits and retries (up to 3 minutes each time); the rest are read at the next sync. Items already read for the contracts list aren't read a second time for Contract management's deliveries.
+- Sovereignty: the right-hand panels sit closer to the page (the same gap as the navigation rail on the left), and that spacing is now the rule for every page with side panels.
+- **In-game notifications** moved from Intel to the **Misc** page (Needs attention stays on Intel), and **Your pilots' mining** from Corporation to **Misc** (with the same period and valuation as Who mined what).
+
+### Fixed
+- A citadel a pilot can't dock in was asked for again at every sync (each refusal counts against ESI's error limit, which slows every later request): now that pilot skips it for a day.
+
 ## 2026-10-30 · 6154026 — Sovereignty page, Blueprint library on Misc, jump planner skills
 
 ### Added

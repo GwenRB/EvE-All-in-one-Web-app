@@ -1,4 +1,4 @@
-<!-- tracks: Misc, Blueprint library, blueprint copies, Location filter, Blueprint calculator, Jump freighters and Rorqual, Jump fuel cost, Mining fleet, Ships and structures you can build, Quotation, Wallets, attribute boosters, cerebral accelerators, Biology -->
+<!-- tracks: Misc, Blueprint library, blueprint copies, Location filter, Blueprint calculator, Jump freighters and Rorqual, Jump fuel cost, Mining fleet, Ships and structures you can build, Quotation, Wallets, attribute boosters, cerebral accelerators, Biology, In-game notifications, Your pilots' mining -->
 
 **Other → Misc.** Calculators and lists. Use the left navigation to jump between them.
 
@@ -63,3 +63,11 @@ The table has four groups (click a group's title to fold it):
 When the pilot running a job isn't the owner (a corporation blueprint), their name shows after the job. A job whose blueprint isn't in the list still shows, without its levels. Copying jobs show the runs of each copy after the next sync.
 
 Type in **Find a blueprint** to filter the table. **Location** shows only the blueprints kept in one station or structure (with how many in each); the tiles follow it. A blueprint in a container, a ship or a corporation office counts where that container is (read from your hangars, so allow **Assets** too). Until the next ESI refresh, blueprints read before show as **Unknown: refresh from ESI**.
+
+## In-game notifications
+Every linked pilot's in-game notifications in plain lines (needs the **Notifications** permission), each once with who received it (it used to be on the Intel page). Read at each sync and with **Refresh from ESI**; ESI only keeps recent notifications, so sync often. Grouped by kind (Structures, Moon mining, War, Sovereignty, Corporation, Kills, Contracts, Planets, Other), newest first. Pick a period and search, or use [Filters](The-basics#filters) (when, what happened, group, kind, received by…). The ones that need attention are counted on the [Intel](Intel) page.
+
+Notifications are kept 90 days in your browser (not in backups). A structure's name only shows for structures the tool already knows.
+
+## Your pilots' mining
+What your linked pilots mined anywhere (**Mining ledger** permission), grouped by pilot, with units, m³ and value (it used to be on the Corporation page). The period (7, 30 or 90 days) and how ore is valued are the same as **Who mined what** on the [Corporation](Corporation) page: change them in either place.

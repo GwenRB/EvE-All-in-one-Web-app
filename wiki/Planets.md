@@ -2,7 +2,7 @@
 
 **Planets** tab. Every colony of your linked pilots (needs the **Planets** permission), ordered by **when it stops**: an extractor expiring, or a factory running out of an input.
 
-Groups (they fold): **Stopped**, **Within 24 h**, **Later**, **Not running**.
+Groups (they fold): **Stopped**, **Within 24 h**, **Later**, **Not running**. **Refresh from ESI** reads only your pilots' planets (and customs offices), not their whole sync.
 
 ## Daily harvest
 Tick **I harvest daily at** and pick the time you usually play. The week view then puts each planet on the day you should visit it: a planet stopping more than *N* hours before your harvest time shows on the day before (the last harvest it can wait for). Set *N* in the same line.

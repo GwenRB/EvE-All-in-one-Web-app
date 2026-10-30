@@ -363,24 +363,26 @@ button.chip { cursor: pointer; font: inherit }
 .bset summary { cursor: pointer; font-weight: 600 }
 .bset .toolbar { margin-top: 6px }
 .plan-layout { display: block }
-.sov-layout, .sov-layout > div, .sov-stick { display: grid; gap: 20px; min-width: 0; align-content: start }
-/* Sovereignty: Top sov changes and Alliance movements in a rail right of the page body that stays in view while scrolling (under the body on narrow screens);
-   the body shifts left to make room until the window is wide enough to keep it centred, and the header logos then leave the margins */
+.side-layout, .side-layout > div, .side-stick { display: grid; gap: 20px; min-width: 0; align-content: start }
+/* Right column (Sovereignty, Intel): panels in a column right of the page body that stays in view while scrolling (under the body on narrow screens).
+   Rule (user's request): it sits 16 px from the body, the same gap as the left navigation rail. The body shifts left to make room until the window is
+   wide enough to keep it centred, and the header logos then leave the margins */
 @media (min-width: 1100px) {
-  body:has(#page-sov:not([hidden])) .wrap { margin-left: max(0px, calc(100vw - 1660px)); margin-right: auto; max-width: min(1280px, calc(100vw - 380px)) }
-  .sov-layout { position: relative }
-  .sov-side { position: absolute; top: 0; bottom: 0; left: calc(100% + 32px); width: 320px }
-  .sov-stick { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; gap: 12px }
-  .sov-side .panel { padding: 10px; gap: 6px }
-  .sov-side h2 { font-size: .85rem }
-  .sov-side .bp-table th, .sov-side .bp-table td { font-size: .72rem; padding: 3px 5px }
-  .sov-side .bp-table { table-layout: fixed; width: 100% }   /* always fits the rail: long names end in … (full name on hover) */
-  .sov-side .bp-table th, .sov-side .bp-table td:not(.empty) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  body:has(.page:not([hidden]) .side-col) .wrap { margin-left: max(0px, calc(100vw - 1644px)); margin-right: auto; max-width: min(1280px, calc(100vw - 364px)) }
+  .side-layout { position: relative }
+  .side-col { position: absolute; top: 0; bottom: 0; left: calc(100% + 16px); width: 320px }
+  .side-stick { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; gap: 12px }
+  .side-col .panel { padding: 10px; gap: 6px }
+  .side-col h2 { font-size: .85rem }
+  .side-col .bp-table th, .side-col .bp-table td { font-size: .72rem; padding: 3px 5px }
+  .side-col .bp-table { table-layout: fixed; width: 100% }   /* always fits the column: long names end in … (full name on hover) */
+  .side-col .bp-table th, .side-col .bp-table td:not(.empty) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
   #sovx-table th:first-child { width: 49% } #sovm-table th:first-child { width: 40% } #sovm-table th:nth-child(2) { width: 20% }
-  .sov-side .bp-table td.empty { padding: 12px 6px }
+  #intel-null th:first-child, #intel-low th:first-child { width: 36% } #intel-null th:nth-child(n+3), #intel-low th:nth-child(n+3) { width: 16% }
+  .side-col .bp-table td.empty { padding: 12px 6px }
 }
-@media (min-width: 1560px) and (max-width: 1999px) { body:has(#page-sov:not([hidden])) header.top .logo { position: static; width: 104px; height: 104px } }
-@media (min-width: 2000px) { body:has(#page-sov:not([hidden])) .wrap { margin-left: auto } }
+@media (min-width: 1560px) and (max-width: 1999px) { body:has(.page:not([hidden]) .side-col) header.top .logo { position: static; width: 104px; height: 104px } }
+@media (min-width: 2000px) { body:has(.page:not([hidden]) .side-col) .wrap { margin-left: auto } }
 @media (min-width: 1280px) {
   body:has(.page:not([hidden]) .plan-rail) .wrap { margin-left: max(212px, calc(50vw - 640px)) ; margin-right: auto }
   .plan-layout { position: relative }
@@ -889,6 +891,16 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="toolbar"><input type="search" id="bpl-find" placeholder="Find a blueprint" style="width:240px" aria-label="Find a blueprint"><select id="bpl-loc" aria-label="Location" style="max-width:320px"><option value="">Every location</option></select><span class="muted" id="bpl-status" style="font-size:.85rem"></span></div>
       <div id="bpl-summary" class="slot-tiles"></div>
       <div class="scroller"><table id="bpl-table" class="bp-table" data-sorted=""></table></div></section>
+    <section class="panel" aria-labelledby="intel-title"><div class="bp-head"><div><h2 id="intel-title">In-game notifications</h2><p class="muted" style="margin:4px 0 0">Every linked pilot's notifications (Notifications permission), each one once with who received it.</p></div></div>
+      <div class="toolbar" id="intel-bar"></div>
+      <div class="toolbar"><input type="search" id="intel-find" placeholder="Find a name, a system, a kind" style="width:260px" aria-label="Find a notification"></div>
+      <div id="intel-cf"></div>
+      <div id="intel-err"></div>
+      <div class="scroller"><table id="intel-list" class="bp-table" data-sorted="0:-1"></table></div></section>
+    <section class="panel" aria-labelledby="corp-own-title"><div class="bp-head"><div><h2 id="corp-own-title">Your pilots' mining</h2><p class="muted" style="margin:4px 0 0">What your linked pilots mined anywhere (their own mining ledgers), over the period and valued the way picked here (the same settings as the Corporation page's Who mined what).</p></div></div>
+      <div class="toolbar" id="misc-min-bar"></div>
+      <div id="misc-min-note"></div>
+      <div class="scroller"><table id="corp-own" class="bp-table"></table></div></section>
    </div></div>
   </div>
 
@@ -966,7 +978,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
   </div>
 
   <div id="page-sov" class="page" hidden>
-   <div class="sov-layout"><div>
+   <div class="side-layout"><div>
     <section class="panel" aria-labelledby="sovc-title"><div class="bp-head"><div><h2 id="sovc-title">Coalitions</h2><p class="muted" style="margin:4px 0 0">Your own groups of alliances, with their systems, members and corporations added up. Put an alliance in one with the Coalition list next to it below.</p></div></div>
       <form id="sovc-form" class="toolbar"><input type="text" id="sovc-name" placeholder="Coalition name, e.g. Imperium" aria-label="Coalition name" style="width:240px"><button type="submit">Add coalition</button></form>
       <div class="scroller"><table id="sovc-table" class="bp-table" data-sorted="2:-1"></table></div></section>
@@ -975,7 +987,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="toolbar"><input type="search" id="sov-find" placeholder="Find an alliance" aria-label="Find an alliance" style="width:240px"></div>
       <div id="sov-summary" class="slot-tiles"></div>
       <div class="scroller"><table id="sov-table" class="bp-table" data-sorted="2:-1"></table></div></section>
-   </div><div class="sov-side"><div class="sov-stick">
+   </div><div class="side-col"><div class="side-stick">
     <section class="panel" aria-labelledby="sovx-title"><div class="bp-head"><div><h2 id="sovx-title">Top sov changes (7 days)</h2><p class="muted" style="margin:4px 0 0" id="sovx-since"></p></div></div>
       <div class="scroller"><table id="sovx-table" class="bp-table" data-sorted=""></table></div></section>
     <section class="panel" aria-labelledby="sovm-title"><div class="bp-head"><div><h2 id="sovm-title">Alliance movements (7 days)</h2><p class="muted" style="margin:4px 0 0" id="sovm-since"></p></div></div>
@@ -1009,20 +1021,19 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="toolbar" id="corp-min-bar"></div>
       <div id="corp-min-note"></div>
       <div class="scroller"><table id="corp-led" class="bp-table"></table></div></section>
-    <section class="panel" aria-labelledby="corp-own-title"><div class="bp-head"><div><h2 id="corp-own-title">Your pilots' mining</h2><p class="muted" style="margin:4px 0 0">What your linked pilots mined anywhere (their own mining ledgers), over the same period and valued the same way.</p></div></div>
-      <div class="scroller"><table id="corp-own" class="bp-table"></table></div></section>
    </div></div>
   </div>
 
   <div id="page-intel" class="page" hidden>
+   <div class="side-layout"><div>
     <section class="panel" aria-labelledby="intel-alert-title"><div class="bp-head"><div><h2 id="intel-alert-title">Needs attention</h2><p class="muted" style="margin:4px 0 0">From the last 3 days: structures attacked, reinforced, low on fuel or out of power, wars declared, moon chunks ready.</p></div></div>
       <div id="intel-alerts"></div></section>
-    <section class="panel" aria-labelledby="intel-title"><div class="bp-head"><div><h2 id="intel-title">In-game notifications</h2><p class="muted" style="margin:4px 0 0">Every linked pilot's notifications (Notifications permission), each one once with who received it.</p></div></div>
-      <div class="toolbar" id="intel-bar"></div>
-      <div class="toolbar"><input type="search" id="intel-find" placeholder="Find a name, a system, a kind" style="width:260px" aria-label="Find a notification"></div>
-      <div id="intel-cf"></div>
-      <div id="intel-err"></div>
-      <div class="scroller"><table id="intel-list" class="bp-table" data-sorted="0:-1"></table></div></section>
+   </div><div class="side-col"><div class="side-stick">
+    <section class="panel" aria-labelledby="intel-null-title"><div class="bp-head"><div><h2 id="intel-null-title">Most violent systems (3 hours)</h2><p class="muted" style="margin:4px 0 0" id="intel-kills-since"></p></div></div>
+      <div class="scroller"><table id="intel-null" class="bp-table" data-sorted=""></table></div></section>
+    <section class="panel" aria-labelledby="intel-low-title"><div class="bp-head"><div><h2 id="intel-low-title">Low-sec systems (3 hours)</h2></div></div>
+      <div class="scroller"><table id="intel-low" class="bp-table" data-sorted=""></table></div></section>
+   </div></div></div>
   </div>
 
   <div id="page-cbrowse" class="page" hidden>
@@ -1576,7 +1587,7 @@ function render() {
   if (!$("page-pnl").hidden) renderPnl();
   if (!$("page-lp").hidden) renderLp();
   if (!$("page-corp").hidden) renderCorp();
-  if (!$("page-intel").hidden) renderIntel();
+  if (intelShown()) renderIntel();
   $("skill-names").innerHTML = allSkills().map(s => `<option value="${esc(s.name)}">`).join("");
   $("btn-add").hidden = !state.canWrite;
   $("custom-form").hidden = !state.canWrite;
@@ -1725,8 +1736,8 @@ async function fetchRetry(url, init, tries = 6) {
       if (r.status !== 429 && r.status !== 420 && r.status < 500) return r;
       const ra = +r.headers.get("Retry-After");
       last = Object.assign(new Error("the service answered " + r.status), { status: r.status });
-      await sleep(ra > 0 ? Math.min(ra, 60) * 1000 : Math.min(30000, 800 * 2 ** i) + Math.random() * 400);
-    } catch (e) { last = e; await sleep(Math.min(20000, 800 * 2 ** i) + Math.random() * 400); }
+      if (i < tries - 1) await sleep(ra > 0 ? Math.min(ra, 60) * 1000 : Math.min(30000, 800 * 2 ** i) + Math.random() * 400);   // no wait after the last try
+    } catch (e) { last = e; if (i < tries - 1) await sleep(Math.min(20000, 800 * 2 ** i) + Math.random() * 400); }
   }
   throw last;
 }
@@ -2209,7 +2220,7 @@ function showPage(tab) {
   const t = PAGES[tab] ? tab : "overview";
   for (const k of Object.keys(PAGES)) $("page-" + k).hidden = k !== t;
   if (t === "overview") renderMatrix();
-  if (t === "misc") { renderMisc(); renderBpCalc(); renderBuild("quote"); renderBoost(); renderBpLib(); }
+  if (t === "misc") { renderMisc(); renderBpCalc(); renderBuild("quote"); renderBoost(); renderBpLib(); renderIntel(); if (!minData || !fuelData.mods) corpEnsure(); renderCorpMoon(); }
   if (t === "map") { renderMap(); renderSupply(); }
   if (t === "plan") renderBuild(t);
   if (t === "settings") renderSettingsPage();
@@ -2226,7 +2237,7 @@ function showPage(tab) {
   if (t === "pnl") renderPnl();
   if (t === "lp") renderLp();
   if (t === "corp") renderCorp();
-  if (t === "intel") renderIntel();
+  if (t === "intel") { renderIntel(); loadKills(); }
   if (t === "cbrowse") renderCbrowse();
   if (t === "itemdb") renderItemDb();
   if (t === "trading") renderMb();
@@ -2244,19 +2255,19 @@ const HOWTO = {
   forecast: "Active contracts count what they will pay you (+) or cost you (−) once completed (a courier you haul pays back its reward and its collateral); contracts between your own pilots are ignored. Actual profit comes from the Profit and loss page: every counted wallet entry (Left out ones aren't), cumulative from the start of the span shown (or the first entry kept), and per week over the last 30 days kept; it's for comparing with the planned profit and isn't added to the total, which already holds that ISK. Planned orders are the Orders management builds not Done: each adds what it's worth less its build cost on the day it should be finished (In progress: from when you set it In progress plus the plan's timeline, or a running job making the item if it ends later; Planned: from today plus the timeline). Builds with no price for the item or a material, or sent before plans kept a timeline, are left out. The forecast records one point per day (ISK from your wallets plus your stock value); the history, stock list and activities are saved in backups. Net worth: each recorded day keeps your wallets, the ticked hangars plus the stock you entered by hand (Assets), your open market orders (sell orders at their price × what's left, before sales tax; buy orders' escrow, the ISK they already hold; Market orders permission), active contracts, and what running manufacturing and reaction jobs will deliver (runs × what a run makes × the price Assets uses; a product without a price is left out and named), and what each pilot and corporation held, so you can pick owners (contracts and stock entered by hand have no owner, so they're left out then). A day is recorded at each sync and when the Overview opens. Days in between show your wallets from the wallet journals' balances (Profit and loss keeps them) when every wallet counted is covered: within ESI's 30 days a wallet without an entry keeps the balance it started from. Market orders and escrow are also on the Forecast's Total value.",
   omega: "Omega dates are entered by hand because ESI doesn't provide them.",
   map: "Gather items: the items are found in every hangar Assets read (counted or not, blueprint copies left out). Stops in a security you didn't tick are left out and no leg flies through one. By gates, legs count gates; with jumps, each leg takes the gate route or the jump route (gates to and from high-sec ends) for the ship under Range, whichever is quicker at 3 min a jump and 1.5 min a gate (fatigue not counted; fuel without economizers). Stations to empty: everything the hangars hold there. Cargo: items count at their packaged volume (read from the game data); a stop's goods ride together unless they don't fit an empty hold, and a full hold goes back to the start to unload. The ship under Range is fitted with Expanded Cargoholds and its pilot's skills; a ship from your hangars counts its bare hold. The order: the nearest system first, then stretches of the trip are reversed while that saves gates, so it's very short but not proven the shortest. Items in a structure whose system isn't known, or in a system with no gate route from the start (wormholes), are named and left out. Dangerous systems use the Map's kills of the last hour.",
-  corp: "Structures and fuel come from ESI's list of your corporation's structures (one linked pilot with the Station Manager role and the Corporation structures permission), read at each sync or with Refresh. Fuel blocks per hour = each online service's module once (copying, ME and TE research share one research lab) at its fuel use from CCP's game data, less the structure's own role bonus on its kind of modules (engineering complexes on engineering services, citadels on citadel services, refineries on reprocessing and reactions); per day = × 24, per month = × 30 × one fuel block's price in your pricing (the block you pick, or the cheapest of the four). A service whose module isn't known isn't counted and the total shows ≥. Fuel runs out = ESI's fuel date; To reach 30 days = the blocks to add so it lasts 30 days from now at today's use. The To-Do page lists the structures running out within your warning. Moon mining needs the Corporation moon mining permission: extractions with the Station Manager role, the moon drills' mining ledgers with the Accountant role; each pilot's own mining with the Mining ledger permission. ESI gives the last 30 days; what's read is kept in this browser for 90 days (not in backups). Value = the units × one unit's worth: its minerals at the best possible yield (Settings → Ore reprocessing) in your pricing, or the ore's own price there; an ore with no price is left out of the values and named.",
-  intel: "Notifications come from ESI at each sync and with Refresh (Notifications permission on each pilot; ESI keeps a pilot's recent notifications, so read often). One that several pilots received shows once, with who got it. They're kept in this browser for 90 days (not in backups). Needs attention lists the last 3 days' structure attacks, lost shields or armour, low fuel, low power or services offline, wars declared and moon chunks ready, until you mark them seen; the Intel tab shows how many. Names come from ESI (characters, corporations, systems, moons); a structure's name only when it's one of the structures known to the tool. " + CF_NOTE,
+  corp: "Structures and fuel come from ESI's list of your corporation's structures (one linked pilot with the Station Manager role and the Corporation structures permission), read at each sync or with Refresh. Fuel blocks per hour = each online service's module once (copying, ME and TE research share one research lab) at its fuel use from CCP's game data, less the structure's own role bonus on its kind of modules (engineering complexes on engineering services, citadels on citadel services, refineries on reprocessing and reactions); per day = × 24, per month = × 30 × one fuel block's price in your pricing (the block you pick, or the cheapest of the four). A service whose module isn't known isn't counted and the total shows ≥. Fuel runs out = ESI's fuel date; To reach 30 days = the blocks to add so it lasts 30 days from now at today's use. The To-Do page lists the structures running out within your warning. Moon mining needs the Corporation moon mining permission: extractions with the Station Manager role, the moon drills' mining ledgers with the Accountant role. Your pilots' own mining (Mining ledger permission) is on the Misc page, with the same period and valuation. ESI gives the last 30 days; what's read is kept in this browser for 90 days (not in backups). Value = the units × one unit's worth: its minerals at the best possible yield (Settings → Ore reprocessing) in your pricing, or the ore's own price there; an ore with no price is left out of the values and named.",
+  intel: "Most violent systems and Low-sec systems: ships and pods killed in the last 3 hours, top 10 by ships + pods, from ESI's kills per system (public, covers the last hour, read again after an hour). The tool keeps each new hourly reading for 4 hours in this browser and adds up the readings of the last 3 hours, so until it has been open for three readings it says how many hours it counts. Null-sec = security 0.0 and below in known space (wormholes left out); low-sec = 0.1 to 0.4. System names, security and regions come from the map (load it once on the Map page). Notifications (listed on the Misc page) come from ESI at each sync and with Refresh (Notifications permission on each pilot; ESI keeps a pilot's recent notifications, so read often). One that several pilots received shows once, with who got it. They're kept in this browser for 90 days (not in backups). Needs attention lists the last 3 days' structure attacks, lost shields or armour, low fuel, low power or services offline, wars declared and moon chunks ready, until you mark them seen; the Intel tab shows how many. Names come from ESI (characters, corporations, systems, moons); a structure's name only when it's one of the structures known to the tool. " + CF_NOTE,
   stock: "Values use the pricing chosen at the top: Jita prices are read live from ESI's orders and kept 6 hours; a citadel pricing only uses that citadel's own orders. An item without a price is shown empty and left out of the totals; blueprint copies count as zero. The search and the filters look in every hangar, ticked or not, and also find what sits in ship cargo, Deliveries and your open contracts (marked not counted); a filter's conditions test each stack (one item in one hangar or container), so Value more than 1b means a stack worth that much. " + CF_NOTE,
   cbrowse: "Contracts come from ESI at each sync (Contracts permission on each pilot, Corporation contracts for your corporation's): ESI gives the active ones and those of the last 30 days; ended ones are kept here for 90 days. A contract several of your pilots see shows once. What each one gives and asks for is read once per contract. Your side: You sell (you put items up for a price), You buy (you pay for someone's items, or ask for items and pay a reward), You give / You receive (no ISK), You ship (your courier contract), You haul (a courier you accepted), Between your pilots. Items worth = what it gives less what it asks for, in the pricing chosen above (blueprint copies count as zero; an item without a price there leaves the worth unknown, never 0). Against worth = how much better than that worth the price is for you: selling, price less worth; buying, worth less price. A contract still waiting after its expiry date is Expired. " + CF_NOTE,
   trading: "Market groups and items come from CCP's own game data (the same data as the Item database). Orders come from ESI's public market orders of every region (or only the region, trade hub or citadel picked under Where), read when you open an item and kept 5 minutes (ESI refreshes them every 5 minutes; Refresh reads them again); they share the tool's market budget with every other page, so an item read across every region takes about 70 requests. Your citadels' orders are read with a pilot's login (Citadel markets permission). PLEX trades in one market for the whole game, which ESI keeps as its own region (shown as Global PLEX market): it's always read, its orders sit at stations everywhere (a region or a hub keeps those placed there), and PLEX's history is that market's. Sell (5%) and Buy (5%) average the cheapest 5% of the units for sale and the highest-priced 5% of the units wanted, over the orders the filters keep; Margin is their difference. Markets comparison isn't filtered: each trade hub (Settings → Pricings and HUBs) and citadel that has orders for the item, with its lowest sell, highest buy and their spread. A citadel whose market can't be read (most have no market module) is left out. Sellers and buyers share what the board leaves them; a short list gives the other its room. History and Markets comparison can open in a window of their own (allow pop-ups for the page), which follows the item you open. History is ESI's daily market history of the region picked (about 13 months; spans from 7 days to everything), read when you show it, with ISK on the left and volume on the right: the line is the day's average price, the band the day's lowest to highest trade, the bars the units traded (point at a day for its numbers); the scale follows the averages, so a single odd trade far off the average is cut at the edge. Security and jumps need the map (open the Map page once); jumps count stargates from the system picked under Jumps from. Station names come from ESI; a structure's name is read once with a pilot's login (Structure names permission) and only when that pilot may dock there, otherwise it shows as a structure in its system. Clicking a price copies it.",
   itemdb: "Items come from CCP's own game data (the static data export of the current game build, read once and kept in this browser; the same data every page uses). Attribute names and units come from ESI's dogma attributes, read once each when you open an item. Prices: the pricing chosen on the item, Jita sell and buy (ESI's live orders), ESI's average price and its adjusted price (what job costs are worked out from). CCP base price is the game's own reference value, not a market price. You own counts everything in the hangars read from ESI, ship cargo and containers included. Used in lists every blueprint and planet factory that takes the item as a material. " + CF_NOTE,
-  sov: "Sovereignty comes from ESI's sovereignty map (public, read again after an hour): systems = the systems an alliance holds. Each alliance's name, ticker and corporations, and each corporation's member count, come from public ESI and are kept a day in this browser; members = the members of its corporations added up. The first read takes a few minutes (one request per corporation); Refresh reads the map and the alliances again, corporations once a day. Coalitions are yours: they add up the systems, members and corporations of the alliances you put in them (saved in backups). Top sov changes and Alliance movements compare today with what this tool saw 7 days ago: it keeps one snapshot a day while the page is opened (in this browser only, 8 days, not in backups), so until it has 7 days of them they count from the oldest one. Gained and lost = systems held now and not then, or then and not now. A movement is a corporation of an alliance holding sovereignty (then or now) whose alliance changed; where a corporation came from is read from its alliance history.",
+  sov: "Sovereignty comes from ESI's sovereignty map (public, read again after an hour): systems = the systems an alliance holds. Each alliance's name, ticker and corporations, and each corporation's member count, come from public ESI and are kept a day in this browser; members = the members of its corporations added up. The first read takes a few minutes (one request per corporation); Refresh reads the map and the alliances again, corporations once a day. The share (%) = systems held ÷ the systems sovereignty can be held in (known space without an NPC faction: the map's systems no faction owns, claimed or not). Coalitions are yours: they add up the systems, members and corporations of the alliances you put in them (saved in backups). Top sov changes and Alliance movements compare today with what this tool saw 7 days ago: it keeps one snapshot a day while the page is opened (in this browser only, 8 days, not in backups), so until it has 7 days of them they count from the oldest one. Gained and lost = systems held now and not then, or then and not now. A movement is a corporation of an alliance holding sovereignty (then or now) whose alliance changed; where a corporation came from is read from its alliance history.",
   lp: "Loyalty points come from ESI at each sync (Loyalty points permission). The store's offers are ESI's public list for that corporation, read when you open it (Refresh reads it again). Sells for = the item's price in the \"Sell items at\" pricing × the quantity, less your sales tax (Settings: your best Accounting level, or your own rate); broker fees aren't counted. Costs = the offer's ISK plus each other item it asks for at its price in the \"Buy other items at\" pricing. ISK per LP = (sells for − costs) ÷ LP. An item with no price in its pricing (blueprint copies usually have none) leaves its offer's profit and ISK per LP unknown: never 0, never another market's price. Analysis Kredits (AK) are shown but not valued. You can buy = your pilots' LP with that corporation, added up, ÷ the offer's LP.",
   fittings: `Can fly it counts every skill the hull, modules, rigs, drones and fighters need. Skill levels are the last ESI sync's, plus the levels the pilot's skill queue has finished since (needs the Skill queues permission). For a pilot who can't fly it yet: when every missing level is in their queue, the date the last of them finishes (the queue's own order and dates); otherwise the time to train only what's missing, prerequisites included, from their attributes and implants (~ when attributes weren't read yet), whatever else is queued. ${SYNC_NOTE}`,
   jobs: `Corporation jobs need one linked pilot with the Factory Manager role; they then count against the slots of whichever of your pilots installed them. Job slots in use come from ESI and include jobs that are finished but not yet delivered. ${SLOTS_NOTE}`,
   overview: `${JOBTIME_NOTE} Invention chance uses base chance × (1 + science levels ÷ 30 + encryption level ÷ 40); structures, rigs, implants and decryptors aren't counted here (Build planning counts them). The skill check reads CCP's game data, so it needs an internet connection the first time you check each blueprint; after that it works offline. Skill queues are read at each ESI sync (Skill queues permission) and age with the clock: a level whose finish date has passed counts as done, and a queue whose last level has finished shows as empty until the next sync. A paused queue has no dates. ${SYNC_NOTE} ${CF_NOTE}`,
   characters: `${JOBTIME_NOTE} ${SLOTS_NOTE} Remote range is one jump per level of Supply Chain Management, Scientific Networking and Remote Reactions. The reprocessing figure is the multiplier from Reprocessing and Reprocessing Efficiency only, before ore-specific skills, structure rigs and implants. Pasting a skill list accepts lines like Industry 5, Industry V or tab-separated columns. ${SYNC_NOTE}`,
-  misc: "Wallets need one pilot with the Accountant role to read corporation divisions. The ship scan reads every published ship with a manufacturing blueprint (a few thousand requests the first time, sent slowly so the service doesn't block them) and is kept in this browser; use Rescan after a game patch.  Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price.  Blueprint library: the blueprints read from ESI at each sync (each pilot's Blueprints permission, and your corporation's with the Director role), with the industry jobs read at the same time. A research or copying job is matched to an original of the same blueprint owned by the pilot (or the corporation) that runs it; when none is found the job still shows, without levels. ME research adds the job's runs to the ME (at most 10), TE research two per run (at most 20). A job past its end date is ready to deliver. Copies are listed last, one line per blueprint, ME, TE, runs and owner." + CF_NOTE,
+  misc: "Wallets need one pilot with the Accountant role to read corporation divisions. The ship scan reads every published ship with a manufacturing blueprint (a few thousand requests the first time, sent slowly so the service doesn't block them) and is kept in this browser; use Rescan after a game patch.  Attribute boosters: every booster in CCP's game data (group Booster, items in the game) that adds to at least one attribute, with its bonuses, how long it lasts and its expiry date (after it, the booster can't be injected). Lasts = the booster's duration + 20% per Biology level (the level you pick, or your best pilot's). Price: in a pricing (Settings → Pricings), or the cheapest sell order at a trade hub or citadel. Only boosters with a market group are priced: the others can only be traded by contract. A month = 30 days, with a new booster injected each time one runs out. ISK a month = price ÷ the hours it lasts × 720. Extra SP a month = 60 × 720 × (the largest bonus + half the second largest): what a skill gains when its primary and secondary attributes are the two the booster adds most to (exact for boosters that add the same to every attribute). ISK per SP = ISK a month ÷ extra SP a month. Best for an attribute = the least ISK a month per point added to that attribute, among boosters with a price that haven't expired. A booster without a price shows no figures: never 0, never another market's price.  Blueprint library: the blueprints read from ESI at each sync (each pilot's Blueprints permission, and your corporation's with the Director role), with the industry jobs read at the same time. A research or copying job is matched to an original of the same blueprint owned by the pilot (or the corporation) that runs it; when none is found the job still shows, without levels. ME research adds the job's runs to the ME (at most 10), TE research two per run (at most 20). A job past its end date is ready to deliver. Copies are listed last, one line per blueprint, ME, TE, runs and owner.  In-game notifications and Your pilots' mining: see How this page works on the Intel and Corporation pages." + CF_NOTE,
   pnl: "Money comes from ESI: each pilot's wallet journal and market transactions, and the 7 wallet divisions of your corporation (one linked pilot with the Accountant role). ESI only gives the last 30 days, so every entry read is kept in this browser and in backups: the history grows from your first read, and a month without a refresh leaves a gap. Purchases and sales are counted from the market transactions (item, quantity, price); the journal's market lines and buy order escrow are left out so nothing counts twice. Money between your own pilots and corporation divisions (transfers, contracts, market trades between them) is left out. Deposits (courier collateral, contract deposits, bids) count when paid and again when refunded. An entry's activity is the first that applies: what you picked for that entry; its item's activity (purchases, sales, sales tax); the activity of who you dealt with (contracts, transfers, donations); its kind of entry's activity; then automatic. A contract with nothing chosen goes by what it held (ESI's contract items, read once per contract with the Contracts permission): each item by your choice for it or by what it is, bought or sold; when its items go to several activities, its price is shared between them by the items' value in the pricing chosen on the page, and its fees and deposits are shared the same way. A contract with an item that has no price in that pricing isn't shared (no price is invented): it stays whole and Not assigned. ESI only shows a contract's items for about 30 days, so older contracts read before this existed stay whole. Automatic: industry job fees by the job's activity (ESI's job list, 90 days), planet taxes to Planets, courier contracts and travel fees to Hauling, a contract's fees and deposits with its price, and items by what they are: PI commodities to Planets; moon materials, intermediates and reaction products you sell to Reactions; minerals, ore, salvage, components and reaction products you buy to Manufacturing; items made from a blueprint that you sell to Manufacturing; datacores, decryptors and blueprint copies you sell to Science; ice products you buy (jump fuel) to Hauling. Anything else is Not assigned: counted, waiting for you to pick. Broker fees only follow an item when ESI ties them to a transaction; otherwise give Broker fees an activity in Kinds of entry. Left out entries aren't counted anywhere. Periods and months use EVE time (UTC). " + CF_NOTE,
   settings: `Backups include everything the tool keeps (pilots, jobs, planets, wallets and their history, hangars, contracts, forecast, fittings, the ship scan, the map, citadels, settings and your Client ID) except login tokens, so importing one on another computer skips every long scan; you only log in again. Linking with ESI uses EVE's official login: the login token stays in this browser and is never included in backups. Your roster is saved in this browser; use Export backup to move it to another computer or browser, then Import backup there. ${SYNC_NOTE}`
 };
@@ -2548,13 +2559,16 @@ async function cmParse(text) {
 // Item exchanges a pilot issued to someone outside your pilots and corporations in the last 60 days, any status: deliveries to clients.
 // Items are read once per contract (ESI shows them for about 30 days)
 // A pilot's own list (charId) or, with corpId, the corporation's: the ones your pilots made on behalf of the corporation
-async function cmDeliveries(key, raw, charId, access, corpId) {
+// read: the contracts whose items contractItems just read (not asked twice)
+async function cmDeliveries(key, raw, charId, access, corpId, read) {
   const ours = new Set(state.chars.flatMap(c => [c.esiId, c.corpId]).filter(Boolean)), pilots = new Set(state.chars.map(c => c.esiId).filter(Boolean)), since = Date.now() - 60 * 864e5;
   const prev = new Map((((state.contracts[key] || {}).sent) || []).map(d => [d.id, d]));
   const L = raw.filter(c => c.type === "item_exchange" && (corpId ? c.for_corporation && c.issuer_corporation_id === corpId && pilots.has(c.issuer_id) : c.issuer_id === charId && !c.for_corporation) && c.assignee_id && !ours.has(c.assignee_id) && Date.parse(c.date_issued) > since)
     .map(c => ({ id: c.contract_id, status: c.status, to: c.assignee_id, by: c.issuer_id, corp: !!corpId, issued: Date.parse(c.date_issued), done: c.date_completed ? Date.parse(c.date_completed) : null, price: c.price || 0, title: c.title || "" }));
   const itemsPath = (id) => corpId ? `/corporations/${corpId}/contracts/${id}/items/` : `/characters/${charId}/contracts/${id}/items/`;
-  await pool(L, 3, async (d) => { const p = prev.get(d.id); if (p && p.items) { d.items = p.items; return; } try { d.items = (await esiAuthGet(itemsPath(d.id), access)).filter(i => i.is_included).map(i => [i.type_id, i.quantity]); } catch (e) {} });
+  const had = new Map((read || []).filter(c => c.items).map(c => [c.id, c.items.map(i => [i[0], i[1]])])); let limited = false;
+  await pool(L, 3, async (d) => { const p = prev.get(d.id); if (p && p.items) { d.items = p.items; return; } if (had.has(d.id)) { d.items = had.get(d.id); return; } if (limited) return;
+    try { d.items = (await esiAuthGet(itemsPath(d.id), access, undefined, 1)).filter(i => i.is_included).map(i => [i.type_id, i.quantity]); } catch (e) { if (e.status === 429 || e.status === 420) limited = true; } });
   const nm = await esiNames([...new Set(L.map(d => d.to)), ...new Set(L.flatMap(d => (d.items || []).map(i => i[0])).filter(t => !state.typeNames[t]))]).catch(() => ({}));
   for (const d of L) { d.toName = nm[d.to] || (prev.get(d.id) || {}).toName || ""; for (const [t] of d.items || []) if (nm[t] && !state.typeNames[t]) state.typeNames[t] = nm[t]; }
   return L;
@@ -4083,11 +4097,12 @@ async function tokenRequest(params) {
   return r.json();
 }
 function jwtPayload(tok) { const p = tok.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); return JSON.parse(decodeURIComponent(escape(atob(p.padEnd(p.length + (4 - p.length % 4) % 4, "="))))); }
-async function esiAuthGet(path, access, page) {
+// tries: 1 for reads that give up at once when ESI says to slow down (contract items: the rest wait for the next sync instead of holding this one)
+async function esiAuthGet(path, access, page, tries = 3) {
   let r, lastErr;
   const q = page ? `&page=${page}` : "", sep = path.includes("?") ? "&" : "?";   // a path may carry its own query (from_id, include_completed)
   for (const url of [`https://esi.evetech.net/latest${path}${sep}datasource=tranquility${q}`, `https://esi.evetech.net${path}${page ? sep + "page=" + page : ""}`]) {
-    try { r = await fetchRetry(url, { headers: { Authorization: "Bearer " + access } }, 3); if (r.ok) break; lastErr = new Error("ESI answered " + r.status); lastErr.status = r.status; if (r.status === 403) break; }
+    try { r = await fetchRetry(url, { headers: { Authorization: "Bearer " + access } }, tries); if (r.ok) break; lastErr = new Error("ESI answered " + r.status); lastErr.status = r.status; if (r.status === 403) break; }
     catch (e) { lastErr = new Error("couldn't reach ESI"); if (e.status === 429 || e.status === 420) { lastErr = new Error("ESI is limiting requests: try again in a few minutes"); lastErr.status = e.status; break; } }   // rate-limited: the other address is the same server
   }
   if (!r || !r.ok) throw lastErr;
@@ -4176,27 +4191,31 @@ async function fetchQueue(charId, access) {
   const d = await esiAuthGet(`/characters/${charId}/skillqueue/`, access), names = await esiNames([...new Set(d.map(x => x.skill_id))]).catch(() => ({}));
   return d.sort((a, b) => a.queue_position - b.queue_position).map(x => ({ n: names[x.skill_id] || "Skill #" + x.skill_id, l: x.finished_level, start: x.start_date ? Date.parse(x.start_date) : null, end: x.finish_date ? Date.parse(x.finish_date) : null }));
 }
-async function applyToken(tok) {
-  const p = jwtPayload(tok.access_token), charId = +String(p.sub).split(":").pop(), name = p.name;
-  const step = (x) => { syncStep[charId] = x; bgSyncMsg(); };   // what the background status line says this pilot is reading
-  step("skills");
-  const { skills, totalSp, alpha } = await fetchSkills(charId, tok.access_token);
-  let attrs = null; try { attrs = await esiAuthGet(`/characters/${charId}/attributes/`, tok.access_token); } catch (e) {}
+// only: the parts to read when a page refreshes just what it shows (skills, jobs, wallets, planets, structures, intel, contracts, orders, assets, rest); none = everything
+async function applyToken(tok, only) {
+  const p = jwtPayload(tok.access_token), charId = +String(p.sub).split(":").pop(), name = p.name, want = (x) => !only || only.includes(x);
+  const say = (x) => { syncStep[charId] = x; bgSyncMsg(); }, took = [], step = (x) => { took.push([x, Date.now()]); say(x); };   // say: what's read now (status lines); step also starts a timed part   // what the status lines say this pilot is reading, and when each part started
+  let skills, totalSp, alpha, attrs = null;
+  if (want("skills")) { step("skills");
+  ({ skills, totalSp, alpha } = await fetchSkills(charId, tok.access_token));
+  try { attrs = await esiAuthGet(`/characters/${charId}/attributes/`, tok.access_token); } catch (e) {} }
   const scopes = [].concat(p.scp || []).join(" ");
   // Implants: their attribute bonuses speed up training (ESI's attributes leave them out)
   let implants = null;
-  if (scopes.includes(IMPLANTS_SCOPE)) { try { const ids = await esiAuthGet(`/characters/${charId}/implants/`, tok.access_token); const nm = await esiNames(ids).catch(() => ({}));
+  if (want("skills") && scopes.includes(IMPLANTS_SCOPE)) { try { const ids = await esiAuthGet(`/characters/${charId}/implants/`, tok.access_token); const nm = await esiNames(ids).catch(() => ({}));
     implants = await pool(ids, 3, async (id) => { const out = { id, name: nm[id] || "Implant #" + id, bonus: {} }; try { const t = await getJSON(REF + "/types/" + id); out.slot = dogma(t, 331) || null; for (const [aid, k] of Object.entries(IMPLANT_ATTR)) { const v = dogma(t, +aid); if (v) out.bonus[k] = v; } if (!nm[id]) out.name = tName(t); } catch (e) {} return out; }); } catch (e) {} }
   let jobs = null, jobsError = "", corpId = null, allyId = null, corpError = "", planets = null, planetsError = "";
-  step("industry jobs");
+  const known = state.chars.find(x => x.esiId === charId);
+  if (only && known && known.corpId) ({ corpId, allyId = null } = known);   // a page's refresh: the corporation known from the last full sync
+  else try { const ci = await esiGet(`/characters/${charId}/`); corpId = ci.corporation_id || null; allyId = ci.alliance_id || null; } catch (e) {}
+  if (want("jobs")) { step("industry jobs");
   if (scopes.includes(JOBS_SCOPE)) { try { jobs = await fetchJobs(charId, tok.access_token); } catch (e) { jobsError = netMsg(e); } }
-  try { const ci = await esiGet(`/characters/${charId}/`); corpId = ci.corporation_id || null; allyId = ci.alliance_id || null; } catch (e) {}
   if (corpId && scopes.includes(CORP_JOBS_SCOPE)) {
     try { state.corpJobs[corpId] = { jobs: await fetchCorpJobs(corpId, tok.access_token), syncedAt: Date.now(), via: name }; saveCorpJobs(); }
     catch (e) { corpError = e.status === 403 ? "no Factory Manager role in the corporation" : netMsg(e); }
-  }
-  step("wallets");
+  } }
   let wallet = null, walletError = "", corpWalletError = "";
+  if (want("wallets")) { step("wallets");
   if (scopes.includes(WALLET_SCOPE)) { try { wallet = await esiAuthGet(`/characters/${charId}/wallet/`, tok.access_token); } catch (e) { walletError = netMsg(e); } }
   if (corpId) {
     try { if (!state.corpNames[corpId]) { state.corpNames[corpId] = (await esiGet(`/corporations/${corpId}/`)).name; saveCorpExtra(); } } catch (e) {}
@@ -4207,35 +4226,35 @@ async function applyToken(tok) {
   }
   // Wallet history for Profit and loss (journal and market transactions, kept beyond ESI's 30 days)
   step("wallet history");
-  try { await pnlSync(charId, name, corpId, tok.access_token, scopes); } catch (e) {}
-  step("planets");
+  try { await pnlSync(charId, name, corpId, tok.access_token, scopes); } catch (e) {} }
+  if (want("planets")) { step("planets");
   if (scopes.includes(PLANETS_SCOPE)) { try { planets = await fetchPlanets(charId, tok.access_token); } catch (e) { planetsError = netMsg(e); } }
-  if (corpId && scopes.includes(POCO_SCOPE)) { try { await pocoSync(corpId, name, tok.access_token); } catch (e) {} }
+  if (corpId && scopes.includes(POCO_SCOPE)) { try { await pocoSync(corpId, name, tok.access_token); } catch (e) {} } }
   // Citadels: where jobs run, and the corporation's own structures (with fuel) when the pilot is a Station Manager
-  step("structures");
   let corpStructError = "";
+  if (want("structures")) { step("structures");
   try { await discoverStructs([...(jobs || []), ...((corpId && state.corpJobs[corpId]) ? state.corpJobs[corpId].jobs : [])].map(j => j.facility), tok.access_token, scopes, "jobs"); } catch (e) {}
   if (corpId && scopes.includes(CORP_STRUCTS_SCOPE)) {
     try { const list = await esiAuthGetAll(`/corporations/${corpId}/structures/`, tok.access_token); for (const st of list) noteStruct(st.structure_id, st, "corp"); await structNames(); }
     catch (e) { corpStructError = e.status === 403 ? "no Station Manager role in the corporation" : netMsg(e); }
-  }
+  } }
   // Moon mining (Corporation page) and in-game notifications (Intel page)
-  step("mining and notifications");
+  if (want("intel")) { step("mining and notifications");
   try { await minSync(charId, name, corpId, tok.access_token, scopes); } catch (e) {}
-  if (scopes.includes(NOTIF_SCOPE)) { try { await intelSync(charId, name, tok.access_token); } catch (e) {} }
-  step("contracts");
+  if (scopes.includes(NOTIF_SCOPE)) { try { await intelSync(charId, name, tok.access_token); } catch (e) {} } }
   let contractsError = "";
-  if (scopes.includes(CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/characters/${charId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("char:" + charId, raw); await contractItems("char:" + charId, [...L, ...P], (cid) => `/characters/${charId}/contracts/${cid}/items/`, tok.access_token, scopes); const sent = await cmDeliveries("char:" + charId, raw, charId, tok.access_token).catch(() => (state.contracts["char:" + charId] || {}).sent); state.contracts["char:" + charId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = netMsg(e); } }
-  if (corpId && scopes.includes(CORP_CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/corporations/${corpId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("corp:" + corpId, raw); await contractItems("corp:" + corpId, [...L, ...P], (cid) => `/corporations/${corpId}/contracts/${cid}/items/`, tok.access_token, scopes); const sent = await cmDeliveries("corp:" + corpId, raw, null, tok.access_token, corpId).catch(() => (state.contracts["corp:" + corpId] || {}).sent); state.contracts["corp:" + corpId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = contractsError || (e.status === 403 ? "corporation contracts refused" : netMsg(e)); } }
-  if (scopes.includes(CONTRACTS_SCOPE) || scopes.includes(CORP_CONTRACTS_SCOPE)) { try { await contractNames(); } catch (e) {} }
+  if (want("contracts")) { step("contracts");
+  if (scopes.includes(CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/characters/${charId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("char:" + charId, raw); await contractItems("char:" + charId, [...L, ...P], (cid) => `/characters/${charId}/contracts/${cid}/items/`, tok.access_token, scopes, say); const sent = await cmDeliveries("char:" + charId, raw, charId, tok.access_token, null, [...L, ...P]).catch(() => (state.contracts["char:" + charId] || {}).sent); state.contracts["char:" + charId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = netMsg(e); } }
+  if (corpId && scopes.includes(CORP_CONTRACTS_SCOPE)) { try { const raw = await esiAuthGetAll(`/corporations/${corpId}/contracts/`, tok.access_token), L = slimContracts(raw), P = pastContracts("corp:" + corpId, raw); say("corporation contracts"); await contractItems("corp:" + corpId, [...L, ...P], (cid) => `/corporations/${corpId}/contracts/${cid}/items/`, tok.access_token, scopes, (x) => say("corporation " + x)); const sent = await cmDeliveries("corp:" + corpId, raw, null, tok.access_token, corpId, [...L, ...P]).catch(() => (state.contracts["corp:" + corpId] || {}).sent); state.contracts["corp:" + corpId] = { at: Date.now(), list: L, past: P, sent }; saveContracts(); } catch (e) { contractsError = contractsError || (e.status === 403 ? "corporation contracts refused" : netMsg(e)); } }
+  if (scopes.includes(CONTRACTS_SCOPE) || scopes.includes(CORP_CONTRACTS_SCOPE)) { try { await contractNames(); } catch (e) {} } }
   // Market orders (Net worth on the Overview): what sell orders will bring in and the ISK held in buy orders (escrow)
-  step("market orders");
   let orders = null, ordersError = "";
+  if (want("orders")) { step("market orders");
   if (scopes.includes(ORDERS_SCOPE)) { try { orders = slimOrders(await esiAuthGet(`/characters/${charId}/orders/`, tok.access_token)); } catch (e) { ordersError = netMsg(e); } }
   if (corpId && scopes.includes(CORP_ORDERS_SCOPE)) { try { (state.misc.corpOrders = state.misc.corpOrders || {})[corpId] = { at: Date.now(), via: name, list: slimOrders(await esiAuthGetAll(`/corporations/${corpId}/orders/`, tok.access_token)) }; saveMisc(); } catch (e) { ordersError = ordersError || (e.status === 403 ? "corporation orders refused (no Accountant or Trader role)" : netMsg(e)); } }
-  if (orders || (corpId && (state.misc.corpOrders || {})[corpId])) { try { const L = [...(orders || []), ...(((state.misc.corpOrders || {})[corpId] || {}).list || [])], types = [...new Set(L.map(o => o.t))].filter(t => !state.typeNames[t]); if (types.length) Object.assign(state.typeNames, await esiNames(types)); await locationNames(L.map(o => o.loc), tok.access_token, scopes); } catch (e) {} }
-  step("hangars");
+  if (orders || (corpId && (state.misc.corpOrders || {})[corpId])) { try { const L = [...(orders || []), ...(((state.misc.corpOrders || {})[corpId] || {}).list || [])], types = [...new Set(L.map(o => o.t))].filter(t => !state.typeNames[t]); if (types.length) Object.assign(state.typeNames, await esiNames(types)); await locationNames(L.map(o => o.loc), tok.access_token, scopes); } catch (e) {} } }
   let assetsError = "", corpAssetsError = "";
+  if (want("assets")) { step("hangars");
   if (scopes.includes(ASSETS_SCOPE)) {
     try { await syncAssets("char:" + charId, name, "Personal", await esiAuthGetAll(`/characters/${charId}/assets/`, tok.access_token), false, tok.access_token, scopes, null); }
     catch (e) { assetsError = netMsg(e); }
@@ -4250,12 +4269,12 @@ async function applyToken(tok) {
         await syncAssets("corp:" + corpId, state.corpNames[corpId] || "Corporation", "Corporation", list, true, tok.access_token, scopes, divisions, name);
       } catch (e) { corpAssetsError = e.status === 403 ? "no Director role in the corporation" : netMsg(e); }
     }
-  }
+  } }
   let c = state.chars.find(x => x.esiId === charId) || state.chars.find(x => x.name.toLowerCase() === String(name).toLowerCase());
   if (!c) { c = { id: "c" + Date.now().toString(36), name }; state.chars.push(c); }
   if (attrs) c.attrs = attrs;
-  c.corpStructError = corpStructError;
-  step("blueprints, clones and the rest");
+  if (want("structures")) c.corpStructError = corpStructError;
+  if (want("rest")) { step("blueprints, clones and the rest");
   // Blueprints owned (pilot, and corporation for a Director)
   state.misc.ownedBps = state.misc.ownedBps || {};
   if (scopes.includes(BPS_SCOPE)) { try { state.misc.ownedBps["char:" + charId] = { at: Date.now(), name, list: slimBps(await esiAuthGetAll(`/characters/${charId}/blueprints/`, tok.access_token)) }; } catch (e) {} }
@@ -4278,29 +4297,38 @@ async function applyToken(tok) {
   if (scopes.includes(SHIP_SCOPE)) { try { const sh = await esiAuthGet(`/characters/${charId}/ship/`, tok.access_token); c.ship = { type: sh.ship_type_id, item: sh.ship_item_id, name: sh.ship_name || "", at: Date.now() }; } catch (e) {} }
   if (scopes.includes(QUEUE_SCOPE)) { try { const since = queueIdleSince(c), q = { at: Date.now(), list: await fetchQueue(charId, tok.access_token) }; if (since && !(queueEnd({ queue: q }) > 0)) q.idle = since; c.queue = q; } catch (e) {} }   // q.idle: still idle since an earlier sync
   if (scopes.includes(CALENDAR_SCOPE)) { try { c.calendar = { at: Date.now(), list: await fetchCalendar(charId, tok.access_token, c.calendar) }; } catch (e) {} }
-  if (scopes.includes(LOYALTY_SCOPE)) { try { c.lp = { at: Date.now(), list: (await esiAuthGet(`/characters/${charId}/loyalty/points/`, tok.access_token)).map(x => [x.corporation_id, x.loyalty_points]) }; } catch (e) {} }
+  if (scopes.includes(LOYALTY_SCOPE)) { try { c.lp = { at: Date.now(), list: (await esiAuthGet(`/characters/${charId}/loyalty/points/`, tok.access_token)).map(x => [x.corporation_id, x.loyalty_points]) }; } catch (e) {} } }
   if (implants) { c.implants = implants; c.implantsAt = Date.now(); }
-  Object.assign(c, { esiId: charId, skills, totalSp, alpha, syncedAt: Date.now(), updatedAt: Date.now(), lastSource: "esi", handEdits: [], jobsScope: scopes.includes(JOBS_SCOPE), jobsError, scopes, corpId, allyId, corpError, planetsError });
+  Object.assign(c, { esiId: charId, scopes, corpId, allyId });
+  // A full sync keeps how long each part took (the Characters page shows the slowest), so a slow sync says where the time went
+  if (!only) Object.assign(c, { skills, totalSp, alpha, syncedAt: Date.now(), updatedAt: Date.now(), lastSource: "esi", handEdits: [], syncTook: took.map(([x, t], i) => [x, (took[i + 1] ? took[i + 1][1] : Date.now()) - t]) });
+  if (want("jobs")) Object.assign(c, { jobsScope: scopes.includes(JOBS_SCOPE), jobsError, corpError });
+  if (want("planets")) c.planetsError = planetsError;
   if (jobs) { c.jobs = jobs; c.jobsSyncedAt = Date.now(); }
   if (planets) { c.planets = planets; c.planetsSyncedAt = Date.now(); }
   if (typeof wallet === "number") { c.wallet = wallet; c.walletAt = Date.now(); }
-  if (orders) c.orders = { at: Date.now(), list: orders }; c.ordersError = ordersError;
-  c.walletError = walletError; c.corpWalletError = corpWalletError; c.assetsError = assetsError; c.corpAssetsError = corpAssetsError; c.contractsError = contractsError;
+  if (orders) c.orders = { at: Date.now(), list: orders };
+  if (want("orders")) c.ordersError = ordersError;
+  if (want("wallets")) { c.walletError = walletError; c.corpWalletError = corpWalletError; }
+  if (want("assets")) { c.assetsError = assetsError; c.corpAssetsError = corpAssetsError; }
+  if (want("contracts")) c.contractsError = contractsError;
   sortChars(); saveLocal(); render();
   return c;
 }
 // Syncs running now (by ESI id): a pilot is never read twice at once, a second sync waits for the first
 const syncRuns = {}, syncStep = {};
-async function syncChar(c) {
+async function syncChar(c, only) {
   if (esiDown()) throw new Error(DOWNTIME_MSG);
   const rt = esiTokens()[c.esiId];
   if (!rt) throw new Error(`${c.name} needs to log in again`);
-  if (syncRuns[c.esiId]) return syncRuns[c.esiId];
-  const id = c.esiId, qi = bgSyncQ.indexOf(id); if (qi >= 0) bgSyncQ.splice(qi, 1);   // synced by hand: no second read from the login queue
-  syncRuns[id] = (async () => {
-    try { return await applyToken(await refreshTok(id)); }
+  const busy = syncRuns[c.esiId];
+  if (busy) return !busy.only || (only && only.every(x => busy.only.includes(x))) ? busy : busy.catch(() => null).then(() => syncChar(c, only));   // a running read that covers this one answers it; otherwise this one runs after it
+  const id = c.esiId;
+  if (!only) { const qi = bgSyncQ.indexOf(id); if (qi >= 0) bgSyncQ.splice(qi, 1); }   // synced by hand: no second read from the login queue
+  syncRuns[id] = Object.assign((async () => {
+    try { return await applyToken(await refreshTok(id), only); }
     catch (e) { if (e.grant) { saveToken(id, null); throw new Error(`${c.name}'s login has expired. Use "Log in again to sync"`); } throw e; }
-  })().finally(() => { delete syncRuns[id]; delete syncStep[id]; render(); bgSyncMsg(); });
+  })().finally(() => { delete syncRuns[id]; delete syncStep[id]; render(); bgSyncMsg(); }), { only });
   render(); bgSyncMsg();
   return syncRuns[id];
 }
@@ -4328,8 +4356,12 @@ function bgSyncPump() {
 }
 // Where a pilot's sync stands: "run" (reading now), "wait" (queued after a login) or ""
 const syncState = (c) => !c.esiId ? "" : syncRuns[c.esiId] ? "run" : bgSyncQ.includes(c.esiId) ? "wait" : "";
+// Page buttons refreshing from ESI now: they say who is read and what part (the Characters page's pills too)
+const syncBtns = new Set();
 function bgSyncMsg() {
   const run = state.chars.filter(c => syncState(c) === "run").map(c => c.name + (syncStep[c.esiId] ? ` (${syncStep[c.esiId]})` : "")), wait = bgSyncQ.length;
+  for (const b of syncBtns) b.textContent = `Refreshing${run.length ? ": " + run.join(", ") : ""}…`;
+  for (const el of document.querySelectorAll("[data-sync-pill]")) { const k = syncStep[el.dataset.syncPill]; el.textContent = `Syncing${k ? ": " + k : ""}…`; }
   const m = $("esi-sync-bg"); if (!m) return;
   m.hidden = !run.length && !wait;
   m.textContent = run.length || wait ? `Syncing in the background: ${run.join(", ") || "starting"}${wait ? ` · ${wait} waiting` : ""}. You can log in the next character now.` : "";
@@ -4417,18 +4449,23 @@ async function reauth(c) {
   if (href) { if (AUTO_LOGIN) openLoginWindow(href); else window.open(href, "_blank", "noopener"); }
 }
 const DOWNTIME_MSG = "EVE's servers are in their daily downtime: sync again once they're back (usually by 11:15 EVE time)";
-async function syncAll() {
+async function syncAll(only) {
   if (esiDown()) { toast(DOWNTIME_MSG); return; }
   const list = state.chars.filter(c => c.esiId && esiTokens()[c.esiId]); const fails = [];
   const ready = list.filter(c => !missingScopes(c).length), stale = list.filter(c => missingScopes(c).length);
-  for (const c of ready) { try { await syncChar(c); } catch (e) { fails.push(e.message); } }
+  for (const c of ready) { try { await syncChar(c, only); } catch (e) { fails.push(e.message); } }
   try { recordSnapshot(false); } catch (e) {}   // the day's net worth is saved even when the Overview isn't opened
   const parts = [ready.length ? `Synced ${ready.length - fails.length} of ${ready.length}` : ""];
   if (fails.length) parts.push(fails[0]);
   if (stale.length) parts.push(`${stale.map(c => c.name).join(", ")} need${stale.length > 1 ? "" : "s"} a new login for new permissions (use Sync now on the Characters page)`);
   toast(parts.filter(Boolean).join(". ") || "No linked pilots to sync");
 }
-$("btn-sync-all").addEventListener("click", syncAll);
+$("btn-sync-all").addEventListener("click", () => syncAll());
+// A page's "Refresh from ESI": every pilot, only the parts that page shows; the button says who and what is read
+async function pageSync(b, only) {
+  b.disabled = true; const label = b.textContent; syncBtns.add(b); bgSyncMsg();
+  try { await syncAll(only); } finally { syncBtns.delete(b); b.disabled = false; b.textContent = label; }
+}
 document.addEventListener("click", async (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.esiRelink) { openEsi(); return; }
@@ -4475,7 +4512,9 @@ function renderChars() {
       source = `<span class="pill good">ESI</span>${n ? ` <span class="pill mid" title="${esc(c.handEdits.join(", "))}">${n} edited by hand since</span>` : ""}`;
     } else source = anySkill ? `<span class="pill mid">${esc(SOURCE[c.lastSource] || "Entered by hand")}</span>` : `<span class="pill bad">No skills yet</span>`;
     const link = c.esiId ? (linked ? `<span class="pill good">Linked</span>` : `<span class="pill bad">Login expired</span>`) : `<span class="muted">Not linked</span>`;
-    const synced = (c.syncedAt ? `${fmtDate(c.syncedAt)}<br><span class="muted">${ago(c.syncedAt)}</span>` : `<span class="muted">Never</span>`) + (ss ? `<br><span class="pill mid">${ss === "run" ? "Syncing…" : "Waiting to sync"}</span>` : "");
+    const dur = (ms) => ms < 60e3 ? `${Math.round(ms / 1000)} s` : fmtDur(ms / 1000), T = c.syncTook || [], slow = [...T].sort((a, b) => b[1] - a[1])[0];
+    const took = T.length ? `<br><span class="muted" style="font-size:.8rem" data-tip="${esc(T.map(([x, ms]) => `${x}: ${dur(ms)}`).join("\n"))}">Took ${dur(T.reduce((t, x) => t + x[1], 0))}${slow && slow[1] >= 30e3 ? `, mostly ${esc(slow[0])} (${dur(slow[1])})` : ""}</span>` : "";
+    const synced = (c.syncedAt ? `${fmtDate(c.syncedAt)}<br><span class="muted">${ago(c.syncedAt)}</span>${took}` : `<span class="muted">Never</span>`) + (ss ? `<br>${ss === "run" ? `<span class="pill mid" data-sync-pill="${c.esiId}">Syncing${syncStep[c.esiId] ? ": " + esc(syncStep[c.esiId]) : ""}…</span>` : `<span class="pill mid">Waiting to sync</span>`}` : "");
     const changed = c.updatedAt ? `${fmtDate(c.updatedAt)}<br><span class="muted">${esc(SOURCE[c.lastSource] || "")}</span>` : `<span class="muted">—</span>`;
     const act = c.esiId ? (linked ? (ss ? `<button class="link" disabled>${ss === "run" ? "Syncing…" : "Waiting to sync"}</button>` : `<button class="link" data-esi-sync="${c.id}">${missingScopes(c).length ? "Sync now (new login needed)" : "Sync now"}</button>`) : `<button class="link" data-esi-relink="1">Log in again</button>`) : `<button class="link" data-esi-relink="1">Link to ESI</button>`;
     const acts = c._mode === "delete"
@@ -4485,7 +4524,7 @@ function renderChars() {
   }).join("")}</tbody>`;
 }
 $("chars-link").addEventListener("click", () => { showPage("overview"); openEsi(); });
-$("chars-sync-all").addEventListener("click", syncAll);
+$("chars-sync-all").addEventListener("click", () => syncAll());
 
 /* ---------- ships page ---------- */
 const shipsHidden = new Set((() => { try { return JSON.parse(localStorage.getItem("eve-industry-ships-hidden") || "[]"); } catch (e) { return []; } })());
@@ -5286,12 +5325,12 @@ function renderPiWho(rows) {
     return `<tr class="group" data-fold="${lab(k)}"><th colspan="3" scope="colgroup">${lab(k)} <span class="muted num">${G.length}</span></th></tr>` + G.map(x => `<tr><th scope="row">${esc(x.c.name)}</th><td>${x.prods.map(m => `${m.t ? icon(m.t) + " " : ""}${esc(m.name)} <span class="muted num">${qty(m.h)}/h</span>`).join("<br>")}</td><td class="num">${x.n}</td></tr>`).join(""); }).join("")}</tbody>`;
 }
 $("jobs-noammo").addEventListener("change", (e) => { state.misc.hideAmmo = e.target.checked; saveMisc(); renderJobs(); });
-$("jobs-refresh").addEventListener("click", async () => { const b = $("jobs-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; });
+$("jobs-refresh").addEventListener("click", () => pageSync($("jobs-refresh"), ["jobs", "structures"]));
 setInterval(() => { if (!$("page-jobs").hidden && !(document.activeElement && document.activeElement.type === "color")) renderJobs(); if (!$("page-planets").hidden) renderPlanets(); }, 30000);
 $("pi-harvest-on").addEventListener("change", (e) => { state.misc.pi = { ...(state.misc.pi || {}), on: e.target.checked }; saveMisc(); renderPlanets(); });
 $("pi-gap").addEventListener("change", (e) => { const v = parseFloat(e.target.value.replace(",", ".")); state.misc.pi = { ...(state.misc.pi || {}), gap: isFinite(v) && v >= 0 ? v : 5 }; saveMisc(); renderPlanets(); });
 for (const id of ["pi-harvest-h", "pi-harvest-m"]) $(id).addEventListener("change", () => { state.misc.pi = { ...(state.misc.pi || {}), time: $("pi-harvest-h").value + ":" + $("pi-harvest-m").value }; saveMisc(); renderPlanets(); });
-$("pi-refresh").addEventListener("click", async () => { const b = $("pi-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; });
+$("pi-refresh").addEventListener("click", () => pageSync($("pi-refresh"), ["planets"]));
 
 /* ---------- wallets page ---------- */
 function saveCorpExtra() { ls.set("eve-industry-corp-extra", { wallets: state.corpWallets, names: state.corpNames }); }
@@ -5331,7 +5370,7 @@ function renderWallets() {
     return `<tr><th scope="row">${esc(h.who)}</th><td>${h.kind === "Corporation" ? `<span class="pill mid">Corp</span>` : "Character"}</td><td class="num" style="text-align:right" data-v="${h.bal}">${iskFull(h.bal)}</td><td><div style="display:flex;gap:8px;align-items:center"><div class="share"><i style="width:${pct.toFixed(1)}%"></i></div><span class="num muted">${pct.toFixed(1)}%</span></div></td><td data-v="${h.at || ""}">${h.at ? ago(h.at) : "—"}</td></tr>`;
   }).join("")}</tbody>` : `<tbody><tr><td class="empty">No wallet data yet. Link pilots to ESI, allow wallets, then refresh.</td></tr></tbody>`;
 }
-$("w-refresh").addEventListener("click", async () => { const b = $("w-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; });
+$("w-refresh").addEventListener("click", () => pageSync($("w-refresh"), ["wallets"]));
 
 /* ---------- fittings page ---------- */
 function saveFits() { ls.set("eve-industry-fits", state.fits); }
@@ -6210,15 +6249,17 @@ function pastContracts(key, raw) {
 }
 // What each contract gives (items) and asks for (ask), read once per contract: for the Contracts browser, and for the Assets search (your own open ones:
 // ESI takes their items out of your assets while the contract is up). A contract that can't be read (too old, not yours) isn't asked again
-async function contractItems(key, list, path, access, scopes) {
+async function contractItems(key, list, path, access, scopes, say) {
   const old = state.contracts[key] || {}, prev = new Map([...(old.list || []), ...(old.past || [])].map(c => [c.id, c]));
-  let limited = false;   // ESI rate-limits contract items: once it says so, the rest are read at the next sync instead of holding this one for hours
+  let limited = false, done = 0;   // ESI rate-limits contract items: once it says so (one try, no waiting), the rest are read at the next sync instead of holding this one
+  const todo = list.filter(c => { const p = prev.get(c.id); return !(p && (p.ask || p.noItems)) && !(c.ask || c.noItems); }).length;
   await pool(list, 3, async (c) => {
     const p = prev.get(c.id); if (p && (p.ask || p.noItems)) { c.items = p.items; c.ask = p.ask; if (p.noItems) c.noItems = 1; return; }
     if (c.ask || c.noItems) return;
     if (limited) { if (p && p.items) c.items = p.items; return; }
-    try { const L = await esiAuthGet(path(c.id), access); c.items = L.filter(i => i.is_included).map(i => [i.type_id, i.quantity, i.raw_quantity === -2 ? 1 : 0]); c.ask = L.filter(i => !i.is_included).map(i => [i.type_id, i.quantity]); }   // [type, quantity, copy]
+    try { const L = await esiAuthGet(path(c.id), access, undefined, 1); c.items = L.filter(i => i.is_included).map(i => [i.type_id, i.quantity, i.raw_quantity === -2 ? 1 : 0]); c.ask = L.filter(i => !i.is_included).map(i => [i.type_id, i.quantity]); }   // [type, quantity, copy]
     catch (e) { if (p && p.items) c.items = p.items; if (e.status === 404 || e.status === 403) c.noItems = 1; if (e.status === 429 || e.status === 420) limited = true; }
+    if (say) say(`contracts: items ${++done} of ${todo}`);
   });
   const have = list.filter(c => (c.items && c.items.length) || (c.ask && c.ask.length)), types = [...new Set(have.flatMap(c => [...(c.items || []), ...(c.ask || [])].map(i => i[0])))].filter(t => !state.typeNames[t]);
   if (types.length) Object.assign(state.typeNames, await esiNames(types).catch(() => ({})));
@@ -6283,9 +6324,9 @@ async function locationNames(ids, access, scopes) {
   const systems = need.filter(id => id >= 30000000 && id < 33000000);
   if (systems.length) Object.assign(state.locNames, await esiNames(systems));
   await pool(need.filter(id => id >= 60000000 && id < 64000000), 3, async (id) => { try { const st = await esiGet(`/universe/stations/${id}/`); state.locNames[id] = st.name; (state.misc.locSys = state.misc.locSys || {})[id] = st.system_id; } catch (e) {} });
-  await pool(need.filter(id => id > 1e12), 3, async (id) => {
+  await pool(need.filter(id => id > 1e12 && !structDenied(access, id)), 3, async (id) => {
     if (!scopes.includes(STRUCTURES_SCOPE)) return;
-    try { const info = await esiAuthGet(`/universe/structures/${id}/`, access); state.locNames[id] = info.name; noteStruct(id, info, "assets"); } catch (e) { state.locNames[id] = state.locNames[id] || null; }
+    try { const info = await esiAuthGet(`/universe/structures/${id}/`, access); state.locNames[id] = info.name; noteStruct(id, info, "assets"); } catch (e) { state.locNames[id] = state.locNames[id] || null; if (e.status === 403) structDeny(access, id); }
   });
 }
 async function refreshPrices(force) {
@@ -6635,7 +6676,7 @@ function renderStockChart(counted) {
   el.innerHTML = `<div class="pie-wrap"><svg viewBox="0 0 200 200" class="pie" role="img" aria-label="Stock value breakdown">${slices}${seps}<text x="100" y="96" text-anchor="middle" class="pie-total">${isk(total)}</text><text x="100" y="114" text-anchor="middle" class="pie-sub">total</text></svg>
     <ul class="pie-legend">${top.map(([k, v], i) => `<li><i style="background:${BAR_COLORS[i % BAR_COLORS.length]}"></i><span class="lbl" title="${esc(k)}">${esc(k)}</span><span class="v">${isk(v)}</span><span class="muted num">${(v / total * 100).toFixed(1)}%</span></li>`).join("")}</ul></div>`;
 }
-$("st-refresh").addEventListener("click", async () => { const b = $("st-refresh"); b.disabled = true; b.textContent = "Refreshing…"; await refreshPrices(true); await syncAll(); b.disabled = false; b.textContent = "Refresh from ESI"; renderStock(); });
+$("st-refresh").addEventListener("click", async () => { await refreshPrices(true); await pageSync($("st-refresh"), ["assets", "contracts"]); renderStock(); });
 ["st-search", "st-loc", "st-group", "st-cat", "st-grp"].forEach(id => $(id).addEventListener("input", () => { stockLimit = 200; renderStock(); }));
 $("st-more").addEventListener("click", (e) => { if (e.target.id === "st-more-btn") { stockLimit += 200; renderStock(); } });
 $("st-sources").addEventListener("change", (e) => {
@@ -7081,6 +7122,11 @@ async function structNames() {
   if (ids.length) { try { const nm = await esiNames(ids); for (const s of list) { if (!s.systemName && nm[s.system]) s.systemName = nm[s.system]; if (!s.typeName && nm[s.type]) s.typeName = nm[s.type]; } } catch (e) {} }
   saveMisc();
 }
+// Structures a pilot can't dock in (ESI answers 403): not asked again by that pilot for a day. Each refusal counts against ESI's error limit,
+// and a pilot with stock or contracts in many such citadels used to ask for every one at every sync
+const structNoKey = (access, id) => String(jwtPayload(access).sub).split(":").pop() + ":" + id;
+const structDenied = (access, id) => Date.now() - ((state.misc.structNo || {})[structNoKey(access, id)] || 0) < 864e5;
+function structDeny(access, id) { const N = state.misc.structNo = state.misc.structNo || {}, now = Date.now(); for (const k in N) if (now - N[k] > 864e5) delete N[k]; N[structNoKey(access, id)] = now; }
 // Read structures by id with a pilot's login (ESI only answers for structures that pilot can dock in)
 async function discoverStructs(ids, access, scopes, src) {
   const all = state.misc.structs || {};
@@ -7088,7 +7134,7 @@ async function discoverStructs(ids, access, scopes, src) {
   const stations = [...new Set(ids.filter(id => id >= 60000000 && id < 64000000))].filter(id => !(state.misc.locSys || {})[id]);
   await pool(stations, 3, async (id) => { try { const st = await esiGet(`/universe/stations/${id}/`); state.locNames[id] = state.locNames[id] || st.name; (state.misc.locSys = state.misc.locSys || {})[id] = st.system_id; } catch (e) {} });
   let found = 0;
-  if (scopes.includes(STRUCTURES_SCOPE)) await pool(todo, 3, async (id) => { try { noteStruct(id, await esiAuthGet(`/universe/structures/${id}/`, access), src); found++; } catch (e) {} });
+  if (scopes.includes(STRUCTURES_SCOPE)) await pool(todo.filter(id => !structDenied(access, id)), 3, async (id) => { try { noteStruct(id, await esiAuthGet(`/universe/structures/${id}/`, access), src); found++; } catch (e) { if (e.status === 403) structDeny(access, id); } });
   if (found || stations.length) await structNames();
   return found;
 }
@@ -7559,6 +7605,7 @@ const MK = {
   origin: { c: "#34d399", ico: 15, draw(g, cx, cy, s, a) { const b = s / 2; a = +a || s * 0.2; g.strokeStyle = this.c; g.lineWidth = 2.2; g.beginPath(); g.moveTo(cx - b, cy); g.lineTo(cx - a, cy); g.moveTo(cx + a, cy); g.lineTo(cx + b, cy); g.moveTo(cx, cy - b); g.lineTo(cx, cy - a); g.moveTo(cx, cy + a); g.lineTo(cx, cy + b); g.stroke(); g.setLineDash([2, 3]); g.beginPath(); g.arc(cx, cy, a + 2, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); } },
   kills: { c: "#ef4444", ico: 13, draw(g, cx, cy, s, bad) { const R = s / 2; if (bad) { g.fillStyle = "rgba(239,68,68,0.22)"; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill(); } g.strokeStyle = bad ? "rgba(239,68,68,0.95)" : "rgba(251,146,60,0.55)"; g.lineWidth = bad ? 2 : 1; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke(); } },
   incursion: { c: "#ef4444", ico: 13, draw(g, cx, cy, s) { const R = s / 2; g.strokeStyle = "rgba(239,68,68,0.95)"; g.lineWidth = 1.6; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(cx - R + 1, cy + R - 1); g.lineTo(cx + R - 1, cy - R + 1); g.stroke(); } },
+  focus: { c: "#a3e635", ico: 14, draw(g, cx, cy, s) { g.strokeStyle = this.c; g.lineWidth = 2; g.beginPath(); g.arc(cx, cy, s / 2 - 1, 0, Math.PI * 2); g.stroke(); } },   // systems of the alliance or coalition picked on the Sovereignty page
   route: { c: "#f472b6" }, gates: { c: "rgba(225,140,80,.9)" }, haul: { c: "#fb923c" },
 };
 const mkIco = (kind, arg) => `<canvas class="mk-ico" width="32" height="32" data-mk="${kind}"${arg ? ` data-mk-arg="${esc(String(arg))}"` : ""} aria-hidden="true"></canvas>`;
@@ -7579,7 +7626,7 @@ async function loadSov(force) {
       const list = await esiGet("/sovereignty/map/");
       const ids = [...new Set(list.flatMap(x => [x.alliance_id, x.faction_id]).filter(Boolean))];
       const names = await esiNames(ids).catch(() => ({}));
-      d = { at: Date.now(), list: list.filter(x => x.alliance_id || x.faction_id).map(x => [x.system_id, x.alliance_id || 0, x.faction_id || 0]), names };
+      d = { at: Date.now(), list: list.filter(x => x.alliance_id || x.faction_id).map(x => [x.system_id, x.alliance_id || 0, x.faction_id || 0]), names, open: list.filter(x => !x.faction_id && x.system_id < 31000000).length };   // open: systems sovereignty can be held in (known space, no NPC faction)
       idb.set("sov", d);
     }
     sov = { ...d, bySys: new Map(d.list.map(([sid, a, f]) => [sid, { a, f }])) };
@@ -7611,6 +7658,10 @@ function drawMapNow() {
   const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0);
   const B = m.bounds;
   if (view.k == null) { view.k = Math.min(w / (B.maxX - B.minX), h / (B.maxY - B.minY)) * 0.94; view.cx = (B.minX + B.maxX) / 2; view.cy = (B.minY + B.maxY) / 2; view.k0 = view.k; }
+  const F = mapUI.focus && sov ? new Set(mapUI.focus.ids) : null;
+  if (F && mapUI.focus.fit) { mapUI.focus.fit = false; const P = sov.list.filter(([, a]) => F.has(a)).map(([id]) => m.byId.get(id)).filter(Boolean);   // opened from the Sovereignty page: frame its systems
+    if (P.length) { const xs = P.map(s => s.px), ys = P.map(s => s.py), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      view.k = Math.min(view.k0 * 12, w / Math.max(x1 - x0, 1e-9) * 0.8, h / Math.max(y1 - y0, 1e-9) * 0.8); view.cx = (x0 + x1) / 2; view.cy = (y0 + y1) / 2; } }
   const X = (s) => (s.px - view.cx) * view.k + w / 2, Y = (s) => (s.py - view.cy) * view.k + h / 2;
   g.fillStyle = "#0b1220"; g.fillRect(0, 0, w, h);
   const zoom = view.k / view.k0, L = mapLayers(), mm = state.misc.map || {}, bySov = mm.color === "sov" && sov, allies = allyIds();
@@ -7633,10 +7684,13 @@ function drawMapNow() {
   for (const s of mapData.systems) {
     const x = X(s), y = Y(s); if (x < -10 || y < -10 || x > w + 10 || y > h + 10) continue;
     if (inRange.has(s.id)) { g.fillStyle = "rgba(34,160,107,0.38)"; g.beginPath(); g.arc(x, y, r + 3, 0, Math.PI * 2); g.fill(); }
-    const o = sov && sov.bySys.get(s.id), ally = o && o.a && allies.has(o.a);
+    const o = sov && sov.bySys.get(s.id), ally = o && o.a && allies.has(o.a), foc = F && o && F.has(o.a);
+    if (foc) MK.focus.draw(g, x, y, 2 * (r + 4));
+    g.globalAlpha = F && !foc ? 0.35 : 1;   // the rest dimmed while an alliance is highlighted
     if (ally && !bySov) { g.strokeStyle = ALLY_COLOR; g.lineWidth = 2.2; g.beginPath(); g.arc(x, y, r + 1.8, 0, Math.PI * 2); g.stroke(); }
     g.fillStyle = bySov ? sovColor(s, allies) : secColor(s.s); g.beginPath(); g.arc(x, y, bySov && ally ? r + 0.8 : r, 0, Math.PI * 2); g.fill();
   }
+  g.globalAlpha = 1;
   const mk = mapMarkers(), mark = (id, draw) => { const s = m.byId.get(id); if (s) draw(X(s), Y(s)); };
   const dot = (id, x, y) => { const s = m.byId.get(id); g.fillStyle = bySov ? sovColor(s, allies) : secColor(s.s); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); };   // the system's dot again, over a marker drawn on it
   // Markers: drawn by MK (the same look in the legend, the system panel and the hover box)
@@ -7749,7 +7803,8 @@ function renderMapInfo() {
 document.addEventListener("toggle", (e) => { if (e.target.classList && e.target.classList.contains("jr-box")) mapUI.rangeOpen = e.target.open; }, true);
 // What's in a system, one line each with its map marker (MK): the selected system's panel, and the hover box (short: no rigs or hangar, NPC stations counted)
 function mapSysItems(s, short) {
-  const mk = mapMarkers(), id = s.id, L = [];
+  const mk = mapMarkers(), id = s.id, L = [], so = mapUI.focus && sov && sov.bySys.get(id);
+  if (so && mapUI.focus.ids.includes(so.a)) L.push(`${mkIco("focus")} Highlighted: ${esc(mapUI.focus.n)}`);
   for (const p of mapPilots().get(id) || []) L.push(`${mkIco("pilot")} ${esc(p.c.name)} <span class="muted">· ${p.where ? "docked" + (short ? "" : " at " + esc(p.where)) : "in space"}${p.ship ? ` · ${esc(p.ship)}` : ""}${short ? "" : ` · seen ${ago(p.at)}`}</span>`);
   for (const x of Object.values(state.misc.structs || {})) if (!x.hidden && x.system === id) { const t = x.typeName || STRUCT_TYPE_IDS[x.type] || ""; L.push(`${mkIco("struct")} ${esc(x.name || "Structure")}${t ? ` <span class="muted">(${esc(t)})</span>` : ""}`); }
   for (const n of mk.stations.get(id) || []) L.push(`${mkIco("station")} ${esc(n)}`);
@@ -7799,7 +7854,7 @@ function renderMap() {
     const o = mapOrigin(); if (document.activeElement !== $("map-origin")) $("map-origin").value = o ? o.n : "";
     $("map-status").textContent = `${mapData.systems.length.toLocaleString()} systems · loaded ${ago(mapData.at)}${m.has2d ? "" : " · no 2D layout"} · showing the ${m.layout === "2d" ? "2D schematic" : "3D (seen from above)"} map`;
     const lg = (k) => `data-ml-leg="${k}" role="button" tabindex="0" aria-pressed="${L[k] !== false}" title="Click to ${L[k] !== false ? "hide" : "show"} on the map"${L[k] !== false ? "" : ` class="off"`}`;   // a legend line with a layer shows or hides it
-    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span ${lg("structs")}>${mkIco("struct")} Your citadels</span><span ${lg("friendly")}>${mkIco("friendly")} Friendly (imported)</span><span ${lg("keepstars")}>${mkIco("keepstar")} Keepstar</span><span ${lg("caps")}>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span ${lg("npc")}>${mkIco("npc")} NPC station (zoom in)</span><span ${lg("stations")}>${mkIco("station")} Station with your stock</span><span ${lg("pi")}>${mkIco("pi")} Your planets</span><span ${lg("gates")}><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span ${lg("homes")}>${mkIco("home")} Home (left of the system)</span><span ${lg("pilots")}>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span ${lg("clones")}>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span ${lg("danger")}>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span ${lg("incursions")}>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
+    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span ${lg("structs")}>${mkIco("struct")} Your citadels</span><span ${lg("friendly")}>${mkIco("friendly")} Friendly (imported)</span><span ${lg("keepstars")}>${mkIco("keepstar")} Keepstar</span><span ${lg("caps")}>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span ${lg("npc")}>${mkIco("npc")} NPC station (zoom in)</span><span ${lg("stations")}>${mkIco("station")} Station with your stock</span><span ${lg("pi")}>${mkIco("pi")} Your planets</span><span ${lg("gates")}><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span ${lg("homes")}>${mkIco("home")} Home (left of the system)</span><span ${lg("pilots")}>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span ${lg("clones")}>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.focus ? `<span>${mkIco("focus")} ${esc(mapUI.focus.n)}${sov ? ` (${sov.list.filter(([, a]) => mapUI.focus.ids.includes(a)).length} systems)` : ""} <button type="button" class="link" id="map-focus-clear">Hide</button></span>` : ""}${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span ${lg("danger")}>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span ${lg("incursions")}>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
   } else { $("map-legend").innerHTML = ""; $("map-status").textContent = ""; }
   renderPlanner(); renderGather(); drawMap(); renderMapInfo();
 }
@@ -7819,8 +7874,38 @@ let kills = null, killsLoading = false;
 async function loadKills(force) {
   if (killsLoading || esiDown() || (!force && kills && Date.now() - kills.at < 600e3)) return;
   killsLoading = true;
-  try { const list = await esiGet("/universe/system_kills/"); kills = { at: Date.now(), by: new Map(list.map(x => [x.system_id, { s: x.ship_kills || 0, p: x.pod_kills || 0, n: x.npc_kills || 0 }])) }; } catch (e) {}
-  killsLoading = false; if (!$("page-map").hidden) { drawMap(); renderMapInfo(); renderSupply(); }
+  try { const list = await esiGet("/universe/system_kills/"); kills = { at: Date.now(), by: new Map(list.map(x => [x.system_id, { s: x.ship_kills || 0, p: x.pod_kills || 0, n: x.npc_kills || 0 }])) }; await kills3Keep(list); } catch (e) {}
+  killsLoading = false; if (!$("page-map").hidden) { drawMap(); renderMapInfo(); renderSupply(); } if (!$("page-intel").hidden) renderViolent();
+}
+// ESI's kills cover the last hour (read again after an hour): each new reading is kept (IDB "kills3" { v, snaps: [{ at, by: [[system, ships, pods]] }] }, 4 hours)
+// so Intel can add up the last 3 hours; a reading equal to the newest one (ESI hasn't moved on yet) isn't kept twice
+let kills3 = null;
+async function kills3Load() { if (!kills3) { const d = await idb.get("kills3").catch(() => null); kills3 = kills3 || (d && d.v === 1 ? d : { v: 1, snaps: [] }); } return kills3; }
+async function kills3Keep(list) {
+  const D = await kills3Load(), by = list.filter(x => x.ship_kills || x.pod_kills).map(x => [x.system_id, x.ship_kills || 0, x.pod_kills || 0]).sort((a, b) => a[0] - b[0]), now = Date.now();
+  if (D.snaps.length && JSON.stringify(D.snaps[D.snaps.length - 1].by) === JSON.stringify(by)) return;
+  D.snaps = [...D.snaps.filter(x => now - x.at < 4 * 3600e3), { at: now, by }]; await idb.set("kills3", D);
+}
+// The last 3 hours: the newest readings taken in that time (at most 3), added up by system → { by: Map(system → { s, p }), n: readings }
+function kills3Sum() {
+  const L = ((kills3 && kills3.snaps) || []).filter(x => Date.now() - x.at < 3 * 3600e3).slice(-3), by = new Map();
+  for (const x of L) for (const [id, sh, p] of x.by) { const e = by.get(id) || by.set(id, { s: 0, p: 0 }).get(id); e.s += sh; e.p += p; }
+  return { by, n: L.length };
+}
+// Intel's right column: the null-sec and low-sec systems with the most ships and pods killed in the last 3 hours, top 10 each (like DOTLAN's front page)
+let violentMap = 0;   // the saved map read from this browser: 1 asked, 2 answered
+function renderViolent() {
+  const nt = $("intel-null"), lt = $("intel-low"); if (!nt || $("page-intel").hidden) return;
+  if (!kills3) { kills3Load().then(renderViolent); return; }
+  if (!mapData && !violentMap) { violentMap = 1; idb.get("map").then(d => { if (d && d.systems && !mapData) { mapData = d; mapIdx = null; } violentMap = 2; renderViolent(); }, () => { violentMap = 2; }); }
+  const m = mapIndex(), K = kills3Sum(), now = Date.now();
+  $("intel-kills-since").textContent = !K.n ? "" : K.n < 3 ? `Ships / pods killed. Counts ${K.n} of the last 3 hours: the tool keeps one reading an hour while it's open.` : "Ships / pods killed.";
+  const rows = (lo) => !m ? [] : [...K.by].map(([id, k]) => ({ s: m.byId.get(id), k })).filter(x => x.s && x.s.id < 31000000 && (lo ? secRound(x.s.s) > 0 && secRound(x.s.s) < 0.5 : secRound(x.s.s) <= 0)).sort((a, b) => (b.k.s + b.k.p) - (a.k.s + a.k.p) || b.k.s - a.k.s).slice(0, 10);
+  const draw = (el, lo) => { const R = rows(lo);
+    el.innerHTML = `<thead><tr><th scope="col">System</th><th scope="col">Region</th><th scope="col" class="num">Ships</th><th scope="col" class="num">Pods</th></tr></thead><tbody>${R.length ? R.map(x => { const rg = (m.regions[x.s.r] || {}).n || "";
+      return `<tr><th scope="row" data-v="${esc(x.s.n)}" title="${esc(x.s.n)}">${esc(x.s.n)} <span class="num" style="color:${secColor(x.s.s)}">${secLabel(x.s.s)}</span></th><td data-v="${esc(rg)}" title="${esc(rg)}">${esc(rg)}</td><td class="num" data-v="${x.k.s}">${x.k.s}</td><td class="num" data-v="${x.k.p}">${x.k.p}</td></tr>`; }).join("")
+      : `<tr><td class="empty" colspan="4">${!m ? (violentMap === 2 ? "Load the map once on the Map page to see the systems." : "Loading…") : !K.n ? (kills ? "Reading…" : esiDown() ? "ESI is down." : "Reading kills from ESI…") : "No kill in these hours."}</td></tr>`}</tbody>`; };
+  draw(nt, false); draw(lt, true);
 }
 // A system is dangerous from this many ships and pods killed in the last hour (set on the Map)
 const dangerMin = () => Math.max(1, Math.round(rxNum((state.misc.map || {}).danger, 5)));
@@ -8218,7 +8303,7 @@ async function readFatigue(c, access) {
     else if (t.dataset.mapHomego) { mm.origin = +t.dataset.mapHomego; mapUI.sel = mm.origin; }
     saveMisc(); renderMap();
   });
-  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-map-origin]"); if (b) { state.misc.map = state.misc.map || {}; state.misc.map.origin = +b.dataset.mapOrigin; saveMisc(); renderMap(); } if (e.target.id === "map-haul-clear") { mapUI.haul = null; renderMap(); } if (e.target.id === "map-reload") { mapData = null; mapIdx = null; loadMapData(); } });
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-map-origin]"); if (b) { state.misc.map = state.misc.map || {}; state.misc.map.origin = +b.dataset.mapOrigin; saveMisc(); renderMap(); } if (e.target.id === "map-haul-clear") { mapUI.haul = null; renderMap(); } if (e.target.id === "map-focus-clear") { mapUI.focus = null; renderMap(); } if (e.target.id === "map-reload") { mapData = null; mapIdx = null; loadMapData(); } });
 })();
 
 /* ---------- owned blueprints ---------- */
@@ -10341,7 +10426,7 @@ async function pnlContents(w, path, access) {
   let limited = false;   // rate-limited by ESI: the rest at the next sync
   await pool(ids, 3, async (cid) => {
     if (limited) return;
-    try { const L = await esiAuthGet(path(cid), access), inc = L.filter(i => i.is_included), use = inc.length ? inc : L; D.cont[cid] = { i: use.map(i => [i.type_id, i.quantity]) }; }
+    try { const L = await esiAuthGet(path(cid), access, undefined, 1), inc = L.filter(i => i.is_included), use = inc.length ? inc : L; D.cont[cid] = { i: use.map(i => [i.type_id, i.quantity]) }; }
     catch (e) { if (e.status === 404 || e.status === 403) D.cont[cid] = { gone: e.status }; if (e.status === 429 || e.status === 420) limited = true; }   // too old or not yours to read: not asked again
   });
 }
@@ -10852,7 +10937,7 @@ async function corpEnsure() {
     if (C.minAs === "minerals") { await loadReproc(ores).catch(() => null); const mats = ores.flatMap(t => (((state.misc.reproc || {})[t] || {}).mats || []).map(m => m[0])); await ensurePrices([...new Set(mats)], C.minAt).catch(() => null); }
     else await ensurePrices(ores, C.minAt).catch(() => null);
     minSave();
-  } finally { corpBusy = false; if (!$("page-corp").hidden) renderCorp(true); if (!$("page-todo").hidden) renderTodo(); todoBadge(); }
+  } finally { corpBusy = false; if (!$("page-corp").hidden) renderCorp(true); if (!$("page-misc").hidden) renderCorpMoon(); if (!$("page-todo").hidden) renderTodo(); todoBadge(); }
 }
 // What one unit of a mined ore is worth: the minerals it gives at the best possible yield (as on Assets), or its own price; null without a price
 const minUnit = (t) => { const C = corpCfg(); return C.minAs === "ore" ? priceIn(C.minAt, t) || null : oreValue(t, C.minAt) || null; };
@@ -10911,8 +10996,8 @@ function renderCorpMoon() {
   else ext.innerHTML = `<thead><tr><th scope="col">Moon</th><th scope="col">Structure</th><th scope="col" class="num">Started</th><th scope="col" class="num">Chunk arrives</th><th scope="col" class="num">Fractures by itself</th><th scope="col">Now</th></tr></thead><tbody>${X.map(x => `<tr><th scope="row">${esc(N(x.moon))}</th><td>${esc(stN(x.st))}</td><td class="num" data-v="${x.start}">${fmtDate(x.start)}</td><td class="num" data-v="${x.arrive}">${fmtDate(x.arrive)}</td><td class="num" data-v="${x.decay}">${fmtDate(x.decay)}</td>
       <td data-v="${x.arrive}">${now < x.arrive ? `extracting · ready in ${fmtDur((x.arrive - now) / 1000)}` : now < x.decay ? `<span class="pill good">ready</span> fractures in ${fmtDur((x.decay - now) / 1000)}` : `<span class="pill mid">fractured</span>`}</td></tr>`).join("")}</tbody>`;
   // Who mined what (the moon drills' ledgers) and your pilots' own mining, over the period, valued in the pricing
-  const from = now - C.days * 864e5, unpriced = new Set();
-  const table = (el, groups, unit, msg) => {
+  const from = now - C.days * 864e5, unLed = new Set(), unOwn = new Set();
+  const table = (el, groups, unit, msg, unpriced) => {
     if (!groups.size) return empty(el, msg);
     let tq = 0, tv = 0, tm = 0;
     el.innerHTML = `<thead><tr><th scope="col">${unit}</th><th scope="col" class="num">Units</th><th scope="col" class="num">m³</th><th scope="col" class="num">Value</th></tr></thead>` + [...groups].sort((a, b) => a[0].localeCompare(b[0])).map(([g, M]) => {
@@ -10921,13 +11006,15 @@ function renderCorpMoon() {
       + `<tfoot><tr class="total"><th scope="row">Total</th><td class="num">${tq.toLocaleString()}</td><td class="num">${Math.round(tm).toLocaleString()}</td><td class="num"><b>${isk(tv)}</b></td></tr></tfoot>`;
   };
   const byMiner = new Map(); for (const [, c] of corps) for (const o of Object.values(c.obs || {})) for (const [ch, t, q, at] of o.rows) { if (at < from) continue; const g = byMiner.get(N(ch)) || byMiner.set(N(ch), new Map()).get(N(ch)); g.set(t, (g.get(t) || 0) + q); }
-  table(led, byMiner, "Miner · ore", corps.some(([, c]) => c.obsAt) ? `Nothing mined at your moon drills in the last ${C.days} days.` : "No mining ledger read yet." + perm(CORP_MINING_SCOPE, "Corporation moon mining (Station Manager / Accountant)"));
+  table(led, byMiner, "Miner · ore", corps.some(([, c]) => c.obsAt) ? `Nothing mined at your moon drills in the last ${C.days} days.` : "No mining ledger read yet." + perm(CORP_MINING_SCOPE, "Corporation moon mining (Station Manager / Accountant)"), unLed);
   const byPilot = new Map(); for (const [, p] of Object.entries(D.char)) for (const [at, , t, q] of p.rows) { if (at < from) continue; const g = byPilot.get(p.name) || byPilot.set(p.name, new Map()).get(p.name); g.set(t, (g.get(t) || 0) + q); }
-  table(own, byPilot, "Pilot · ore", Object.values(D.char).some(p => p.at) ? `Your pilots mined nothing in the last ${C.days} days.` : "No pilot's mining read yet." + perm(CHAR_MINING_SCOPE, "Mining ledger"));
-  $("corp-min-note").innerHTML = noPriceNote(C.minAt, [...unpriced], "left out of the values");
-  const mb = $("corp-min-bar"); if (mb && !mb.contains(document.activeElement)) mb.innerHTML = `<label class="label" for="corp-days">Period</label><select id="corp-days" data-corp="days">${[7, 30, 90].map(d => `<option value="${d}"${C.days === d ? " selected" : ""}>Last ${d} days</option>`).join("")}</select>
-    <label class="label" for="corp-as">Value ore as</label><select id="corp-as" data-corp="minAs"><option value="minerals"${C.minAs === "minerals" ? " selected" : ""}>Its minerals (best possible yield)</option><option value="ore"${C.minAs === "ore" ? " selected" : ""}>The ore's own price</option></select>
-    <label class="label">in</label>${pricingOptions(C.minAt, `data-corp="minAt" aria-label="Pricing for mined ore"`)}`;
+  table(own, byPilot, "Pilot · ore", Object.values(D.char).some(p => p.at) ? `Your pilots mined nothing in the last ${C.days} days.` : "No pilot's mining read yet." + perm(CHAR_MINING_SCOPE, "Mining ledger"), unOwn);
+  $("corp-min-note").innerHTML = noPriceNote(C.minAt, [...unLed], "left out of the values");
+  $("misc-min-note").innerHTML = noPriceNote(C.minAt, [...unOwn], "left out of the values");
+  // The same period and valuation for Who mined what (Corporation) and Your pilots' mining (Misc)
+  for (const p of ["corp", "mmin"]) { const mb = $(p === "corp" ? "corp-min-bar" : "misc-min-bar"); if (mb && !mb.contains(document.activeElement)) mb.innerHTML = `<label class="label" for="${p}-days">Period</label><select id="${p}-days" data-corp="days">${[7, 30, 90].map(d => `<option value="${d}"${C.days === d ? " selected" : ""}>Last ${d} days</option>`).join("")}</select>
+    <label class="label" for="${p}-as">Value ore as</label><select id="${p}-as" data-corp="minAs"><option value="minerals"${C.minAs === "minerals" ? " selected" : ""}>Its minerals (best possible yield)</option><option value="ore"${C.minAs === "ore" ? " selected" : ""}>The ore's own price</option></select>
+    <label class="label">in</label>${pricingOptions(C.minAt, `data-corp="minAt" aria-label="Pricing for mined ore"`)}`; }
 }
 document.addEventListener("change", (e) => { const k = e.target.dataset && e.target.dataset.corp; if (!k) return; const C = corpCfg(); C[k] = /^(block|warn|days)$/.test(k) ? +e.target.value : e.target.value; saveMisc(); renderCorp(); corpEnsure(); });
 document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-corp-refresh]"); if (b) corpRefresh(); });
@@ -11007,10 +11094,13 @@ async function intelRefresh() {
   for (const c of list) { try { const tok = await refreshTok(c.esiId); await intelSync(c.esiId, c.name, tok.access_token); } catch (e) { toast(`${c.name}: ${e.message}`); } }
   intelMsg = ""; renderIntel();
 }
+// Needs attention and the violent systems are on Intel, the notifications list on Misc
+const intelShown = () => !$("page-intel").hidden || !$("page-misc").hidden;
 function renderIntel() {
   const C = state.misc.intel = state.misc.intel || {}, box = $("intel-list"), al = $("intel-alerts"); if (!box) return;
-  if (!intelData) { box.innerHTML = `<tbody><tr><td class="empty">Loading…</td></tr></tbody>`; intelLoad().then(() => { intelBadge(); if (!$("page-intel").hidden) renderIntel(); }); return; }
-  if (!intelBusy) { intelBusy = true; intelNames().then(ch => { intelBusy = false; if (ch && !$("page-intel").hidden) renderIntel(); }, () => { intelBusy = false; }); }
+  renderViolent();
+  if (!intelData) { box.innerHTML = `<tbody><tr><td class="empty">Loading…</td></tr></tbody>`; intelLoad().then(() => { intelBadge(); if (intelShown()) renderIntel(); }); return; }
+  if (!intelBusy) { intelBusy = true; intelNames().then(ch => { intelBusy = false; if (ch && intelShown()) renderIntel(); }, () => { intelBusy = false; }); }
   const D = intelData, days = [1, 3, 7, 30, 90].includes(+C.days) ? +C.days : 7, q = ($("intel-find").value || "").trim().toLowerCase(), now = Date.now();
   const bar = $("intel-bar"); if (bar && !bar.contains(document.activeElement)) bar.innerHTML = `<label class="label" for="intel-days">Period</label><select id="intel-days" data-intel="days">${[[1, "Last 24 hours"], [3, "Last 3 days"], [7, "Last 7 days"], [30, "Last 30 days"], [90, "Everything kept"]].map(([d, l]) => `<option value="${d}"${days === d ? " selected" : ""}>${l}</option>`).join("")}</select>
     <button type="button" class="primary" data-intel-refresh="1">Refresh from ESI</button><span class="muted" style="font-size:.85rem">${esc(intelMsg)}${Object.keys(D.at).length ? ` Read ${ago(Math.max(...Object.values(D.at)))}` : ""}</span>`;
@@ -11134,7 +11224,7 @@ document.addEventListener("click", async (e) => {
   const b = e.target.closest && e.target.closest("[data-cb-show],[data-cb-open],[data-cb-refresh]"); if (!b) return;
   if (b.dataset.cbShow) { cbCfg().show = b.dataset.cbShow; saveMisc(); renderCbrowse(); return; }
   if (b.dataset.cbOpen) { const id = +b.dataset.cbOpen; if (cbOpen.has(id)) cbOpen.delete(id); else cbOpen.add(id); renderCbrowse(); return; }
-  b.disabled = true; b.textContent = "Refreshing…"; await syncAll(); renderCbrowse();
+  await pageSync(b, ["contracts"]); renderCbrowse();
 });
 
 /* ---------- item database page ---------- */
@@ -11446,23 +11536,26 @@ function renderSovPage() {
   $("sov-refresh").disabled = !!sovRun;
   const aName = (a) => (I.al[a] || {}).n || I.names[a] || ((sov && sov.names) || {})[a] || `Alliance ${a}`;
   const logo = (k, id) => `<img src="https://images.evetech.net/${k}/${id}/logo?size=32" width="20" height="20" alt="" loading="lazy" style="vertical-align:middle">`;
+  const mapBtn = (k, n) => ` <button type="button" class="link" data-sov-map="${esc(k)}" title="Show ${esc(n)}'s systems on the map">Map</button>`;
   const aCell = (a) => a ? `${logo("alliances", a)} ${esc(aName(a))}${(I.al[a] || {}).t ? ` <span class="muted">[${esc(I.al[a].t)}]</span>` : ""}` : `<span class="muted">No alliance</span>`;
   const aTick = (a) => a ? `${logo("alliances", a)} ${esc((I.al[a] || {}).t || aName(a))}` : `<span class="muted">None</span>`;   // the narrow movements table: logo and ticker
   const num = (v) => v == null ? `<td class="num" data-v="">—</td>` : `<td class="num" data-v="${v}">${v.toLocaleString()}</td>`;
+  const pct = (v) => { const p = sov && sov.open ? v / sov.open * 100 : null; return p == null ? "" : `${p > 0 && p < 10 ? p.toFixed(1) : Math.round(p)}%`; };   // share of the systems sovereignty can be held in
+  const sysTd = (v) => `<td class="num" data-v="${v}">${v.toLocaleString()}${pct(v) ? ` <span class="muted">(${pct(v)})</span>` : ""}</td>`;
   const stats = [...held].map(([a, sys]) => { const i = I.al[a], cs = (i && i.corps) || [], ms = cs.map(c => I.corp[c]).filter(Boolean);
     return { a, sys, corps: i ? cs.length : null, m: ms.length ? ms.reduce((t, x) => t + x.m, 0) : null }; }).sort((x, y) => y.sys - x.sys || (y.m || 0) - (x.m || 0));
   const byA = new Map(stats.map(x => [x.a, x])), coalOf = (a) => cfg.coals.find(c => c.id === cfg.of[a]);
-  $("sov-summary").innerHTML = [["Alliances", stats.length, "holding sovereignty"], ["Systems", stats.reduce((t, x) => t + x.sys, 0), "held by alliances"], ["Members", stats.reduce((t, x) => t + (x.m || 0), 0), "in those alliances"]]
+  $("sov-summary").innerHTML = [["Alliances", stats.length, "holding sovereignty"], ["Systems", stats.reduce((t, x) => t + x.sys, 0), `held by alliances${sov && sov.open ? ` · ${pct(stats.reduce((t, x) => t + x.sys, 0))} of ${sov.open.toLocaleString()} claimable` : ""}`], ["Members", stats.reduce((t, x) => t + (x.m || 0), 0), "in those alliances"]]
     .map(([l, v, m]) => `<div class="slot-tile"><div class="label">${l}</div><span class="big-num">${v.toLocaleString()}</span><div class="muted">${m}</div></div>`).join("");
   // Coalitions: the sums of their alliances that hold sovereignty
   $("sovc-table").innerHTML = `<thead><tr><th scope="col">Coalition</th><th scope="col">Alliances</th><th scope="col" class="num">Systems</th><th scope="col" class="num">Members</th><th scope="col" class="num">Corporations</th><th scope="col"></th></tr></thead><tbody>${cfg.coals.length ? cfg.coals.map(c => {
     const as = Object.keys(cfg.of).filter(a => cfg.of[a] === c.id).map(Number).sort((x, y) => ((byA.get(y) || {}).m || 0) - ((byA.get(x) || {}).m || 0)), xs = as.map(a => byA.get(a)).filter(Boolean), sum = (k) => xs.some(x => x[k] != null) ? xs.reduce((t, x) => t + (x[k] || 0), 0) : as.length ? null : 0;
-    return `<tr><th scope="row" data-v="${esc(c.n)}">${esc(c.n)}</th><td data-v="${as.length}" style="font-size:.85rem">${as.length ? as.map(a => `<span title="${esc(aName(a))}">${logo("alliances", a)} ${esc((I.al[a] || {}).t || aName(a))}</span>`).join(" ") : `<span class="muted">none yet</span>`}</td>${num(sum("sys") || 0)}${num(sum("m"))}${num(sum("corps"))}<td><button type="button" class="link" data-sov-coal-del="${esc(c.id)}">Remove</button></td></tr>`; }).join("")
+    return `<tr><th scope="row" data-v="${esc(c.n)}">${esc(c.n)}${xs.length ? mapBtn("c" + c.id, c.n) : ""}</th><td data-v="${as.length}" style="font-size:.85rem">${as.length ? as.map(a => `<span title="${esc(aName(a))}">${logo("alliances", a)} ${esc((I.al[a] || {}).t || aName(a))}</span>`).join(" ") : `<span class="muted">none yet</span>`}</td>${sysTd(sum("sys") || 0)}${num(sum("m"))}${num(sum("corps"))}<td><button type="button" class="link" data-sov-coal-del="${esc(c.id)}">Remove</button></td></tr>`; }).join("")
     : `<tr><td class="empty" colspan="6">No coalition yet. Name one above.</td></tr>`}</tbody>`;
   // The ranking
   const q = $("sov-find").value.trim().toLowerCase(), opts = (a) => `<option value="">—</option>` + cfg.coals.map(c => `<option value="${esc(c.id)}"${cfg.of[a] === c.id ? " selected" : ""}>${esc(c.n)}</option>`).join("");
   const rows = stats.map((x, i) => ({ ...x, rank: i + 1 })).filter(x => !q || aName(x.a).toLowerCase().includes(q) || ((I.al[x.a] || {}).t || "").toLowerCase().includes(q));
-  box.innerHTML = `<thead><tr><th scope="col" class="num">#</th><th scope="col">Alliance</th><th scope="col" class="num">Systems</th><th scope="col" class="num">Members</th><th scope="col" class="num">Corporations</th><th scope="col">Coalition</th></tr></thead><tbody>${rows.length ? rows.map(x => `<tr><td class="num" data-v="${x.rank}">${x.rank}</td><th scope="row" data-v="${esc(aName(x.a))}">${aCell(x.a)}</th>${num(x.sys)}${num(x.m)}${num(x.corps)}<td data-v="${esc((coalOf(x.a) || {}).n || "")}"><select data-sov-of="${x.a}" aria-label="Coalition of ${esc(aName(x.a))}"${cfg.coals.length ? "" : ` disabled title="Add a coalition above first"`}>${opts(x.a)}</select></td></tr>`).join("")
+  box.innerHTML = `<thead><tr><th scope="col" class="num">#</th><th scope="col">Alliance</th><th scope="col" class="num">Systems</th><th scope="col" class="num">Members</th><th scope="col" class="num">Corporations</th><th scope="col">Coalition</th></tr></thead><tbody>${rows.length ? rows.map(x => `<tr><td class="num" data-v="${x.rank}">${x.rank}</td><th scope="row" data-v="${esc(aName(x.a))}">${aCell(x.a)}${mapBtn("a" + x.a, aName(x.a))}</th>${sysTd(x.sys)}${num(x.m)}${num(x.corps)}<td data-v="${esc((coalOf(x.a) || {}).n || "")}"><select data-sov-of="${x.a}" aria-label="Coalition of ${esc(aName(x.a))}"${cfg.coals.length ? "" : ` disabled title="Add a coalition above first"`}>${opts(x.a)}</select></td></tr>`).join("")
     : `<tr><td class="empty" colspan="6">${!sov ? (sovRun ? "Reading sovereignty…" : "Sovereignty isn't read yet: Refresh from ESI.") : q ? "No alliance matches." : "No alliance holds sovereignty."}</td></tr>`}</tbody>`;
   // 7 days: today against the oldest snapshot of the last 7 days
   const base = sovBase(), since = base && now - base.at > 3600e3 ? `Since ${fmtDate(base.at)}${now - base.at < 6.5 * SOV_DAY ? " (the oldest snapshot this tool has: it keeps one a day while this page is opened)" : ""}.` : "";
@@ -11487,6 +11580,11 @@ $("sovc-form").addEventListener("submit", (e) => { e.preventDefault(); const n =
   if (cfg.coals.some(c => c.n.toLowerCase() === n.toLowerCase())) { toast(`There's already a coalition called ${n}`); return; }
   cfg.coals.push({ id: "c" + Date.now().toString(36), n }); $("sovc-name").value = ""; saveMisc(); renderSovPage(); });
 document.addEventListener("change", (e) => { const a = e.target.dataset && e.target.dataset.sovOf; if (!a) return; const cfg = sovCfg(); if (e.target.value) cfg.of[a] = e.target.value; else delete cfg.of[a]; saveMisc(); renderSovPage(); });
+// Map: the alliance's (or the coalition's) systems highlighted, the map framed on them
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-sov-map]"); if (!b) return; const k = b.dataset.sovMap, cfg = sovCfg(), I = sovInfo || { al: {}, names: {} };
+  const co = k[0] === "c" && cfg.coals.find(c => c.id === k.slice(1)), ids = co ? Object.keys(cfg.of).filter(a => cfg.of[a] === co.id).map(Number) : [+k.slice(1)];
+  mapUI.focus = { n: co ? co.n : (I.al[ids[0]] || {}).n || I.names[ids[0]] || ((sov && sov.names) || {})[ids[0]] || `Alliance ${ids[0]}`, ids, fit: true };
+  showPage("map"); renderMap(); setTimeout(() => $("map-wrap").scrollIntoView({ behavior: "smooth", block: "center" }), 50); });
 document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-sov-coal-del]"); if (!b) return; const cfg = sovCfg(), id = b.dataset.sovCoalDel;
   cfg.coals = cfg.coals.filter(c => c.id !== id); for (const a of Object.keys(cfg.of)) if (cfg.of[a] === id) delete cfg.of[a]; saveMisc(); renderSovPage(); });
 
