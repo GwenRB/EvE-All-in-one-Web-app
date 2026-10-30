@@ -211,6 +211,12 @@ async def handle(route):
         if not tail: return await j(list(SYS))
         sid=int(tail); n,x,y,z,sec,c=SYS[sid]; nb=[b for a,b in LINKS if a==sid]+[a for a,b in LINKS if b==sid]
         return await j({"name":{"en":n},"position":{"x":x*LYm,"y":y*LYm,"z":z*LYm},"position2_d":{"x":x*LYm,"y":z*LYm},"security_status":sec,"constellation_id":c,"region_id":CON[c],"stargates_to_system_ids":nb})
+    # EVE-Scout: Thera → Bravo, Thera → a wormhole system (not on the map), "Turnur" (played by Charlie) → Foxtrot
+    if "api.eve-scout.com/v2/public/signatures" in u:
+        exp=lambda h: time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(time.time()+h*3600))
+        return await j([{"signature_type":"wormhole","out_system_id":31000005,"out_system_name":"Thera","out_signature":"JXT-585","in_system_id":30000002,"in_system_name":"Bravo","in_signature":"XWF-276","max_ship_size":"large","expires_at":exp(5)},
+                        {"signature_type":"wormhole","out_system_id":31000005,"out_system_name":"Thera","out_signature":"BOA-444","in_system_id":31001022,"in_system_name":"J120452","in_signature":"QFX-016","max_ship_size":"medium","expires_at":exp(3)},
+                        {"signature_type":"wormhole","out_system_id":30000003,"out_system_name":"Turnur","out_signature":"OOA-254","in_system_id":30000006,"in_system_name":"Foxtrot","in_signature":"BWI-992","max_ship_size":"xlarge","expires_at":exp(12)}])
     if "/incursions" in path: return await j([{"constellation_id":20000003,"infested_solar_systems":[30000006],"staging_solar_system_id":30000006,"state":"established"}])
     if "/sovereignty/map" in path: return await j([])
     if "/universe/systems/" in path:

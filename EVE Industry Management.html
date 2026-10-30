@@ -1252,7 +1252,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <input type="search" id="map-find" list="map-names" placeholder="Find a system" aria-label="Find a system" style="width:180px"><datalist id="map-names"></datalist>
         <label class="label" for="map-origin">Jump from</label><input type="text" id="map-origin" list="map-names" placeholder="System" style="width:140px" aria-label="Jump origin system">
         <label class="label" for="map-ship">Range</label><select id="map-ship" aria-label="Pilot and ship for jump range"></select><input type="text" id="map-range" inputmode="decimal" style="width:70px" aria-label="Custom jump range in light years" hidden>
-        <span class="map-layers"><label><input type="checkbox" data-ml="gates"> Gates</label><label><input type="checkbox" data-ml="structs"> Citadels</label><label><input type="checkbox" data-ml="stations"> Stations</label><label><input type="checkbox" data-ml="pi"> Planets</label><label><input type="checkbox" data-ml="pilots"> Pilots</label><label><input type="checkbox" data-ml="clones"> Clones</label><label><input type="checkbox" data-ml="friendly"> Friendly</label><label><input type="checkbox" data-ml="keepstars"> Keepstars</label><label><input type="checkbox" data-ml="npc"> NPC stations</label><label><input type="checkbox" data-ml="caps"> Capitals</label><label><input type="checkbox" data-ml="danger"> Kills (last hour)</label><label><input type="checkbox" data-ml="incursions"> Incursions</label><label><input type="checkbox" data-ml="homes"> Homes</label><label title="Ships and pods killed in the last hour that make a system dangerous (supply chain gate legs warn about them)">Danger from <input type="text" id="map-danger" inputmode="numeric" style="width:44px" aria-label="Kills that make a system dangerous"> kills</label></span>
+        <span class="map-layers"><label><input type="checkbox" data-ml="gates"> Gates</label><label><input type="checkbox" data-ml="structs"> Citadels</label><label><input type="checkbox" data-ml="stations"> Stations</label><label><input type="checkbox" data-ml="pi"> Planets</label><label><input type="checkbox" data-ml="pilots"> Pilots</label><label><input type="checkbox" data-ml="clones"> Clones</label><label><input type="checkbox" data-ml="friendly"> Friendly</label><label><input type="checkbox" data-ml="keepstars"> Keepstars</label><label><input type="checkbox" data-ml="npc"> NPC stations</label><label><input type="checkbox" data-ml="caps"> Capitals</label><label><input type="checkbox" data-ml="danger"> Kills (last hour)</label><label><input type="checkbox" data-ml="incursions"> Incursions</label><label><input type="checkbox" data-ml="homes"> Homes</label><label><input type="checkbox" data-ml="scout"> Thera / Turnur</label><label title="Ships and pods killed in the last hour that make a system dangerous (supply chain gate legs warn about them)">Danger from <input type="text" id="map-danger" inputmode="numeric" style="width:44px" aria-label="Kills that make a system dangerous"> kills</label></span>
         <button type="button" id="map-reset">Reset view</button>
       </div>
       <div class="toolbar" id="map-tools2" style="margin-top:6px">
@@ -1399,7 +1399,7 @@ function renderSrv() {
   el.hidden = false; el.className = "pill srv " + cls; el.textContent = "● " + txt;
   el.title = `Tranquility${srv.version ? `, version ${srv.version}` : ""}${srv.start ? `, back online at ${hm(srv.start, true)} EVE time (${fmtDate(srv.start)} your time)` : ""}. Read ${ago(srv.at)}.${down ? " During the daily downtime (11:00 EVE time) syncs, prices and map data wait until the server is back." : ""}`;
 }
-setInterval(() => { loadStatus(); if (!$("page-map").hidden) loadKills(); }, 120e3);
+setInterval(() => { loadStatus(); if (!$("page-map").hidden) { loadKills(); if (mapLayers().scout) loadScout(); } }, 120e3);
 
 /* ---------- storage (this browser's localStorage, plus JSON backups) ---------- */
 function saveLocal() { ls.set("eve-industry-roster", { chars: state.chars.map(({ _mode, ...c }) => c), extra: state.extra }); }
@@ -7605,6 +7605,7 @@ const MK = {
   origin: { c: "#34d399", ico: 15, draw(g, cx, cy, s, a) { const b = s / 2; a = +a || s * 0.2; g.strokeStyle = this.c; g.lineWidth = 2.2; g.beginPath(); g.moveTo(cx - b, cy); g.lineTo(cx - a, cy); g.moveTo(cx + a, cy); g.lineTo(cx + b, cy); g.moveTo(cx, cy - b); g.lineTo(cx, cy - a); g.moveTo(cx, cy + a); g.lineTo(cx, cy + b); g.stroke(); g.setLineDash([2, 3]); g.beginPath(); g.arc(cx, cy, a + 2, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); } },
   kills: { c: "#ef4444", ico: 13, draw(g, cx, cy, s, bad) { const R = s / 2; if (bad) { g.fillStyle = "rgba(239,68,68,0.22)"; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill(); } g.strokeStyle = bad ? "rgba(239,68,68,0.95)" : "rgba(251,146,60,0.55)"; g.lineWidth = bad ? 2 : 1; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke(); } },
   incursion: { c: "#ef4444", ico: 13, draw(g, cx, cy, s) { const R = s / 2; g.strokeStyle = "rgba(239,68,68,0.95)"; g.lineWidth = 1.6; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(cx - R + 1, cy + R - 1); g.lineTo(cx + R - 1, cy - R + 1); g.stroke(); } },
+  scout: { c: "#a78bfa", ico: 14, draw(g, cx, cy, s) { const R = s / 2; g.strokeStyle = this.c; g.lineWidth = Math.max(1.4, s / 10); g.beginPath(); for (let i = 0; i <= 40; i++) { const a = i / 40 * Math.PI * 3.2, rr = R * (0.15 + 0.8 * i / 40); g[i ? "lineTo" : "moveTo"](cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } g.stroke(); } },   // a Thera / Turnur wormhole (EVE-Scout): a swirl
   focus: { c: "#a3e635", ico: 14, draw(g, cx, cy, s) { g.strokeStyle = this.c; g.lineWidth = 2; g.beginPath(); g.arc(cx, cy, s / 2 - 1, 0, Math.PI * 2); g.stroke(); } },   // systems of the alliance or coalition picked on the Sovereignty page
   route: { c: "#f472b6" }, gates: { c: "rgba(225,140,80,.9)" }, haul: { c: "#fb923c" },
 };
@@ -7612,7 +7613,7 @@ const mkIco = (kind, arg) => `<canvas class="mk-ico" width="32" height="32" data
 function paintMarks(root = document) {
   for (const c of root.querySelectorAll("canvas.mk-ico")) { const M = MK[c.dataset.mk], g = c.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.setTransform(c.width / 16, 0, 0, c.height / 16, 0, 0); if (M && M.draw) M.draw(g, 8, 8, M.ico, c.dataset.mkArg || ""); }
 }
-function mapLayers() { return { gates: true, structs: true, stations: true, pi: true, pilots: true, clones: true, friendly: true, keepstars: true, npc: true, caps: true, danger: true, homes: true, incursions: true,...((state.misc.map || {}).layers || {}) }; }
+function mapLayers() { return { gates: true, structs: true, stations: true, pi: true, pilots: true, clones: true, friendly: true, keepstars: true, npc: true, caps: true, danger: true, homes: true, incursions: true, scout: true,...((state.misc.map || {}).layers || {}) }; }
 let mapRaf = 0;
 function drawMap() { cancelAnimationFrame(mapRaf); mapRaf = requestAnimationFrame(drawMapNow); }
 // Sovereignty (public ESI), kept for an hour; allied alliances are picked by the user
@@ -7714,6 +7715,9 @@ function drawMapNow() {
   if (L.keepstars) for (const [id, list] of dockSites()) if (list.some(x => x.cls === "XL")) mark(id, (x, y) => MK.keepstar.draw(g, x + r + 9, y + r + 8, 16));
   // Incursions: red hatched halo (no cynos there)
   if (L.incursions && incursions) for (const id of incursions.sys) mark(id, (x, y) => MK.incursion.draw(g, x, y, 2 * (r + 5)));
+  // Thera / Turnur wormholes (EVE-Scout): a swirl above-left of the dot; a dashed line when both ends are in known space (Turnur's)
+  if (L.scout && scout) { g.strokeStyle = MK.scout.c; g.globalAlpha = 0.7; g.lineWidth = 1.2; g.setLineDash([4, 4]); g.beginPath(); for (const [a, b] of scout.lines) { const p = m.byId.get(a), q = m.byId.get(b); if (p && q) { g.moveTo(X(p), Y(p)); g.lineTo(X(q), Y(q)); } } g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+    for (const id of scout.by.keys()) mark(id, (x, y) => MK.scout.draw(g, x - r - 9, y - r - 8, 13)); }
   // Jump clones: a small person to the right of the dot
   if (L.clones) for (const id of mk.clones.keys()) mark(id, (x, y) => MK.clone.draw(g, x + r + 15, y, 12));
   // Your pilots' last location: the game's own-ship bracket around the dot (who is there: the hover box and the system panel)
@@ -7811,6 +7815,7 @@ function mapSysItems(s, short) {
   for (const c of mapCapitals().get(id) || []) L.push(`${mkIco("cap", BRACKET_OF[(state.typeMeta[c.t] || [])[0]] || "carrier")} ${esc(c.name)}${c.q > 1 ? " ×" + c.q : ""} <span class="muted">· ${esc(c.owner)}${!short && c.where ? ` · ${esc(c.where)}` : ""}</span>`);
   for (const n of mk.pi.get(id) || []) L.push(`${mkIco("pi")} ${esc(n)}`);
   for (const n of mk.clones.get(id) || []) L.push(`${mkIco("clone")} ${esc(n)}`);
+  for (const w of (scout && scout.by.get(id)) || []) L.push(`${mkIco("scout")} Wormhole to ${esc(w.to)} <span class="muted">· ${w.sig ? esc(w.sig) + (short || !w.far ? "" : ` (${esc(w.far)} in ${esc(w.to)})`) + " · " : ""}up to ${esc(SCOUT_SIZE[w.size] || w.size || "?")} · about ${durLabel(Math.max(0, w.exp - Date.now()) / 60000)} left</span>`);
   for (const f of [...((state.misc.friendly || {}).list || []), ...((state.misc.indy || {}).list || [])]) if (f.sys === id) L.push(`${mkIco("friendly")} ${esc(f.n)} <span class="muted">(${esc(f.type)}${f.tax != null ? `, tax ${f.tax}%` : ""})</span>${!short && (f.rigs || []).length ? `<div class="muted" style="font-size:.8rem;margin:0 0 2px 20px">${f.rigs.map(n => esc(n.replace(/^Standup /, ""))).join("<br>")}</div>` : ""}`);
   if (s.st) { if (short) L.push(`${mkIco("npc")} ${s.st.length} NPC station${s.st.length > 1 ? "s" : ""}`); else for (const sid of s.st) L.push(`${mkIco("npc")} ${npcNames.has(sid) ? esc(npcNames.get(sid)) : "NPC station…"}`); }
   return L;
@@ -7837,7 +7842,7 @@ function renderMap() {
   for (const sel of [shipSel, $("jp-ship")]) if (sel && document.activeElement !== sel) { if (sel.dataset.html !== shipHtml) { sel.innerHTML = shipHtml; sel.dataset.html = shipHtml; } const cur = mm.ship === "custom" ? "custom" : (mapRange().sh || {}).key; sel.value = cur && [...sel.options].some(o => o.value === cur) ? cur : (defaultShip(sh) ? defaultShip(sh).key : "custom"); }
   $("map-range").hidden = shipSel.value !== "custom"; if (document.activeElement !== $("map-range")) $("map-range").value = mm.range || "";
   const m = mapIndex();
-  if (m && !$("page-map").hidden) { loadSov(); loadIncursions(); loadKills(); if (!mapData.stv) setTimeout(loadNpcStations, 0); }
+  if (m && !$("page-map").hidden) { loadSov(); loadIncursions(); loadKills(); if (L.scout) loadScout(); if (!mapData.stv) setTimeout(loadNpcStations, 0); }
   if (document.activeElement !== $("map-danger")) $("map-danger").value = dangerMin();
   $("map-color").value = mm.color === "sov" ? "sov" : "sec";
   const lb = $("map-layout"); lb.disabled = !m || !!mapLoad; lb.textContent = !m ? "Switch to 2D map" : !m.has2d ? "Get the 2D map" : m.layout === "2d" ? "Switch to 3D map" : "Switch to 2D map"; lb.title = m && !m.has2d ? "Your saved map came without the game's 2D layout: this reads it again from EVE Ref (a few minutes)" : "";
@@ -7854,7 +7859,7 @@ function renderMap() {
     const o = mapOrigin(); if (document.activeElement !== $("map-origin")) $("map-origin").value = o ? o.n : "";
     $("map-status").textContent = `${mapData.systems.length.toLocaleString()} systems · loaded ${ago(mapData.at)}${m.has2d ? "" : " · no 2D layout"} · showing the ${m.layout === "2d" ? "2D schematic" : "3D (seen from above)"} map`;
     const lg = (k) => `data-ml-leg="${k}" role="button" tabindex="0" aria-pressed="${L[k] !== false}" title="Click to ${L[k] !== false ? "hide" : "show"} on the map"${L[k] !== false ? "" : ` class="off"`}`;   // a legend line with a layer shows or hides it
-    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span ${lg("structs")}>${mkIco("struct")} Your citadels</span><span ${lg("friendly")}>${mkIco("friendly")} Friendly (imported)</span><span ${lg("keepstars")}>${mkIco("keepstar")} Keepstar</span><span ${lg("caps")}>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span ${lg("npc")}>${mkIco("npc")} NPC station (zoom in)</span><span ${lg("stations")}>${mkIco("station")} Station with your stock</span><span ${lg("pi")}>${mkIco("pi")} Your planets</span><span ${lg("gates")}><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span ${lg("homes")}>${mkIco("home")} Home (left of the system)</span><span ${lg("pilots")}>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span ${lg("clones")}>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.focus ? `<span>${mkIco("focus")} ${esc(mapUI.focus.n)}${sov ? ` (${sov.list.filter(([, a]) => mapUI.focus.ids.includes(a)).length} systems)` : ""} <button type="button" class="link" id="map-focus-clear">Hide</button></span>` : ""}${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span ${lg("danger")}>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span ${lg("incursions")}>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
+    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span ${lg("structs")}>${mkIco("struct")} Your citadels</span><span ${lg("friendly")}>${mkIco("friendly")} Friendly (imported)</span><span ${lg("keepstars")}>${mkIco("keepstar")} Keepstar</span><span ${lg("caps")}>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span ${lg("npc")}>${mkIco("npc")} NPC station (zoom in)</span><span ${lg("stations")}>${mkIco("station")} Station with your stock</span><span ${lg("pi")}>${mkIco("pi")} Your planets</span><span ${lg("gates")}><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span ${lg("homes")}>${mkIco("home")} Home (left of the system)</span><span ${lg("pilots")}>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span ${lg("clones")}>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.focus ? `<span>${mkIco("focus")} ${esc(mapUI.focus.n)}${sov ? ` (${sov.list.filter(([, a]) => mapUI.focus.ids.includes(a)).length} systems)` : ""} <button type="button" class="link" id="map-focus-clear">Hide</button></span>` : ""}${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span ${lg("danger")}>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span ${lg("incursions")}>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><span ${lg("scout")}>${mkIco("scout")} Thera / Turnur wormhole (EVE-Scout)${scout ? ` · ${scout.by.size} system${scout.by.size === 1 ? "" : "s"} · read ${ago(scout.at)}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
   } else { $("map-legend").innerHTML = ""; $("map-status").textContent = ""; }
   renderPlanner(); renderGather(); drawMap(); renderMapInfo();
 }
@@ -7869,6 +7874,24 @@ async function loadIncursions(force) {
   incLoading = false; if (!$("page-map").hidden) { drawMap(); renderMapInfo(); }
 }
 const inIncursion = (s) => !!(incursions && incursions.sys.has(s.id));
+// Thera and Turnur wormholes (EVE-Scout's public API, read every 10 minutes while the Map is open; a failed read waits as long):
+// by = known-space system → its connections { to, sig (here), far (the other side's), size, exp }, lines = connections with both ends in known space
+let scout = null, scoutTry = 0;
+const SCOUT_SIZE = { small: "frigates", medium: "cruisers", large: "battleships", xlarge: "freighters", capital: "capitals" };
+async function loadScout(force) {
+  if (!force && Date.now() - scoutTry < 600e3) return;
+  scoutTry = Date.now();
+  try {
+    const r = await fetch("https://api.eve-scout.com/v2/public/signatures"); if (!r.ok) throw new Error("EVE-Scout " + r.status);
+    const by = new Map(), lines = [];
+    for (const x of await r.json()) { if (x.signature_type !== "wormhole" || !x.in_system_id || !x.out_system_id) continue;
+      const e = { size: x.max_ship_size, exp: Date.parse(x.expires_at) || 0 }, ends = [[x.in_system_id, x.in_signature, x.out_system_name, x.out_signature], [x.out_system_id, x.out_signature, x.in_system_name, x.in_signature]];
+      for (const [id, sig, to, far] of ends) if (id < 31000000) (by.get(id) || by.set(id, []).get(id)).push({ ...e, to, sig, far });
+      if (x.in_system_id < 31000000 && x.out_system_id < 31000000) lines.push([x.out_system_id, x.in_system_id]); }
+    scout = { at: Date.now(), by, lines };
+  } catch (e) {}
+  if (!$("page-map").hidden) renderMap();
+}
 // Kills in the last hour per system (public ESI, read again every 10 minutes while the Map is open): ships and pods killed, NPCs killed
 let kills = null, killsLoading = false;
 async function loadKills(force) {

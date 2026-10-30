@@ -9,6 +9,11 @@ How entries are kept:
 
 ---
 
+## 2026-10-30 — Thera and Turnur wormholes on the map
+
+### Added
+- Map: **Thera and Turnur wormholes** from EVE-Scout. Systems with a wormhole to Thera or Turnur get a violet swirl; Turnur's connections are drawn as a dashed line. Click or hover a system to see the signatures, the biggest ship that fits and the time left. Read every 10 minutes while the map is open; the **Thera / Turnur** tick box (or its legend line) hides them.
+
 ## 2026-10-30 · 616e3fb — Faster page refreshes and contracts sync, Sovereignty map and shares, Intel kill panels
 
 ### Added

@@ -613,6 +613,22 @@ async def map_markers(t):
     t.ok(not await t.js("(()=>{const p=document.querySelector('#map-info .map-sel').cloneNode(true); p.querySelectorAll('button').forEach(b=>b.remove()); return /[◆□●♟◇✷▪⛴⌂]/.test(document.getElementById('map-hover').innerText + p.innerText)})()"), "no old text symbols are left in the hover box or the system panel")
 
 @scenario
+async def map_thera(t):
+    # Thera / Turnur wormholes from EVE-Scout: the known-space ends get the swirl marker, listed in the panel, the hover box and the legend
+    await map_(t)
+    t.ok(await t.until("!!scout", 8), "EVE-Scout's connections are read when the map opens")
+    t.eq(await t.js("[[...scout.by.keys()].sort(), scout.lines]"), [[30000002, 30000003, 30000006], [[30000003, 30000006]]], "only known-space ends are kept; a line only where both ends are on the map")
+    await t.js("mapSelect(30000002, true)"); await asyncio.sleep(0.3)
+    pn = t.show("panel", await t.js("[...document.querySelectorAll('#map-info .map-sel canvas.mk-ico[data-mk=scout]')].map(c=>c.parentElement.innerText.replace(/\\s+/g,' ').trim()).join(' | ')"))
+    t.ok("Wormhole to Thera" in pn and "XWF-276 (JXT-585 in Thera)" in pn and "up to battleships" in pn and "left" in pn, "the system panel gives both signatures, the ship size and the time left", pn)
+    await t.js("mapSelect(30000003, false)"); await asyncio.sleep(0.3)
+    t.ok("Wormhole to Foxtrot" in (await t.text("#map-info")) and "up to freighters" in (await t.text("#map-info")), "Turnur's side lists where it leads", await t.text("#map-info"))
+    t.ok("Thera / Turnur wormhole (EVE-Scout) · 3 systems" in (await t.text("#map-legend")), "the legend counts the systems", await t.text("#map-legend"))
+    await t.js("view.k=null; drawMap()"); await asyncio.sleep(0.2); await t.pg.locator("#map-wrap").screenshot(path=SP + "map_thera.png")
+    await t.pg.click("[data-ml=scout]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("mapLayers().scout"), False, "the Thera / Turnur tick box hides them")
+
+@scenario
 async def map_pilots(t):
     # Every pilot's last location (ESI "Character location") on the map, with the same marker in the panel, the hover box and the legend
     await map_(t)
