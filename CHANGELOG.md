@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-31 — Trading board top bar, history crosshair, faster citadel reads; Sovereignty map icon
+## 2026-10-31 · bb637f3 — Trading board top bar, history crosshair, faster citadel reads; Sovereignty map icon
 
 ### Changed
 - Sovereignty: the **Map** link by every alliance and coalition is now a square button with a constellation icon.
