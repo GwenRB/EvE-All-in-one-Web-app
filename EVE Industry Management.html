@@ -87,7 +87,7 @@ body:has(#page-trading:not([hidden])) .wrap > :is(header.top, #status, #esi-pane
 .mb-books { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) } .mb-books[hidden] { display: none }
 .mb-book .scroller { overflow: auto } .mb .scroller, .mb-tree, #mb-hist-panel, #mb-hubs-panel { overscroll-behavior: contain }   /* reaching a list's end doesn't scroll the page */ .mb-book thead th { position: sticky; top: 0; z-index: 1; background: var(--panel) }
 .mb-book tbody tr { cursor: pointer } .mb-book tbody tr.sel > * { background: color-mix(in srgb, var(--accent) 22%, transparent) }
-.mb-views { gap: 8px } .mb-views button { width: 100% }
+.mb-views { display: flex; gap: 8px; margin-left: auto; align-self: center }
 .mb-pop { width: min(760px, 94vw); max-height: 92vh; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); padding: 14px } .mb-pop::backdrop { background: rgba(0,0,0,.55) }
 .mb-book .bp-table { font-size: .84rem } .mb-book .bp-table :is(td, th) { padding-top: 2px; padding-bottom: 2px } .mb-book .pill { font-size: .72rem; padding-block: 0 }
 .mb-left { display: grid; gap: 16px; align-content: start; min-width: 0 }
@@ -97,17 +97,18 @@ body:has(#page-trading:not([hidden])) .wrap > :is(header.top, #status, #esi-pane
   .mb-side { flex: 1 1 0; min-height: 0; position: static; max-height: none }
   #mb-body:not([hidden]) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 12px }
   .mb-books:not([hidden]) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden } .mb-books > .panel { flex: none }
-  #mb-hist-panel:not([hidden]), #mb-hubs-panel:not([hidden]) { flex: 1 1 0; min-height: 0; overflow: auto }
+  #mb-hist-panel:not([hidden]), #mb-hubs-panel:not([hidden]) { flex: 1 1 0; min-height: 0; overflow: auto; align-content: start }
 }
 .mb-hist { position: relative } .mb-tip { position: absolute; top: 6px; z-index: 2; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: .82rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); white-space: nowrap }
 .mb-tip b { font-weight: 600 } .mb-tip div { display: flex; justify-content: space-between; gap: 14px }
 @media (max-width: 899px) { .mb { grid-template-columns: minmax(0, 1fr) } .mb-side { position: static; max-height: 60vh } }
 .mb-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap } .mb-top h2 { margin: 0 } .mb-top h2 button { text-transform: inherit; letter-spacing: inherit } .mb-id { flex: 1 1 260px; min-width: 0 } .mb-tools { display: grid; gap: 4px; justify-items: end; margin-left: auto }
-.mb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px 18px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line) }
-.mb-stat b { font-size: 1rem; margin-left: 6px } .mb-stat .muted { font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.mb-stats { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line) }
+.mb-stat { flex: 1 1 170px; min-width: 0 } .mb-stat b { font-size: 1rem; margin-left: 6px } .mb-stat .muted { font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .mb-path { font-size: .85rem } .mb-path button { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); cursor: pointer } .mb-path button:hover { text-decoration: underline }
 #mb-hist svg { width: 100%; height: auto; display: block }
 .mb-go { flex: none; display: inline-flex; align-items: center; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); border-radius: 4px; padding: 1px 4px; line-height: 1 } .mb-go:hover { color: var(--accent); border-color: var(--accent) }
+.sov-map { width: 22px; height: 22px; padding: 0; justify-content: center; vertical-align: middle; cursor: pointer }
 .page > *, .panel > * { min-width: 0 }
 .tabs { display: flex; flex-wrap: wrap; gap: 0 2px; border-bottom: 1px solid var(--line) }
 .tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 8px 9px; font: 600 .9rem var(--f-display); letter-spacing: .03em; color: var(--muted); white-space: nowrap }
@@ -1070,7 +1071,6 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         <input type="search" id="mb-find" placeholder="Find an item, e.g. Tritanium" aria-label="Find an item">
         <details id="mb-filt"><summary>Filters <span class="muted" id="mb-fn"></span></summary><div id="mb-filters" class="mb-filters"></div></details>
         <div id="mb-tree" class="mb-tree" role="tree" aria-label="Market groups"></div></section>
-      <section class="panel nofold mb-views" aria-label="Other views"><button type="button" data-mb-view="hist">Show history</button><button type="button" data-mb-view="hubs">Show markets comparison</button></section>
       </div>
       <div class="mb-main">
         <section class="panel nofold" id="mb-head" aria-labelledby="mb-title"><div id="mb-top"></div></section>
@@ -2360,7 +2360,7 @@ async function runImport(fresh) {
   st.textContent = "Reading item volumes…";
   await pool(types, 3, async (t) => { try { const d = await getJSON(REF + "/types/" + t); names[t] = tName(d); vols[t] = d.packaged_volume || d.volume || 0; } catch (e) { names[t] = state.typeNames[t] || "Item " + t; vols[t] = 0; } });
   // Sync: forget what was read from both markets, so the orders are read again
-  if (fresh) for (const v of [cfg.local, cfg.src]) { const [k, id] = String(v).split(":"); if (k === "cit") { delete structMarket[id]; delete structBooks[id]; } else for (const key of Object.keys(bookCache)) if (key.startsWith(id + "|")) delete bookCache[key]; }
+  if (fresh) for (const v of [cfg.local, cfg.src]) { const [k, id] = String(v).split(":"); if (k === "cit") { delete structMarket[id]; delete structBooks[id]; delete structNo[id]; } else for (const key of Object.keys(bookCache)) if (key.startsWith(id + "|")) delete bookCache[key]; }
   const sups = cfg.sup ? supList().filter(sp => types.some(t => (sp.stock || {})[t])) : [];
   for (const sp of sups) { const P = sp.pricing || {}; if (P.mode === "pct") await ensurePrices(types, validPricing(P.base || "jbv")).catch(() => null); }
   try {
@@ -3034,8 +3034,12 @@ async function mbLoad(t, force) {
     } while (++page <= pages);
     mbSay(`Reading orders… ${++done} of ${regs.length} region${regs.length === 1 ? "" : "s"}`); });
   // your citadels' markets need a pilot's login (ESI's public orders only have public structures); those of the region or the citadel picked
-  for (const s of citadelMarkets()) { const reg = (mbSys(s.sys) || {}).r || null; if (W.k === "cit" ? s.id !== W.id : W.hub || W.k === "r" && reg !== +W.id) continue;
-    try { await structOrders(s.id); for (const o of (structBooks[s.id].raw || new Map()).get(t) || []) add(o, reg, s.sys); } catch (e) { cits.push(s.name); } }
+  // (a few at a time: each is its whole market, kept 30 minutes)
+  const CM = citadelMarkets().filter(s => !(W.k === "cit" ? s.id !== W.id : W.hub || W.k === "r" && (mbSys(s.sys) || {}).r !== +W.id)); let cd = 0;
+  if (CM.length) mbSay(`Reading your citadels' markets… 0 of ${CM.length}`);
+  await pool(CM, 4, async (s) => { const reg = (mbSys(s.sys) || {}).r || null;
+    try { await structOrders(s.id); for (const o of (structBooks[s.id].raw || new Map()).get(t) || []) add(o, reg, s.sys); } catch (e) { cits.push(s.name); }
+    mbSay(`Reading your citadels' markets… ${++cd} of ${CM.length}`); });
   if (regs.length && fail.length === regs.length) throw new Error("ESI's market didn't answer: try again in a minute");
   const kept = W.hub ? orders.filter(o => o.loc === W.hub.id) : W.k === "r" ? orders.filter(o => o.reg === +W.id || (mbSys(o.sys) || {}).r === +W.id) : orders;
   const d = { at: Date.now(), orders: kept, fail, cits }; mbCache.set(key, d); return d;
@@ -3121,6 +3125,11 @@ function mbWhereSel() {
   const C = mbCfg(), o = (v, l) => `<option value="${esc(v)}"${v === (C.reg || "") ? " selected" : ""}>${esc(l)}</option>`, cits = citsNotHubs(C.reg);
   return `<select id="mb-where" aria-label="Where to look" style="max-width:260px">${o("", "Every region")}<optgroup label="Trade hubs">${tradeHubs().map(h => o("st:" + h.id, h.name)).join("")}</optgroup>${cits.length ? `<optgroup label="Your citadels">${cits.map(c => o("cit:" + c.id, c.name)).join("")}</optgroup>` : ""}<optgroup label="Regions">${(mbRegions.list || []).map(([id, nm]) => o("r:" + id, nm)).join("")}</optgroup></select>`;
 }
+// A price in a tile's small line, short: 1.6B, 250M, 12.5K ISK (three figures); under a thousand to the cent
+function mbShort(v) {
+  const a = Math.abs(v), u = [[1e12, "T"], [1e9, "B"], [1e6, "M"], [1e3, "K"]].find(([d]) => a >= d * 0.9995);   // 999,950 is 1M, not 1,000K
+  return u ? `${(+(v / u[0]).toPrecision(3)).toLocaleString()}${u[1]} ISK` : iskFull(v);
+}
 // The item: its market group path, tiles over the filtered orders, both order books, its history and the trade hubs side by side
 function mbRenderItem() {
   const top = $("mb-top"); if (!top) return;
@@ -3137,8 +3146,9 @@ function mbRenderItem() {
 </div>
       <div class="mb-tools"><div class="toolbar">${mbWhereSel()}<button type="button" data-mb-idb="${t}">Item database</button><button type="button" data-mb-refresh="${t}"${it.busy ? " disabled" : ""}>Refresh</button><button type="button" class="link" data-mb-howto>How this page works</button></div>
         <span class="muted" id="mb-status" style="font-size:.8rem">${it.busy ? "Reading orders…" : d ? `${esc(mbWhereName())} · read ${ago(d.at)} · ${L.length.toLocaleString()} of ${d.orders.length.toLocaleString()} orders shown` : ""}</span></div></div>
-    ${d ? `<div class="mb-stats">${tile("Sell (5%)", P(s5), sells.length ? `lowest ${iskFull(sells[0].p)} at ${at(sells[0])}` : "nobody sells")}${tile("Buy (5%)", P(b5), buys.length ? `highest ${iskFull(buys[0].p)} at ${at(buys[0])}` : "nobody buys")}
-      ${tile("Margin", s5 != null && b5 != null ? iskFull(s5 - b5) : P(null), s5 != null && b5 != null && s5 ? `${((s5 - b5) / s5 * 100).toFixed(1)}% of the sell price` : "")}${tile("For sale", units(sells).toLocaleString(), `${sells.length.toLocaleString()} order${sells.length === 1 ? "" : "s"}`)}${tile("Wanted", units(buys).toLocaleString(), `${buys.length.toLocaleString()} order${buys.length === 1 ? "" : "s"}`)}</div>` : ""}
+    ${d ? `<div class="mb-stats">${tile("Sell (5%)", P(s5), sells.length ? `lowest ${mbShort(sells[0].p)} at ${at(sells[0])}` : "nobody sells")}${tile("Buy (5%)", P(b5), buys.length ? `highest ${mbShort(buys[0].p)} at ${at(buys[0])}` : "nobody buys")}
+      ${tile("Margin", s5 != null && b5 != null ? iskFull(s5 - b5) : P(null), s5 != null && b5 != null && s5 ? `${((s5 - b5) / s5 * 100).toFixed(1)}% of the sell price` : "")}<div class="mb-stat">${[["Sell volume", sells], ["Buy volume", buys]].map(([l, X]) => `<div><span class="label">${l}</span><b>${units(X).toLocaleString()}</b> <span class="muted">${X.length.toLocaleString()} order${X.length === 1 ? "" : "s"}</span></div>`).join("")}</div>
+      <div class="mb-views">${["hist", "hubs"].map(v => `<button type="button" data-mb-view="${v}">${mbViewTxt(v)}</button>`).join("")}</div></div>` : ""}
     ${it.err ? `<div class="notice" style="color:var(--bad);border-color:var(--bad)">The orders couldn't be read: ${esc(it.err)}</div>` : ""}${notes.map(x => `<div class="notice">${x}</div>`).join("")}`;
   $("mb-body").hidden = !d; if (!d) return;
   mbRenderHubs(d.orders); mbRenderBooks(sells, buys);
@@ -3155,7 +3165,7 @@ function mbHubsHtml(orders) {
   if (!rows.length) return `<p class="muted" style="margin:0">No orders for it at the trade hubs or your citadels${mbCfg().reg ? ` (looking at ${esc(mbWhereName())})` : ""}.</p>`;
   const v = (x, f) => x == null ? `<td class="num"><span class="muted">—</span></td>` : `<td class="num">${f(x)}</td>`, def = { key: "i", dir: 1 }, H = (k, l, num) => sortHead("mbh", k, l, def).replace("<th ", num ? `<th class="num" ` : "<th "), un = (x) => x ?? -Infinity;
   const L = sortRows("mbh", def, rows, { i: r => r.i, name: r => r.name, ls: r => un(r.ls), sq: r => r.sq, hb: r => un(r.hb), bq: r => r.bq, sp: r => un(r.sp) });
-  return `<div class="scroller"><table class="bp-table"><thead><tr>${H("name", "Market")}${H("ls", "Lowest sell", 1)}${H("sq", "For sale", 1)}${H("hb", "Highest buy", 1)}${H("bq", "Wanted", 1)}${H("sp", "Spread", 1)}</tr></thead><tbody>${L.map(r => `<tr><th scope="row">${esc(r.name)}${r.cit ? ` <span class="pill">citadel</span>` : ""}</th>${v(r.ls, iskFull)}${v(r.ls != null ? r.sq : null, x => x.toLocaleString())}${v(r.hb, iskFull)}${v(r.hb != null ? r.bq : null, x => x.toLocaleString())}${v(r.sp, x => `${iskFull(x)} <span class="muted">${(x / r.ls * 100).toFixed(1)}%</span>`)}</tr>`).join("")}</tbody></table></div>`;
+  return `<div class="scroller"><table class="bp-table"><thead><tr>${H("name", "Market")}${H("ls", "Lowest sell", 1)}${H("sq", "Sell volume", 1)}${H("hb", "Highest buy", 1)}${H("bq", "Buy volume", 1)}${H("sp", "Spread", 1)}</tr></thead><tbody>${L.map(r => `<tr><th scope="row">${esc(r.name)}${r.cit ? ` <span class="pill">citadel</span>` : ""}</th>${v(r.ls, iskFull)}${v(r.ls != null ? r.sq : null, x => x.toLocaleString())}${v(r.hb, iskFull)}${v(r.hb != null ? r.bq : null, x => x.toLocaleString())}${v(r.sp, x => `${iskFull(x)} <span class="muted">${(x / r.ls * 100).toFixed(1)}%</span>`)}</tr>`).join("")}</tbody></table></div>`;
 }
 function mbBook(side, L) {
   const id = side === "s" ? "mbs" : "mbb", def = { key: "p", dir: side === "s" ? 1 : -1 }, hops = mbHops(), mine = mbMine(), now = Date.now();
@@ -3190,24 +3200,37 @@ async function mbHistory(r, t) {
   if (!res.ok && res.status !== 404) throw new Error(res.status === 503 ? "ESI's market isn't answering (downtime?)" : "ESI answered " + res.status);
   const rows = res.ok ? (await res.json()).map(x => ({ ...x, lowest: x.lowest ?? x.average, highest: x.highest ?? x.average, order_count: x.order_count || 0, volume: x.volume || 0 })).sort((a, b) => a.date.localeCompare(b.date)) : []; mbHistC.set(k, { at: Date.now(), rows }); return rows;
 }
-// The region's daily prices (ESI keeps about 13 months): the average as a line, the day's lowest to highest as a band, the units traded as bars
-function mbChart(rows) {
-  const W = 1000, top = 10, ph = 190, vt = 222, vh = 50, L0 = 78, R0 = 64, w = W - L0 - R0, avg = rows.map(x => x.average), lo = Math.min(...avg), hi = Math.max(...avg);
+// The region's daily prices (ESI keeps about 13 months): the average as a line, the day's lowest to highest as a band, the units traded as bars.
+// Drawn at its box's size in pixels (W × H), so the text stays 12 px however wide the panel is
+function mbChart(rows, W, H) {
+  const avg = rows.map(x => x.average), lo = Math.min(...avg), hi = Math.max(...avg);
   // a day's lowest / highest can be far off its average (one odd trade): the scale follows the averages, with room for the band up to ×2
   let y0 = Math.min(lo, ...rows.map(x => Math.max(x.lowest, lo / 2))), y1 = Math.max(hi, ...rows.map(x => Math.min(x.highest, hi * 2))); if (y1 <= y0) { y1 = y0 * 1.1 + 1; y0 *= 0.9; }
-  const n = rows.length, X = (i) => L0 + (n === 1 ? w / 2 : i * w / (n - 1)), Y = (v) => top + ph - (Math.min(y1, Math.max(y0, v)) - y0) / (y1 - y0) * ph, vmax = Math.max(1, ...rows.map(x => x.volume)), bw = Math.max(1, w / n * 0.7), step = n > 1 ? w / (n - 1) : w;
-  const fp = (v) => v >= 1e6 ? isk(v) : v.toLocaleString(undefined, { maximumFractionDigits: v < 100 ? 2 : 0 }), f = (v) => v.toFixed(1);
+  const fp = (v) => v >= 1e6 ? isk(v) : v.toLocaleString(undefined, { maximumFractionDigits: v < 100 ? 2 : 0 }), f = (v) => v.toFixed(1), vmax = Math.max(1, ...rows.map(x => x.volume));
+  // price on top, a gap for the volume's title, volume under it, the dates at the bottom; the side margins fit the longest scale label; a day is a slot of the width, its bar and point in the middle
+  const top = 28, vh = Math.max(40, Math.round((H - 84) * 0.22)), ph = H - 84 - vh, vt = top + ph + 30, nt = Math.max(3, Math.min(7, Math.floor(ph / 45) + 1)), ticks = [...Array(nt)].map((_, k) => y0 + (y1 - y0) * k / (nt - 1));
+  const L0 = 14 + 7 * Math.max(3, ...ticks.map(v => fp(v).length)), R0 = 14 + 7 * Math.max(6, isk(vmax).length), w = W - L0 - R0, n = rows.length;
+  const X = (i) => L0 + (i + 0.5) * w / n, Y = (v) => top + ph - (Math.min(y1, Math.max(y0, v)) - y0) / (y1 - y0) * ph, vy = (v) => vt + vh - v / vmax * vh, bw = Math.max(1, w / n * 0.7);
   const band = rows.map((x, i) => `${f(X(i))},${f(Y(x.highest))}`).concat(rows.map((x, i) => `${f(X(i))},${f(Y(x.lowest))}`).reverse()).join(" ");
-  const ticks = [0, 1, 2, 3].map(k => y0 + (y1 - y0) * k / 3), dates = [...new Set([0, n >> 2, n >> 1, (3 * n) >> 2, n - 1])], vy = (v) => vt + vh - v / vmax * vh;
-  mbGeo = { rows, x: rows.map((_, i) => X(i)), y: rows.map(x => Y(x.average)), W, L0, w };
-  return `<svg viewBox="0 0 ${W} 300" role="img" aria-label="Daily average price and units traded">
-    ${ticks.map(v => `<line x1="${L0}" x2="${W - R0}" y1="${f(Y(v))}" y2="${f(Y(v))}" style="stroke:var(--line)"/><text x="${L0 - 6}" y="${f(Y(v) + 4)}" text-anchor="end" style="fill:var(--muted);font-size:12px">${fp(v)}</text>`).join("")}
+  const nd = Math.max(2, Math.min(n, Math.floor(w / 130))), dates = [...new Set([...Array(nd)].map((_, k) => Math.round(k * (n - 1) / (nd - 1))))], tx = `style="fill:var(--muted);font-size:12px"`;
+  const lab = (c) => `<g class="${c}"><rect height="18" rx="3" style="fill:var(--panel-2);stroke:var(--accent)"/><text style="fill:var(--ink);font-size:12px"></text></g>`;
+  mbGeo = { rows, x: rows.map((_, i) => X(i)), y: rows.map(x => Y(x.average)), W, H, L0, R0, w, top, ph, vt, vh, y0, y1, vmax, fp };
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block" role="img" aria-label="Daily average price and units traded">
+    ${ticks.map(v => `<line x1="${L0}" x2="${W - R0}" y1="${f(Y(v))}" y2="${f(Y(v))}" style="stroke:var(--line)"/><text x="${L0 - 6}" y="${f(Y(v) + 4)}" text-anchor="end" ${tx}>${fp(v)}</text>`).join("")}
     <polygon points="${band}" style="fill:var(--accent);opacity:.18"/><path d="${rows.map((x, i) => `${i ? "L" : "M"}${f(X(i))},${f(Y(x.average))}`).join("")}" style="fill:none;stroke:var(--accent);stroke-width:2"/>
-    ${rows.map((x, i) => `<rect x="${f(X(i) - bw / 2)}" y="${f(vt + vh - x.volume / vmax * vh)}" width="${f(bw)}" height="${f(x.volume / vmax * vh)}" style="fill:var(--muted);opacity:.55"/>`).join("")}
-    ${[0, vmax / 2, vmax].map(v => `<line x1="${L0}" x2="${W - R0}" y1="${f(vy(v))}" y2="${f(vy(v))}" style="stroke:var(--line);opacity:.6"/><text x="${W - R0 + 6}" y="${f(vy(v) + 4)}" style="fill:var(--muted);font-size:12px">${isk(v)}</text>`).join("")}
-    <text x="${W - R0 + 6}" y="${vt - 8}" style="fill:var(--muted);font-size:11px">Volume</text><text x="${L0 - 6}" y="${top + 2}" text-anchor="end" style="fill:var(--muted);font-size:11px">ISK</text>
-    ${dates.map(i => `<text x="${f(X(i))}" y="292" text-anchor="${i === 0 && n > 1 ? "start" : i === n - 1 && n > 1 ? "end" : "middle"}" style="fill:var(--muted);font-size:12px">${esc(rows[i].date)}</text>`).join("")}
-    <g class="mb-cx" style="display:none"><line y1="${top}" y2="${vt + vh}" style="stroke:var(--muted);stroke-dasharray:3 3"/><circle r="4" style="fill:var(--accent);stroke:var(--panel);stroke-width:2"/></g></svg><div class="mb-tip" hidden></div>`;
+    ${rows.map((x, i) => `<rect x="${f(X(i) - bw / 2)}" y="${f(vy(x.volume))}" width="${f(bw)}" height="${f(x.volume / vmax * vh)}" style="fill:var(--muted);opacity:.55"/>`).join("")}
+    ${[0, vmax / 2, vmax].map(v => `<line x1="${L0}" x2="${W - R0}" y1="${f(vy(v))}" y2="${f(vy(v))}" style="stroke:var(--line);opacity:.6"/><text x="${W - R0 + 6}" y="${f(vy(v) + 4)}" ${tx}>${isk(v)}</text>`).join("")}
+    <text x="${W - R0 + 6}" y="${vt - 12}" style="fill:var(--muted);font-size:11px">Volume</text><text x="${L0 - 6}" y="12" text-anchor="end" style="fill:var(--muted);font-size:11px">ISK</text>
+    ${dates.map(i => `<text x="${f(X(i))}" y="${H - 8}" text-anchor="${i === 0 && n > 1 ? "start" : i === n - 1 && n > 1 ? "end" : "middle"}" ${tx}>${esc(rows[i].date)}</text>`).join("")}
+    <g class="mb-cx" style="display:none;pointer-events:none"><line class="v" y1="${top}" y2="${vt + vh}" style="stroke:var(--muted);stroke-dasharray:3 3"/><line class="h" x1="${L0}" x2="${W - R0}" style="stroke:var(--muted);stroke-dasharray:3 3"/><circle r="4" style="fill:var(--accent);stroke:var(--panel);stroke-width:2"/>${lab("yl")}${lab("xl")}</g></svg><div class="mb-tip" hidden></div>`;
+}
+// The chart takes the panel's width and, from 900 px wide (the board is one screen tall), the height the panel leaves it
+function mbDrawHist(box) {
+  const c = box && box.querySelector(".mb-chart"); if (!c || !box._rows || !c.clientWidth) return;
+  const D = box.ownerDocument, V = D.defaultView, p = box.closest(".panel"), W = Math.max(320, Math.floor(c.clientWidth));
+  const bottom = (D === document ? p.getBoundingClientRect().bottom : V.innerHeight - 12) - parseFloat(V.getComputedStyle(p).paddingBottom) - 2;
+  const room = V.matchMedia("(min-width: 900px)").matches ? bottom - c.getBoundingClientRect().top - box.querySelector("p").offsetHeight - 6 : W * 0.45;
+  c.innerHTML = mbChart(box._rows, W, Math.floor(Math.max(240, Math.min(room, W * 0.7)))); box._geo = mbGeo;
 }
 function mbRenderHist() { for (const D of mbDocs("hist")) mbRenderHistIn(D); }
 async function mbRenderHistIn(D) {
@@ -3219,7 +3242,7 @@ async function mbRenderHistIn(D) {
   try { const all = await mbHistory(hr, it.id); if (seq !== box._seq) return;
     const rows = all.slice(-C.span); if (!rows.length) { box.innerHTML = `<p class="muted" style="margin:0">No trades of ${esc(idbName(it.id))} in ${esc(mbRegName(hr))} ${C.span < 400 ? `in the last ${C.span} days` : "in the last 13 months"}.</p>`; return; }
     const S = mhStats({ rows: all.map(x => [x.date, x.average, x.volume]) }), pc = (v) => v == null ? "—" : `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v * 100).toFixed(1)}%`;
-    box.innerHTML = mbChart(rows) + `<p class="muted" style="margin:6px 0 0;font-size:.85rem">${esc(mbRegName(hr))}, last 7 days: ${Math.round(S.perDay).toLocaleString()} sold a day, ${isk(S.iskDay)} ISK traded a day · daily average ${pc(S.d1)} over a day, ${pc(S.d7)} over a week · point at the chart for a day's numbers</p>`; box._geo = mbGeo;
+    box.innerHTML = `<div class="mb-chart"></div><p class="muted" style="margin:6px 0 0;font-size:.85rem">${esc(mbRegName(hr))}, last 7 days: ${Math.round(S.perDay).toLocaleString()} sold a day, ${isk(S.iskDay)} ISK traded a day · daily average ${pc(S.d1)} over a day, ${pc(S.d7)} over a week · point at the chart for a day's numbers</p>`; box._rows = rows; mbDrawHist(box);
   } catch (e) { if (seq === box._seq) box.innerHTML = `<div class="notice">The history couldn't be read: ${esc(netMsg(e))}</div>`; }
 }
 async function mbOpen(t, force) {
@@ -3235,11 +3258,17 @@ async function mbOpen(t, force) {
 mbOpen.n = 0;
 let mbFindT = 0;
 $("mb-find").addEventListener("input", () => { clearTimeout(mbFindT); mbFindT = setTimeout(mbTree, 150); });
-// Pointing at the chart: a line on the nearest day and a box with its numbers
+// Pointing at the chart: a line on the nearest day (its date at the bottom), a line at the pointer's height (its price on the left, or its
+// volume on the right over the bars) and a box with the day's numbers
 function mbHistPoint(e) {
   const box = e.currentTarget, sv = box.querySelector("svg"), G = box._geo, tip = box.querySelector(".mb-tip"); if (!sv || !G || !tip || !G.rows.length) return;
-  const r = sv.getBoundingClientRect(), vx = (e.clientX - r.left) * G.W / r.width, n = G.rows.length, i = Math.max(0, Math.min(n - 1, Math.round((vx - G.L0) / G.w * (n - 1)))), x = G.rows[i];
-  const cx = box.querySelector(".mb-cx"); cx.style.display = ""; cx.querySelector("line").setAttribute("x1", G.x[i]); cx.querySelector("line").setAttribute("x2", G.x[i]); cx.querySelector("circle").setAttribute("cx", G.x[i]); cx.querySelector("circle").setAttribute("cy", G.y[i]);
+  const r = sv.getBoundingClientRect(), vx = (e.clientX - r.left) * G.W / r.width, n = G.rows.length, i = Math.max(0, Math.min(n - 1, Math.floor((vx - G.L0) / G.w * n))), x = G.rows[i];
+  const vy = (e.clientY - r.top) * G.H / r.height, inV = vy > G.top + G.ph + 15, yy = Math.max(inV ? G.vt : G.top, Math.min(inV ? G.vt + G.vh : G.top + G.ph, vy));
+  const cx = box.querySelector(".mb-cx"), at = (s, a) => { const el = cx.querySelector(s); for (const k in a) el.setAttribute(k, a[k]); return el; }; cx.style.display = "";
+  at(".v", { x1: G.x[i], x2: G.x[i] }); at(".h", { y1: yy, y2: yy }); at("circle", { cx: G.x[i], cy: G.y[i] });
+  const label = (s, txt, lx, ly, anchor) => { const t = at(s + " text", { y: ly + 13, "text-anchor": "start" }); t.textContent = txt; const tw = t.getComputedTextLength() + 10, x0 = anchor === "end" ? lx - tw : anchor === "middle" ? Math.max(2, Math.min(G.W - tw - 2, lx - tw / 2)) : lx; at(s + " rect", { x: x0, y: ly, width: tw }); t.setAttribute("x", x0 + 5); };
+  label(".yl", inV ? Math.round((G.vt + G.vh - yy) / G.vh * G.vmax).toLocaleString() : G.fp(G.y0 + (G.top + G.ph - yy) / G.ph * (G.y1 - G.y0)), inV ? G.W - G.R0 + 2 : G.L0 - 2, yy - 9, inV ? "start" : "end");
+  label(".xl", x.date, G.x[i], G.H - 21, "middle");
   const row = (l, v) => `<div><span class="muted">${l}</span><b>${v}</b></div>`;
   tip.innerHTML = `<b>${esc(x.date)}</b>${row("Average", iskFull(x.average))}${row("Highest", iskFull(x.highest))}${row("Lowest", iskFull(x.lowest))}${row("Volume", x.volume.toLocaleString())}${row("Orders", x.order_count.toLocaleString())}`; tip.hidden = false;
   const px = G.x[i] / G.W * r.width + (r.left - box.getBoundingClientRect().left), right = px > r.width * 0.6; tip.style.left = right ? "" : px + 14 + "px"; tip.style.right = right ? (r.width - px + 14) + "px" : "";
@@ -3249,14 +3278,16 @@ function mbHistHooks(D) {
   D.getElementById("mb-hist").addEventListener("pointermove", mbHistPoint); D.getElementById("mb-hist").addEventListener("pointerleave", mbHistLeave);
   D.getElementById("mb-hreg").addEventListener("change", (e) => { mbCfg().hist = e.target.value; saveMisc(); mbRenderHist(); });
   D.getElementById("mb-span").addEventListener("change", (e) => { mbCfg().span = +e.target.value; saveMisc(); mbRenderHist(); });
+  D.defaultView.addEventListener("resize", () => mbDrawHist(D.getElementById("mb-hist")));
 }
 // Sellers / buyers, history or the markets comparison in their place; history and comparison can open in a window of their own (to put on
 // another screen; it gets a copy of the panel, drawn again whenever the item or its settings change) and the board goes back to sellers / buyers
 const mbWin = { hist: null, hubs: null };
 const mbDocs = (which) => { const out = []; if (!$((which === "hist" ? "mb-hist" : "mb-hubs") + "-panel").hidden) out.push(document); const w = mbWin[which]; if (w && !w.closed) out.push(w.document); return out; };
+function mbViewTxt(v) { return mbView === v ? "Back to sellers and buyers" : v === "hist" ? "Show history" : "Show markets comparison"; }
 function mbApplyView() {
   $("mb-books").hidden = mbView !== "orders"; $("mb-hist-panel").hidden = mbView !== "hist"; $("mb-hubs-panel").hidden = mbView !== "hubs";
-  document.querySelectorAll("[data-mb-view]").forEach(b => { const v = b.dataset.mbView; b.textContent = mbView === v ? "Back to sellers and buyers" : v === "hist" ? "Show history" : "Show markets comparison"; });
+  document.querySelectorAll("[data-mb-view]").forEach(b => { b.textContent = mbViewTxt(b.dataset.mbView); });
   mbRenderHist(); mbRenderHubs(); mbFitBooks();
 }
 function mbPop(which) {
@@ -5519,7 +5550,7 @@ async function docContents(f) {
 async function docRefresh(force) {
   const sid = docSid(); if (!sid || docBusy) return;
   docBusy = true; docMsg = ""; renderDoctrines();
-  try { if (force) delete structMarket[sid]; await structOrders(sid); for (const f of state.fits.filter(x => x.doctrine)) await docContents(f); }
+  try { if (force) { delete structMarket[sid]; delete structNo[sid]; } await structOrders(sid); for (const f of state.fits.filter(x => x.doctrine)) await docContents(f); }
   catch (e) { docMsg = /no pilot allows/i.test(e.message || "") ? `No pilot allows citadel markets: allow "Citadel markets" on the ESI login for a pilot who can dock at ${citName(sid)}.` : `${citName(sid)}'s market couldn't be read (${netMsg(e)}).`; }
   docBusy = false; renderDoctrines();
 }
@@ -6351,7 +6382,7 @@ const JITA_KEY = "eve-industry-jita";
 const jitaCache = (() => { try { return JSON.parse(localStorage.getItem(JITA_KEY) || "{}"); } catch (e) { return {}; } })();
 const saveJita = () => { ls.set(JITA_KEY, jitaCache); };
 const PRICE_MODES = { jbv: "Jita buy (JBV)", split: "Jita split", jsv: "Jita sell (JSV)" };
-const structMarket = {}, structBooks = {};
+const structMarket = {}, structBooks = {}, structNo = {};
 // Every pricing: the three Jita ones, then yours (a % of another pricing, or a citadel's sell / buy / split)
 function pricings() { return [...Object.entries(PRICE_MODES).map(([id, name]) => ({ id, name, base: true })), ...(state.misc.pricings || []).map(p => ({ ...p, id: "p:" + p.id }))]; }
 const pricingName = (id) => (pricings().find(p => p.id === id) || {}).name || PRICE_MODES.jbv;
@@ -9013,14 +9044,15 @@ async function buyPrices(ids, cfg) {
 }
 async function structOrders(sid) {
   const c0 = structMarket[sid]; if (c0 && Date.now() - c0.at < 1800e3) return c0.min;
+  if (Date.now() - (structNo[sid] || 0) < 1800e3) throw new Error("its market can't be read");   // no market module, or no access: not asked again for 30 minutes
   const who = state.chars.find(c => c.esiId && esiTokens()[c.esiId] && (c.scopes || "").includes(MARKET_SCOPE)); if (!who) throw new Error("no pilot allows citadel markets");
   const { access } = await freshAccess(who), min = new Map(), max = new Map(), sells = new Map(), buyB = new Map(), raw = new Map();   // raw: every order of a type, for the Trading board
-  let page = 1, pages = 1;
-  do {
-    const r = await esiMarket(`https://esi.evetech.net/latest/markets/structures/${sid}/?datasource=tranquility&page=${page}`, { headers: { Authorization: "Bearer " + access } }, 3);
-    if (!r.ok) throw new Error("ESI answered " + r.status); pages = +r.headers.get("X-Pages") || 1;
+  const get = async (page) => { const r = await esiMarket(`https://esi.evetech.net/latest/markets/structures/${sid}/?datasource=tranquility&page=${page}`, { headers: { Authorization: "Bearer " + access } }, 3);
+    if (!r.ok) { if (r.status === 403 || r.status === 404) structNo[sid] = Date.now(); throw new Error("ESI answered " + r.status); } return r; };
+  const r1 = await get(1), pages = Math.min(30, +r1.headers.get("X-Pages") || 1), all = [r1, ...await Promise.all(Array.from({ length: pages - 1 }, (_, i) => get(i + 2)))];   // the other pages at once
+  for (const r of all) {
     for (const o of await r.json()) { (raw.get(o.type_id) || raw.set(o.type_id, []).get(o.type_id)).push(o); if (!o.is_buy_order) { min.set(o.type_id, Math.min(min.get(o.type_id) || Infinity, o.price)); (sells.get(o.type_id) || sells.set(o.type_id, []).get(o.type_id)).push([o.price, o.volume_remain]); } else { max.set(o.type_id, Math.max(max.get(o.type_id) || 0, o.price)); (buyB.get(o.type_id) || buyB.set(o.type_id, []).get(o.type_id)).push([o.price, o.volume_remain]); } }
-  } while (++page <= Math.min(pages, 30));
+  }
   for (const l of sells.values()) l.sort((a, b) => a[0] - b[0]);
   for (const l of buyB.values()) l.sort((a, b) => b[0] - a[0]);
   structMarket[sid] = { at: Date.now(), min, max }; structBooks[sid] = { at: Date.now(), sells, buys: max, buyB, raw }; return min;
@@ -11559,7 +11591,7 @@ function renderSovPage() {
   $("sov-refresh").disabled = !!sovRun;
   const aName = (a) => (I.al[a] || {}).n || I.names[a] || ((sov && sov.names) || {})[a] || `Alliance ${a}`;
   const logo = (k, id) => `<img src="https://images.evetech.net/${k}/${id}/logo?size=32" width="20" height="20" alt="" loading="lazy" style="vertical-align:middle">`;
-  const mapBtn = (k, n) => ` <button type="button" class="link" data-sov-map="${esc(k)}" title="Show ${esc(n)}'s systems on the map">Map</button>`;
+  const mapBtn = (k, n) => ` <button type="button" class="mb-go sov-map" data-sov-map="${esc(k)}" title="Show ${esc(n)}'s systems on the map" aria-label="Show ${esc(n)}'s systems on the map"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 12.5L6 4.5L10 9L13.5 3" style="fill:none;stroke:currentColor;stroke-width:1.2"/><g style="fill:currentColor"><circle cx="2.5" cy="12.5" r="1.8"/><circle cx="6" cy="4.5" r="1.8"/><circle cx="10" cy="9" r="1.8"/><circle cx="13.5" cy="3" r="1.8"/></g></svg></button>`;
   const aCell = (a) => a ? `${logo("alliances", a)} ${esc(aName(a))}${(I.al[a] || {}).t ? ` <span class="muted">[${esc(I.al[a].t)}]</span>` : ""}` : `<span class="muted">No alliance</span>`;
   const aTick = (a) => a ? `${logo("alliances", a)} ${esc((I.al[a] || {}).t || aName(a))}` : `<span class="muted">None</span>`;   // the narrow movements table: logo and ticker
   const num = (v) => v == null ? `<td class="num" data-v="">—</td>` : `<td class="num" data-v="${v}">${v.toLocaleString()}</td>`;

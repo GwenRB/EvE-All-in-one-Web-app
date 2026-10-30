@@ -1,4 +1,11 @@
-# commit b19dbfd 2026-10-30 (lines below are covered by the wiki; written by scripts/wiki.sh mark)
+# commit ddcfe61 2026-10-31 (lines below are covered by the wiki; written by scripts/wiki.sh mark)
+- Sovereignty: the **Map** link by every alliance and coalition is now a square button with a constellation icon.
+- Trading board: **Sell volume** and **Buy volume** (were For sale and Wanted) share one column, and **Show history** / **Show markets comparison** moved from under the Market panel to the right end of the item's numbers. The markets comparison's columns use the same names.
+- Trading board history: the chart fills its panel (text stays the same size however wide it is), and pointing at it shows a crosshair with the day at the bottom and the price (or, over the bars, the volume) on the side.
+- Trading board: the lowest sell and highest buy under Sell (5%) and Buy (5%) are short (1.6B, 250M, 12.5K ISK).
+- Trading board: items no longer take a long time after "71 of 71 regions": your citadels' markets are read several at a time (the status counts them), and a citadel without a market isn't asked again for 30 minutes.
+- Trading board history: the ISK and Volume titles no longer overlap the scale, and the first and last day's bars no longer spill over the scales.
+- Map: **Thera and Turnur wormholes** from EVE-Scout. Systems with a wormhole to Thera or Turnur get a violet swirl; Turnur's connections are drawn as a dashed line. Click or hover a system to see the signatures, the biggest ship that fits and the time left. Read every 10 minutes while the map is open; the **Thera / Turnur** tick box (or its legend line) hides them.
 - Sovereignty: a **Map** button by every alliance and coalition opens the map with its systems highlighted (a green ring, the rest dimmed) and framed; **Hide** in the map legend clears it.
 - Characters (Settings): the Last synced column says how long the last full sync took and which part took most of it (hover for every part).
 - Sovereignty: next to the systems of each alliance and coalition, its share of all the systems sovereignty can be held in (%); the Systems tile says it too.

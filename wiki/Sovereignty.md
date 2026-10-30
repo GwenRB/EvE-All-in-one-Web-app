@@ -3,7 +3,7 @@
 **Sovereignty** (the last tab). Who holds null-sec, from CCP's own public data (ESI), like DOTLAN's alliance page.
 
 ## Alliances
-Every alliance holding sovereignty, ranked by the systems it holds (with, in brackets, its share of all the systems sovereignty can be held in), with its members (its corporations' members added up) and how many corporations it has. Type in **Find an alliance** to filter by name or ticker. **Map** next to an alliance (or a coalition) opens the [Map](Map-and-jump-planner) framed on its systems, each with a green ring and the rest dimmed; **Hide** in the map's legend clears it.
+Every alliance holding sovereignty, ranked by the systems it holds (with, in brackets, its share of all the systems sovereignty can be held in), with its members (its corporations' members added up) and how many corporations it has. Type in **Find an alliance** to filter by name or ticker. The square map button (a constellation) next to an alliance (or a coalition) opens the [Map](Map-and-jump-planner) framed on its systems, each with a green ring and the rest dimmed; **Hide** in the map's legend clears it.
 
 The first time, the page reads every corporation of those alliances (a few minutes; the status says how far it is). It's then kept a day in your browser. **Refresh from ESI** reads the map and the alliances again.
 

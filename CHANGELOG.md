@@ -9,6 +9,18 @@ How entries are kept:
 
 ---
 
+## 2026-10-31 — Trading board top bar, history crosshair, faster citadel reads; Sovereignty map icon
+
+### Changed
+- Sovereignty: the **Map** link by every alliance and coalition is now a square button with a constellation icon.
+- Trading board: **Sell volume** and **Buy volume** (were For sale and Wanted) share one column, and **Show history** / **Show markets comparison** moved from under the Market panel to the right end of the item's numbers. The markets comparison's columns use the same names.
+- Trading board history: the chart fills its panel (text stays the same size however wide it is), and pointing at it shows a crosshair with the day at the bottom and the price (or, over the bars, the volume) on the side.
+- Trading board: the lowest sell and highest buy under Sell (5%) and Buy (5%) are short (1.6B, 250M, 12.5K ISK).
+
+### Fixed
+- Trading board: items no longer take a long time after "71 of 71 regions": your citadels' markets are read several at a time (the status counts them), and a citadel without a market isn't asked again for 30 minutes.
+- Trading board history: the ISK and Volume titles no longer overlap the scale, and the first and last day's bars no longer spill over the scales.
+
 ## 2026-10-30 · fc0a90b — Thera and Turnur wormholes on the map
 
 ### Added

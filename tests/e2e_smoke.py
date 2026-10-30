@@ -1587,6 +1587,16 @@ async def market_browser(t):
     t.ok(await t.js("(()=>{const x=document.querySelector('#mb-top').innerText; return x.includes(iskFull((100*3.5+205*4)/305)) && x.includes(iskFull(3.8)) && x.includes((6100).toLocaleString()) && x.includes((10500).toLocaleString())})()"), "Sell (5%) and Buy (5%) average the best 5% of the units; for sale and wanted", top)
     t.ok(await t.js("document.getElementById('mb-hist-panel').hidden && document.getElementById('mb-hubs-panel').hidden && !document.getElementById('mb-books').hidden"), "sellers and buyers show; history and the comparison wait behind their buttons")
     t.ok(not await t.js("(document.querySelector('#mb-top').innerText||'').includes('Citadel markets permission')"), "no note about citadels whose market can't be read")
+    sh = t.show("short prices", await t.js("[1.6e9, 999950, 250e6, 12500, 3.5].map(mbShort)"))
+    t.eq(sh, await t.js("[[1.6,'B'],[1,'M'],[250,'M'],[12.5,'K']].map(([v,u])=>v.toLocaleString()+u+' ISK').concat(iskFull(3.5))"), "the lowest / highest lines are short: 1.6B, 1M (not 1,000K), 250M, 12.5K ISK; under a thousand to the cent")
+    # citadel markets: the other pages read at once, a citadel without a market (403) not asked again for 30 minutes
+    cm = t.show("citadel market", await t.js("""(async()=>{ const sv={m:esiMarket,f:freshAccess,c:state.chars,k:ls.get('eve-industry-esi-tokens',{})}, calls=[];
+      try { ls.set('eve-industry-esi-tokens',{9:{}}); freshAccess=async()=>({access:'x'}); state.chars=[{esiId:9,scopes:MARKET_SCOPE}];
+        esiMarket=async(u)=>{ calls.push(u); const p=+u.match(/page=(\d+)/)[1]; if(u.includes('/1000000000001/')) return new Response('',{status:403}); return new Response(JSON.stringify([{type_id:34,price:p,volume_remain:1,is_buy_order:false,order_id:p}]),{headers:{'X-Pages':'3'}}); };
+        const a=await structOrders('1000000000002'); let e=null; await structOrders('1000000000001').catch(()=>0); const n=calls.length; await structOrders('1000000000001').catch(x=>e=x.message);
+        return [a.get(34), structBooks['1000000000002'].sells.get(34).length, n, calls.length, e];
+      } finally { esiMarket=sv.m; freshAccess=sv.f; state.chars=sv.c; ls.set('eve-industry-esi-tokens',sv.k); delete structMarket['1000000000002']; delete structBooks['1000000000002']; delete structNo['1000000000001']; } })()"""))
+    t.eq(cm, [1, 3, 4, 4, "its market can't be read"], "a citadel's 3 pages are read, and one that refuses isn't asked again")
     hh = t.show("item panel height", await t.js("document.getElementById('mb-head').getBoundingClientRect().height")); t.ok(hh < 200, "the item panel stays short", hh)
     await t.js("document.querySelector('.mb').scrollIntoView()"); await asyncio.sleep(0.2); await t.pg.screenshot(path=SP + "trading_board.png")
     await t.pg.click("[data-mb-view=hubs]"); await asyncio.sleep(0.2)
@@ -1602,7 +1612,14 @@ async def market_browser(t):
     box = await t.pg.locator("#mb-hist svg").bounding_box(); await t.pg.mouse.move(box["x"] + box["width"] - 20, box["y"] + 100); await asyncio.sleep(0.2)
     tip = t.show("tooltip", await t.text("#mb-hist .mb-tip")); t.ok(tip and "Average" in tip and "Volume" in tip and "Orders" in tip and await t.js("document.querySelector('#mb-hist .mb-cx').style.display!=='none'"), "pointing at the chart shows that day's numbers", tip)
     t.ok(await t.js("(()=>{const x=document.querySelector('#mb-hist .mb-tip').innerText; const d=new Date(Date.now()-864e5).toISOString().slice(0,10); return x.includes(d)})()"), "the last day is under the pointer at the right edge", tip)
-    t.ok(await t.js("[...document.querySelectorAll('#mb-hist svg text')].some(x=>x.textContent==='Volume' && +x.getAttribute('x')>900)"), "the volume has its own scale on the right")
+    cross = t.show("crosshair", await t.js("['.yl text','.xl text'].map(s=>document.querySelector('#mb-hist .mb-cx '+s).textContent)"))
+    t.ok(cross[1] == await t.js("document.querySelector('#mb-hist')._geo.rows.at(-1).date") and cross[0] and cross[0][0].isdigit() and await t.js("+document.querySelector('#mb-hist .mb-cx .h').getAttribute('y1')>0"), "a crosshair: the day's date at the bottom, the price at the pointer's height on the left", cross)
+    await t.pg.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] - 40); await asyncio.sleep(0.2)
+    t.ok(await t.js("(()=>{const G=document.querySelector('#mb-hist')._geo, r=document.querySelector('#mb-hist .mb-cx .yl rect'); return +r.getAttribute('x')>=G.W-G.R0})()"), "over the bars it reads the volume on the right")
+    await t.pg.mouse.move(box["x"] + box["width"] * 0.4, box["y"] + 120); await asyncio.sleep(0.2); await t.pg.screenshot(path=SP + "trading_history.png")
+    t.ok(await t.js("(()=>{const sv=document.querySelector('#mb-hist svg'), G=document.querySelector('#mb-hist')._geo, p=document.getElementById('mb-hist-panel'); return [...sv.querySelectorAll('text')].some(x=>x.textContent==='Volume' && +x.getAttribute('x')>G.W-G.R0) && sv.getBoundingClientRect().height>300 && p.scrollHeight<=p.clientHeight+1})()"), "the volume has its own scale on the right; the chart fills the panel without a scrollbar")
+    tl = t.show("chart labels", await t.js("(()=>{const E=[...document.querySelectorAll('#mb-hist svg > text')], T=E.map(x=>x.getBBox()), o=[]; for(let a=0;a<T.length;a++) for(let b=a+1;b<T.length;b++){const A=T[a],B=T[b]; if(A.x<B.x+B.width&&B.x<A.x+A.width&&A.y<B.y+B.height&&B.y<A.y+A.height) o.push(E[a].textContent+' / '+E[b].textContent)} return [T.length,o.length,o]})()"))
+    t.ok(tl[1] == 0, "no two labels of the chart overlap", tl)
     t.eq(await t.js("[...document.querySelectorAll('#mb-span option')].map(o=>o.textContent)"), ["7 days", "14 days", "30 days", "3 months", "6 months", "1 year", "Everything"], "more spans for the history")
     await t.pg.select_option("#mb-span", "7"); await asyncio.sleep(0.4)
     t.eq(await t.js("document.querySelector('#mb-hist')._geo.rows.length"), 7, "7 days shows 7 days")
@@ -1636,7 +1653,8 @@ async def market_browser(t):
     t.ok(fit[0] <= fit[1] and fit[0] >= fit[1] - 40 and all(fit[2:]), "the board is one screen tall and nothing spills out", fit)
     t.ok(await t.js("(()=>{scrollTo(0,0); const T=$('mb-tree'); T.style.maxHeight='40px'; const n=T.querySelector('[aria-current]'); T.scrollTop=0; mbTreeTo(n, true); const r=[scrollY, T.scrollTop>0 || n.offsetTop<40]; T.style.maxHeight=''; return r[0]===0 && r[1]})()"), "showing a market tree row scrolls the tree, never the page")
     t.eq(await t.js("['#mb-tree','#mb-sells .scroller'].map(s=>getComputedStyle(document.querySelector(s)).overscrollBehaviorY)"), ["contain", "contain"], "reaching a list's end doesn't scroll the page")
-    t.ok(await t.js("document.querySelector('.mb-left .mb-views [data-mb-view=hist]')!=null"), "Show history and Show markets comparison sit on the left, under the Market panel")
+    t.ok(await t.js("document.querySelector('#mb-top .mb-stats .mb-views [data-mb-view=hist]')!=null && !document.querySelector('.mb-left [data-mb-view]')"), "Show history and Show markets comparison sit in the item panel, after the numbers")
+    t.ok(await t.js("(()=>{const x=document.querySelector('#mb-top .mb-stats').textContent; return x.includes('Sell volume') && x.includes('Buy volume') && !/For sale|Wanted/i.test(x)})()"), "Sell volume and Buy volume share one column")
     # a clicked row stays highlighted; another click on it lets go
     await t.pg.click("#mb-sells tbody tr:nth-child(2) td:first-child"); await asyncio.sleep(0.1)
     t.eq(await t.js("[...document.querySelectorAll('#mb-sells tbody tr.sel')].map(r=>+r.dataset.mbO)"), [1001], "a clicked seller stays highlighted")
@@ -1809,12 +1827,12 @@ async def sovereignty(t):
     await t.tab("sov", 0.3)
     t.ok(await t.until("!sovRun && !!sov && sovHist.snaps.length===2", 15), "reading sovereignty, alliances and corporations", await t.text("#sov-status"))
     rows = t.show("ranking", await t.js("[...document.querySelectorAll('#sov-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
-    t.eq(rows, [["1", "Alpha Alliance [AA] Map", "2 (67%)", "40", "2"], ["2", "Beta Alliance [BB] Map", "1 (33%)", "50", "1"]], "alliances ranked by systems, with members and corporations (factions left out)")
+    t.eq(rows, [["1", "Alpha Alliance [AA]", "2 (67%)", "40", "2"], ["2", "Beta Alliance [BB]", "1 (33%)", "50", "1"]], "alliances ranked by systems, with members and corporations (factions left out)")
     await t.pg.fill("#sovc-name", "Test coalition"); await t.pg.click("#sovc-form button[type=submit]"); await asyncio.sleep(0.2)
     cid = await t.js("sovCfg().coals[0].id")
     for a in ("99000001", "99000002"): await t.pg.select_option(f"[data-sov-of='{a}']", cid); await asyncio.sleep(0.2)
     co = t.show("coalition", await t.js("[...document.querySelectorAll('#sovc-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
-    t.ok(len(co) == 1 and co[0][0] == "Test coalition Map" and co[0][2:] == ["3 (100%)", "90", "3"] and "AA" in co[0][1] and "BB" in co[0][1], "a coalition adds up its alliances' systems, members and corporations", co)
+    t.ok(len(co) == 1 and co[0][0] == "Test coalition" and co[0][2:] == ["3 (100%)", "90", "3"] and "AA" in co[0][1] and "BB" in co[0][1], "a coalition adds up its alliances' systems, members and corporations", co)
     t.ok(co[0][1].index("BB") < co[0][1].index("AA"), "a coalition lists its alliances by members, most first", co)
     ch = t.show("sov changes", await t.js("[...document.querySelectorAll('#sovx-table tbody tr')].map(r=>[...r.cells].map(c=>c.innerText.trim()))"))
     t.eq(ch, [["Alpha Alliance [AA]", "+2", "0", "+2"], ["Beta Alliance [BB]", "0", "−2", "−2"]], "sov changes: systems gained and lost since the snapshot")
@@ -1837,7 +1855,8 @@ async def sovereignty(t):
     t.ok(mp["a"] == [99000001, 99000002] and mp["none"] == 0, "Map allies: your pilots' coalition by default, removable", mp)
     t.ok(mp["same"], "colour by sovereignty: one coalition, one colour", mp)
     # Map buttons: an alliance's or a coalition's systems highlighted on the map
-    t.ok(await t.js("document.querySelectorAll('#sov-table [data-sov-map]').length===2 && document.querySelectorAll('#sovc-table [data-sov-map]').length===1"), "a Map button by every alliance holding sov and by the coalition")
+    t.ok(await t.js("document.querySelectorAll('#sov-table [data-sov-map]').length===2 && document.querySelectorAll('#sovc-table [data-sov-map]').length===1"), "a map button by every alliance holding sov and by the coalition")
+    t.ok(await t.js("[...document.querySelectorAll('#sov-table [data-sov-map]')].every(b=>b.querySelector('svg circle') && !b.textContent.trim() && b.getAttribute('aria-label').startsWith('Show ') && Math.abs(b.offsetWidth-b.offsetHeight)<=1)"), "it is a square button with a constellation icon")
     await t.pg.click("#sovc-table [data-sov-map]"); await asyncio.sleep(0.3)
     fm = t.show("map focus", await t.js("({page:!document.getElementById('page-map').hidden, n:mapUI.focus&&mapUI.focus.n, ids:mapUI.focus&&[...mapUI.focus.ids].sort(), item:mapSysItems({id:30000003}).join(' '), other:mapSysItems({id:30000005}).join(' ')})"))
     t.ok(fm["page"] and fm["n"] == "Test coalition" and fm["ids"] == [99000001, 99000002] and "Highlighted: Test coalition" in fm["item"] and "Highlighted" not in fm["other"], "the coalition's Map button opens the map with its alliances' systems highlighted", fm)
