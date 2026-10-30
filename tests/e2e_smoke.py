@@ -596,12 +596,13 @@ async def skill_check_saved(t):
 async def map_markers(t):
     # The map, its legend, the system panel and the hover box draw each marker with the same MK entry
     await map_(t)
-    await t.js("()=>{state.misc.structs={...(state.misc.structs||{}), 1077:{name:'Bravo - Test Astrahus',system:30000002,type:35832,typeName:'Astrahus'}}; state.misc.map={...(state.misc.map||{}),homes:[30000002]}; saveMisc(); renderMap(); mapSelect(30000002, true);}")
+    await t.js("()=>{state.misc.structs={...(state.misc.structs||{}), 1077:{name:'Bravo - Test Astrahus',system:30000002,type:35832,typeName:'Astrahus'}}; state.misc.map={...(state.misc.map||{}),homes:[30000002]}; mapUI.focus={n:'Test alliance',ids:[1]}; saveMisc(); renderMap(); mapSelect(30000002, true);}")
     await asyncio.sleep(0.4)
     info = t.show("panel", await t.js("[...document.querySelectorAll('#map-info .map-sel canvas.mk-ico')].map(c=>c.dataset.mk+':'+(c.dataset.mkArg||''))"))
     t.ok("struct:" in info and "home:" in info, "the system panel shows the map's markers (citadel, home)", info)
     leg = t.show("legend", await t.js("[...document.querySelectorAll('#map-legend canvas.mk-ico')].map(c=>c.dataset.mk)"))
     t.ok(set(leg) >= {k for k in await t.js("Object.keys(MK).filter(k=>MK[k].draw)")}, "the legend shows every marker the map draws", leg)
+    await t.js("()=>{ mapUI.focus=null; renderMap() }")
     t.ok(await t.js("[...document.querySelectorAll('#map-legend canvas.mk-ico')].every(c=>c.getContext('2d').getImageData(0,0,32,32).data.some((v,i)=>i%4===3&&v>0))"), "every legend icon is painted")
     pos = await t.js("(()=>{const s=mapIndex().byId.get(30000002), cv=document.getElementById('map-canvas'), rc=cv.getBoundingClientRect(); return [rc.left+(s.px-view.cx)*view.k+cv.clientWidth/2, rc.top+(s.py-view.cy)*view.k+cv.clientHeight/2]})()")
     await t.pg.mouse.move(pos[0], pos[1]); await asyncio.sleep(0.2)
@@ -774,16 +775,49 @@ async def login_background_sync(t):
     t.eq(await t.js("(async()=>{ const db=await idb.open(), real=db.transaction.bind(db); db.transaction=(...a)=>{ const tx=real(...a); setTimeout(()=>tx.abort()); return tx; }; try { return await Promise.race([idb.set('x', 1), sleep(3000).then(()=>'hung')]); } finally { db.transaction=real; } })()"), False, "an aborted save says it failed instead of waiting forever")
 
 @scenario
+async def partial_sync(t):
+    """A page's "Refresh from ESI" reads only what that page shows; its button and the Characters page say who is read and what part."""
+    await t.tab("characters")
+    r = t.show("planets refresh", await t.js("""(async()=>{ const jwt=(id,name)=>'h.'+btoa(JSON.stringify({sub:'CHARACTER:EVE:'+id,name,scp:['esi-planets.manage_planets.v1']})).replace(/=+$/,'').replace(/\\+/g,'-').replace(/\\//g,'_')+'.s';
+      const c=state.chars[0]; Object.assign(c,{esiId:9201, corpId:98000001, skills:{Industry:4}, syncedAt:123, scopes:requestedScopes().join(' ')}); saveToken(9201,'rt');
+      refreshTok=async()=>({access_token:jwt(9201,c.name)});
+      const urls=[], rf=window.fetch; let open; const gate=new Promise(r=>open=r);
+      window.fetch=async(u,i)=>{ if(!String(u).includes('esi.evetech.net')) return rf(u,i); urls.push(String(u).replace(/^https:\\/\\/esi.evetech.net(\\/latest)?/,'').split('?')[0]); await gate; return new Response('[]',{status:200,headers:{'Content-Type':'application/json'}}); };
+      try { const b=document.getElementById('pi-refresh'), label=b.textContent, p=pageSync(b,['planets']); await sleep(300); renderChars();
+        const mid=[b.textContent, b.disabled, (document.querySelector('#chars-table [data-sync-pill]')||{}).textContent]; open(); await p;
+        return {mid, after:[b.textContent===label, b.disabled], urls:[...new Set(urls)].filter(u=>!u.startsWith('/markets/')), skills:c.skills.Industry, syncedAt:c.syncedAt, planetsAt:!!c.planetsSyncedAt}; }
+      finally { window.fetch=rf; } })()"""))
+    t.ok("planets" in r["mid"][0] and r["mid"][1] and "Syncing: planets" in (r["mid"][2] or ""), "while it runs, the button and the Characters page say the pilot's planets are read", r["mid"])
+    t.eq(r["after"], [True, False], "the button is back afterwards")
+    t.eq(r["urls"], ["/characters/9201/planets/"], "only the planets are read from ESI (no skills, wallets, assets…; market prices other pages read aside)")
+    t.ok(r["skills"] == 4 and r["syncedAt"] == 123 and r["planetsAt"], "the rest of the pilot is left as it was; the planets are marked read", r)
+
+@scenario
+async def intel_violent(t):
+    """Intel's right column: the null-sec and low-sec systems with the most ships and pods killed over the last 3 hours (hourly ESI readings kept and added up)."""
+    await map_(t)
+    r = t.show("violent", await t.js("""(async()=>{ const S=mapData.systems.filter(s=>s.id<31000000), nul=S.filter(s=>secRound(s.s)<=0).slice(0,2), low=S.filter(s=>secRound(s.s)>0&&secRound(s.s)<0.5).slice(0,1), hi=S.find(s=>secRound(s.s)>=0.5);
+      const now=Date.now(); kills3={v:1,snaps:[{at:now-5*3600e3,by:[[nul[0].id,99,99]]},{at:now-2*3600e3,by:[[nul[0].id,3,1],[low[0].id,2,0]]},{at:now-3600e3,by:[[nul[0].id,1,1],[nul[1].id,10,0],[hi.id,50,50]]}]};
+      kills={at:now,by:new Map()}; showPage('intel'); renderViolent(); await sleep(200);
+      const rows=(id)=>[...document.querySelectorAll('#'+id+' tbody tr')].map(r=>[r.cells[0].dataset.v, +r.cells[2].textContent, +r.cells[3].textContent]);
+      const before=kills3.snaps.length; await kills3Keep([{system_id:nul[0].id,ship_kills:1,pod_kills:1},{system_id:nul[1].id,ship_kills:10,pod_kills:0},{system_id:hi.id,ship_kills:50,pod_kills:50}]);
+      return {nul:rows('intel-null'), low:rows('intel-low'), names:[nul[1].n, nul[0].n, low[0].n], since:document.getElementById('intel-kills-since').textContent, same:kills3.snaps.length===before, side:!!document.querySelector('#page-intel .side-col #intel-null')}; })()"""))
+    n = r["names"]
+    t.eq(r["nul"], [[n[0], 10, 0], [n[1], 4, 2]], "null-sec: the last 3 hours added up (an older reading left out), most ships + pods first; high-sec left out")
+    t.eq(r["low"], [[n[2], 2, 0]], "low-sec in its own panel")
+    t.ok("2 of the last 3 hours" in r["since"] and r["same"] and r["side"], "it says how many hours it counts; a repeated reading isn't kept twice; the panels sit in the right column", r)
+
+@scenario
 async def contract_items_rate_limit(t):
     """A corporation with many contracts: when ESI rate-limits contract items (429), the sync stops asking and goes on; the rest are read at the next sync."""
     r = t.show("429", await t.js("""(async()=>{ const rf=window.fetch; let calls=0, limit=true;
       window.fetch=(u,i)=>{ if(!String(u).includes('/contracts/')) return rf(u,i); calls++; return Promise.resolve(limit ? new Response('{}',{status:429}) : new Response(JSON.stringify([{type_id:34,quantity:5,is_included:true}]),{status:200})); };
       const list=()=>Array.from({length:50},(_, k)=>({id:880000+k})), path=(id)=>'/corporations/98000009/contracts/'+id+'/items/';
-      try { const t0=Date.now(), L=list(); await contractItems('corp:98000009', L, path, 'tok', ''); const first=[calls, Date.now()-t0<15000, L.filter(c=>c.items).length];
+      try { const t0=Date.now(), L=list(); await contractItems('corp:98000009', L, path, 'tok', ''); const first=[calls, Date.now()-t0<3000, L.filter(c=>c.items).length];
         state.contracts['corp:98000009']={list:L}; limit=false; calls=0; const L2=list(); await contractItems('corp:98000009', L2, path, 'tok', '');
         return [...first, calls, L2.filter(c=>c.items&&c.items.length).length]; }
       finally { window.fetch=rf; delete state.contracts['corp:98000009']; } })()"""))
-    t.ok(r[0] <= 12 and r[1] and r[2] == 0, "ESI says 429: a few tries, then the other contracts wait (not 50 contracts × retries)", r)
+    t.ok(r[0] <= 3 and r[1] and r[2] == 0, "ESI says 429: no waiting and retrying, the other contracts wait for the next sync (not 50 contracts × retries)", r)
     t.eq(r[3:], [50, 50], "the next sync reads them all")
 
 @scenario
@@ -1211,7 +1245,10 @@ async def corporation(t):
     t.eq([x if isinstance(x, str) else x[:2] for x in led], ["Bob Client", ["Veldspar", 1500], "Gas Supplier", ["Compressed Scordite", 300]], "who mined what over 30 days (an older day left out)")
     v = await t.js("[oreValue(1230,'jbv'), oreValue(62520,'jbv')]")
     t.ok(len(led) == 4 and v[0] and abs(led[1][2] - 1500 * v[0]) < 1 and abs(led[3][2] - 300 * v[1]) < 1, "ore valued as its minerals at the best possible yield", [led, v])
+    await t.tab("misc", 0.4)
     own = await t.js(LED, "#corp-own"); t.eq([x if isinstance(x, str) else x[:2] for x in own], ["Ender Alpha", ["Veldspar", 200]], "your pilots' own mining")
+    t.ok(await t.js("!!document.querySelector('#page-misc #corp-own') && !document.querySelector('#page-corp #corp-own') && document.querySelector('#mmin-days').value==='30'"), "your pilots' mining is on the Misc page, with the Corporation page's period")
+    await t.tab("corp", 0.4)
     await t.pg.select_option("#corp-days", "90"); await asyncio.sleep(0.3); await t.until("!corpBusy", 10)
     t.eq([x[1] for x in await t.js(LED, "#corp-led") if not isinstance(x, str) and x[0] == "Compressed Scordite"], [300 + 9999], "90 days takes the older day in")
     await t.pg.select_option("#corp-as", "ore"); await asyncio.sleep(0.3); await t.until("!corpBusy", 10)
@@ -1263,11 +1300,13 @@ async def intel(t):
     al = t.show("alerts", await t.text("#intel-alerts"))
     t.ok(al and "Delta - Sotiyo in Delta is under attack: shield 46%, armour 100%, hull 100% by Gas Supplier · Pirates · Bad Guys" in al, "an attack says where, how bad and by whom", al)
     t.ok(al and "Chunk ready at Delta I - Moon 1" in al, "a chunk ready names its moon", al)
+    t.ok(await t.js("!!document.querySelector('#page-misc #intel-list') && !document.querySelector('#page-intel #intel-list')"), "the notifications list is on the Misc page")
+    await t.tab("misc", 0.4)
     G = "[...document.querySelectorAll('#intel-list tr.group th')].map(th=>th.textContent.replace(/^[▾▸]\\s*/,'').replace(/\\s*\\d+$/,''))"
     t.eq(await t.js(G), ["Structures", "Moon mining", "Corporation"], "notifications grouped by kind")
     await t.pg.select_option("#intel-days", "1"); await asyncio.sleep(0.3)
     t.eq(await t.js(G), ["Structures", "Moon mining"], "the period hides older ones")
-    await t.pg.click("[data-intel-seen]"); await asyncio.sleep(0.3)
+    await t.tab("intel", 0.3); await t.pg.click("[data-intel-seen]"); await asyncio.sleep(0.3)
     t.ok(await t.js("!document.querySelector('.tabs button[data-tab=intel]').dataset.alert && !document.querySelector('.tabs .tabgrp:has(button[data-tab=intel]) .tabgrp-btn').dataset.alert") and "Nothing needs attention" in (await t.text("#intel-alerts") or ""), "Mark all as seen clears the alerts and the count")
 
 @scenario
@@ -1333,7 +1372,7 @@ async def custom_filters(t):
     await t.js("()=>{cfCfg('matrix').rules=[{f:'name',op:'is',a:'Industry'}]; renderMatrix();}"); await asyncio.sleep(0.2)
     t.eq(await t.js("[...document.querySelectorAll('#matrix tbody tr:not(.group) th')].map(th=>th.textContent.trim())"), ["Industry"], "the skill matrix filters by its own columns")
     await t.tab("pnl", 0.5); t.ok(await t.js("!!document.querySelector('#pnl-ent-cf [data-cf-act=open]') && !!document.querySelector('#pnl-items-cf [data-cf-act=open]')"), "Profit and loss has Filters on Entries and Items")
-    await t.tab("intel", 0.5); t.ok(await t.js("!!document.querySelector('#intel-cf [data-cf-act=open]')"), "Intel has Filters")
+    await t.tab("misc", 0.5); t.ok(await t.js("!!document.querySelector('#intel-cf [data-cf-act=open]')"), "In-game notifications (Misc) have Filters")
 
 @scenario
 async def net_worth(t):
@@ -1754,12 +1793,12 @@ async def sovereignty(t):
     await t.tab("sov", 0.3)
     t.ok(await t.until("!sovRun && !!sov && sovHist.snaps.length===2", 15), "reading sovereignty, alliances and corporations", await t.text("#sov-status"))
     rows = t.show("ranking", await t.js("[...document.querySelectorAll('#sov-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
-    t.eq(rows, [["1", "Alpha Alliance [AA]", "2", "40", "2"], ["2", "Beta Alliance [BB]", "1", "50", "1"]], "alliances ranked by systems, with members and corporations (factions left out)")
+    t.eq(rows, [["1", "Alpha Alliance [AA] Map", "2 (67%)", "40", "2"], ["2", "Beta Alliance [BB] Map", "1 (33%)", "50", "1"]], "alliances ranked by systems, with members and corporations (factions left out)")
     await t.pg.fill("#sovc-name", "Test coalition"); await t.pg.click("#sovc-form button[type=submit]"); await asyncio.sleep(0.2)
     cid = await t.js("sovCfg().coals[0].id")
     for a in ("99000001", "99000002"): await t.pg.select_option(f"[data-sov-of='{a}']", cid); await asyncio.sleep(0.2)
     co = t.show("coalition", await t.js("[...document.querySelectorAll('#sovc-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
-    t.ok(len(co) == 1 and co[0][0] == "Test coalition" and co[0][2:] == ["3", "90", "3"] and "AA" in co[0][1] and "BB" in co[0][1], "a coalition adds up its alliances' systems, members and corporations", co)
+    t.ok(len(co) == 1 and co[0][0] == "Test coalition Map" and co[0][2:] == ["3 (100%)", "90", "3"] and "AA" in co[0][1] and "BB" in co[0][1], "a coalition adds up its alliances' systems, members and corporations", co)
     t.ok(co[0][1].index("BB") < co[0][1].index("AA"), "a coalition lists its alliances by members, most first", co)
     ch = t.show("sov changes", await t.js("[...document.querySelectorAll('#sovx-table tbody tr')].map(r=>[...r.cells].map(c=>c.innerText.trim()))"))
     t.eq(ch, [["Alpha Alliance [AA]", "+2", "0", "+2"], ["Beta Alliance [BB]", "0", "−2", "−2"]], "sov changes: systems gained and lost since the snapshot")
@@ -1769,17 +1808,24 @@ async def sovereignty(t):
     for w in (1280, 1600, 1920, 2560):
         await t.pg.set_viewport_size({"width": w, "height": 1000}); await asyncio.sleep(0.2)
         lay = t.show(f"layout {w}", await t.js("""(()=>{ const R=(e)=>{const r=e.getBoundingClientRect(); return [Math.round(r.left),Math.round(r.right),Math.round(r.height)]};
-          return {wrap:R(document.querySelector('.wrap')), main:R(document.querySelector('.sov-layout > div')), side:R(document.querySelector('.sov-side')), tabs:R(document.querySelector('nav.tabs')),
-            tables:[...document.querySelectorAll('.sov-side table')].map(x=>[x.scrollWidth, x.parentElement.clientWidth]), vw:document.documentElement.clientWidth, sw:document.documentElement.scrollWidth,
-            logo:R(document.querySelector('header.top .logo-l')), title:R(document.querySelector('header.top h1')), sticky:getComputedStyle(document.querySelector('.sov-stick')).position}; })()"""))
+          return {wrap:R(document.querySelector('.wrap')), main:R(document.querySelector('.side-layout > div')), side:R(document.querySelector('.side-col')), tabs:R(document.querySelector('nav.tabs')),
+            tables:[...document.querySelectorAll('.side-col table')].map(x=>[x.scrollWidth, x.parentElement.clientWidth]), vw:document.documentElement.clientWidth, sw:document.documentElement.scrollWidth,
+            logo:R(document.querySelector('header.top .logo-l')), title:R(document.querySelector('header.top h1')), sticky:getComputedStyle(document.querySelector('.side-stick')).position}; })()"""))
         t.ok(lay["side"][0] >= lay["wrap"][1] and lay["side"][1] <= lay["vw"] and lay["sw"] <= lay["vw"] and lay["sticky"] == "sticky", f"{w} px: the 7-day panels sit right of the page body, in the window, and stay in view", lay)
         t.ok(all(a <= b for a, b in lay["tables"]), f"{w} px: their tables fit the rail", lay["tables"])
+        t.eq(lay["side"][0] - lay["main"][1], 16, f"{w} px: 16 px between the body and the right column, like the left navigation rail")
         t.ok(lay["logo"][1] <= lay["title"][0], f"{w} px: the header logo doesn't cover the title", lay)
     # Map: the coalition your pilots' alliance is in is allied by default; a coalition's alliances share a colour
     mp = t.show("map allies", await t.js("""()=>{ state.chars[0].allyId=99000001; const a=[...allyIds()].sort(), m=state.misc.map=state.misc.map||{}; delete m.allyCoals;
       const col=(id)=>sovColor({id, s:-0.5}, new Set()), same=col(30000001)===col(30000003); m.allyCoals=[]; const none=allyIds().size; delete m.allyCoals; return {a, same, none}; }"""))
     t.ok(mp["a"] == [99000001, 99000002] and mp["none"] == 0, "Map allies: your pilots' coalition by default, removable", mp)
     t.ok(mp["same"], "colour by sovereignty: one coalition, one colour", mp)
+    # Map buttons: an alliance's or a coalition's systems highlighted on the map
+    t.ok(await t.js("document.querySelectorAll('#sov-table [data-sov-map]').length===2 && document.querySelectorAll('#sovc-table [data-sov-map]').length===1"), "a Map button by every alliance holding sov and by the coalition")
+    await t.pg.click("#sovc-table [data-sov-map]"); await asyncio.sleep(0.3)
+    fm = t.show("map focus", await t.js("({page:!document.getElementById('page-map').hidden, n:mapUI.focus&&mapUI.focus.n, ids:mapUI.focus&&[...mapUI.focus.ids].sort(), item:mapSysItems({id:30000003}).join(' '), other:mapSysItems({id:30000005}).join(' ')})"))
+    t.ok(fm["page"] and fm["n"] == "Test coalition" and fm["ids"] == [99000001, 99000002] and "Highlighted: Test coalition" in fm["item"] and "Highlighted" not in fm["other"], "the coalition's Map button opens the map with its alliances' systems highlighted", fm)
+    await t.js("(()=>{ mapUI.focus=null })()"); await t.tab("sov", 0.3)
     await t.pg.click("[data-sov-coal-del]"); await asyncio.sleep(0.2)
     t.ok(await t.js("!sovCfg().coals.length && !Object.keys(sovCfg().of).length"), "removing a coalition takes its alliances out of it")
     t.ok(await t.js("(()=>{ const td=document.querySelector('#sovc-table td.empty'); return !!td && td.getBoundingClientRect().width > td.closest('table').getBoundingClientRect().width - 2; })()"), "an empty table's message spans every column")

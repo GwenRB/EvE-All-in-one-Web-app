@@ -16,6 +16,8 @@ Some tabs show a **red number**: To-Do counts what waits on you, Intel (and its 
 ## Syncing
 Linked pilots are read from ESI when you sync them, and most pages also have a **Refresh from ESI** button. A sync reads skills, queues, jobs, assets, planets, wallets, contracts, calendar, notifications… depending on the [permissions](ESI-permissions) you gave.
 
+A page's **Refresh from ESI** reads only what that page shows (Planets: the planets; Jobs: jobs and structures; Wallets: the wallets; Stock: hangars and contracts; Contracts browser: contracts), so it takes seconds. **Sync now** and **Sync all** read everything. While it runs, the button and the Characters panel in Settings say which pilot is read and which part (for example *Syncing: wallet history…*, or *contracts: items 40 of 300*). Contract items are read once each; when ESI asks to slow down, the rest wait for the next sync instead of holding this one. After a full sync, the **Last synced** column says how long it took and which part took most of it (hover for every part): if a sync is slow, that's where to look.
+
 Prices and market history are read when a page needs them. Every page's market reads share **one queue** that stays under ESI's rate limit, and the page you're looking at goes first. When reads are held back, a small status shows at the bottom left. A big build may take a little while to price: that's the queue waiting, not an error.
 
 ### Daily downtime

@@ -28,7 +28,7 @@ The tab bar, left to right:
 | **Trading board** | [Trading board](Trading-board) | A market browser: every order for an item in every region, the hubs side by side, price history |
 | **Stock ▾** | [Assets](Assets) | What you own and where |
 | **Pilots ▾** | [Characters](Characters), [Skills](Skills), [Omega](Omega), [Fittings](Fittings) | Your pilots |
-| **Other ▾** | [Misc](Misc), [Corporation](Corporation), [Intel](Intel), [Item database](Item-database) | Calculators, wallets, attribute boosters, your blueprint library, structure fuel, moon mining, in-game notifications, every item in the game |
+| **Other ▾** | [Misc](Misc), [Corporation](Corporation), [Intel](Intel), [Item database](Item-database) | Calculators, wallets, attribute boosters, your blueprint library, structure fuel, moon mining, in-game notifications, the most violent systems, every item in the game |
 | **Settings** | [Settings and backups](Settings-and-backups) | Pilots, backups, pricings, taxes, news, clocks |
 | **Notes** | [Settings and backups](Settings-and-backups#notes) | Your own notes |
 | **Tests** | [Tests](Tests) | New tools, tried out first |
