@@ -9,6 +9,38 @@ How entries are kept:
 
 ---
 
+## 2026-10-31 · efa74a6 — Route planner on the Map (Thera, Turnur, Zarzakh), Travel planning panel
+
+### Added
+- Map: **Route**, under the Jump planner: the fewest-gates route between two systems, like the game's autopilot, drawn on the map. Untick high-sec, low-sec or null-sec to keep the route out of it. Lists every system with its security, region and kills in the last hour, and counts the dangerous ones.
+- Map, Route: tick **Thera** or **Turnur** to take their wormholes (open ones from EVE-Scout, with the biggest ship each takes), and **Zarzakh** to fly through it (you're then locked to the gate you came in by for 6 hours).
+- Map: a system's panel has **Route to here from …** next to **Jump here from …**.
+
+### Changed
+- Map: **Jump from here** is now **Start from here** (and **Jump from** above the map is **Start from**): the start counts for jump range, the Jump planner and routes. Picking a start (button, box or home) also fills the Jump planner's and the Route's **From**.
+- Map: the Jump planner, Route and Gather items moved to their own **Travel planning** panel under the map, so you can fold them away and keep the map.
+- Map, Route: the gates tile names the biggest ship the route's wormholes take (the smallest wormhole sets it).
+
+### Fixed
+- Map: routes by gate no longer go through Zarzakh unless you allow it (its gate lock keeps you there for 6 hours).
+
+## 2026-10-31 · bb637f3 — Trading board top bar, history crosshair, faster citadel reads; Sovereignty map icon
+
+### Changed
+- Sovereignty: the **Map** link by every alliance and coalition is now a square button with a constellation icon.
+- Trading board: **Sell volume** and **Buy volume** (were For sale and Wanted) share one column, and **Show history** / **Show markets comparison** moved from under the Market panel to the right end of the item's numbers. The markets comparison's columns use the same names.
+- Trading board history: the chart fills its panel (text stays the same size however wide it is), and pointing at it shows a crosshair with the day at the bottom and the price (or, over the bars, the volume) on the side.
+- Trading board: the lowest sell and highest buy under Sell (5%) and Buy (5%) are short (1.6B, 250M, 12.5K ISK).
+
+### Fixed
+- Trading board: items no longer take a long time after "71 of 71 regions": your citadels' markets are read several at a time (the status counts them), and a citadel without a market isn't asked again for 30 minutes.
+- Trading board history: the ISK and Volume titles no longer overlap the scale, and the first and last day's bars no longer spill over the scales.
+
+## 2026-10-30 · fc0a90b — Thera and Turnur wormholes on the map
+
+### Added
+- Map: **Thera and Turnur wormholes** from EVE-Scout. Systems with a wormhole to Thera or Turnur get a violet swirl; Turnur's connections are drawn as a dashed line. Click or hover a system to see the signatures, the biggest ship that fits and the time left. Read every 10 minutes while the map is open; the **Thera / Turnur** tick box (or its legend line) hides them.
+
 ## 2026-10-30 · 616e3fb — Faster page refreshes and contracts sync, Sovereignty map and shares, Intel kill panels
 
 ### Added

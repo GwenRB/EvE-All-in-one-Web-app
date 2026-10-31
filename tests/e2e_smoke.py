@@ -613,6 +613,22 @@ async def map_markers(t):
     t.ok(not await t.js("(()=>{const p=document.querySelector('#map-info .map-sel').cloneNode(true); p.querySelectorAll('button').forEach(b=>b.remove()); return /[◆□●♟◇✷▪⛴⌂]/.test(document.getElementById('map-hover').innerText + p.innerText)})()"), "no old text symbols are left in the hover box or the system panel")
 
 @scenario
+async def map_thera(t):
+    # Thera / Turnur wormholes from EVE-Scout: the known-space ends get the swirl marker, listed in the panel, the hover box and the legend
+    await map_(t)
+    t.ok(await t.until("!!scout", 8), "EVE-Scout's connections are read when the map opens")
+    t.eq(await t.js("[[...scout.by.keys()].sort(), scout.lines]"), [[30000002, 30000003, 30000006], [[30000003, 30000006]]], "only known-space ends are kept; a line only where both ends are on the map")
+    await t.js("mapSelect(30000002, true)"); await asyncio.sleep(0.3)
+    pn = t.show("panel", await t.js("[...document.querySelectorAll('#map-info .map-sel canvas.mk-ico[data-mk=scout]')].map(c=>c.parentElement.innerText.replace(/\\s+/g,' ').trim()).join(' | ')"))
+    t.ok("Wormhole to Thera" in pn and "XWF-276 (JXT-585 in Thera)" in pn and "up to battleships" in pn and "left" in pn, "the system panel gives both signatures, the ship size and the time left", pn)
+    await t.js("mapSelect(30000003, false)"); await asyncio.sleep(0.3)
+    t.ok("Wormhole to Foxtrot" in (await t.text("#map-info")) and "up to freighters" in (await t.text("#map-info")), "Turnur's side lists where it leads", await t.text("#map-info"))
+    t.ok("Thera / Turnur wormhole (EVE-Scout) · 3 systems" in (await t.text("#map-legend")), "the legend counts the systems", await t.text("#map-legend"))
+    await t.js("view.k=null; drawMap()"); await asyncio.sleep(0.2); await t.pg.locator("#map-wrap").screenshot(path=SP + "map_thera.png")
+    await t.pg.click("[data-ml=scout]"); await asyncio.sleep(0.2)
+    t.eq(await t.js("mapLayers().scout"), False, "the Thera / Turnur tick box hides them")
+
+@scenario
 async def map_pilots(t):
     # Every pilot's last location (ESI "Character location") on the map, with the same marker in the panel, the hover box and the legend
     await map_(t)
@@ -1480,6 +1496,54 @@ async def map_gather(t):
     t.ok(await t.js("!mapUI.haul && !$('gr-out').innerHTML"), "Clear removes the route from the map")
 
 @scenario
+async def map_route(t):
+    """Route on the Map: the fewest gates between two systems, kept out of unticked security, drawn as the planned route."""
+    await map_(t)
+    pg = t.pg
+    await pg.fill("#rt-from", "Echo"); await pg.fill("#rt-to", "Golf"); await pg.click("#rt-form button[type=submit]"); await asyncio.sleep(0.3)
+    r = t.show("route", await t.js("({rows:[...document.querySelectorAll('#rt-out tbody tr')].map(r=>r.cells[1].innerText.split(' ')[0]), tiles:[...document.querySelectorAll('#rt-out .slot-tile .big-num')].map(x=>x.textContent), drawn:(mapUI.route||[]).map(id=>mapIndex().byId.get(id).n), best:gatePath(mapIndex().byName.get('echo'),mapIndex().byName.get('golf'),false).map(s=>s.n), cfg:state.misc.map.route})"))
+    t.ok(r["rows"] == r["best"] == r["drawn"] and r["tiles"][0] == str(len(r["best"]) - 1), "the fewest-gates route is listed, counted and drawn on the map", r)
+    t.ok(r["cfg"]["from"] == "Echo" and r["cfg"]["to"] == "Golf", "the systems are kept", r["cfg"])
+    # The fake map is a tree, so unticking a security either leaves the route as it is or finds none
+    await pg.uncheck("[data-rt-sec=n]"); await asyncio.sleep(0.3)
+    t.ok("No route" in await t.js("$('rt-out').innerText") and await t.js("mapUI.route") is None, "unticking null-sec plans again: Delta is null-sec, so no route, and nothing drawn")
+    await pg.fill("#rt-from", "Alpha"); await pg.click("#rt-form button[type=submit]"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[[...document.querySelectorAll('#rt-out tbody tr')].map(r=>r.cells[1].innerText.split(' ')[0]), (mapUI.route||[]).length]"), [["Alpha", "Bravo", "Charlie", "Golf"], 4], "a route outside null-sec is found and drawn")
+    await pg.click("#rt-clear")
+    t.ok(await t.js("mapUI.route === null && !$('rt-out').innerHTML"), "Clear removes the route from the map")
+    # From the system panel: "Start from here" on Echo, then "Route to here from Echo" on Golf
+    await pg.check("[data-rt-sec=n]"); await t.js("mapSelect(30000005, true)"); await asyncio.sleep(0.2); await pg.click("#map-info [data-map-origin]"); await asyncio.sleep(0.2)
+    t.ok(await t.js("$('jp-from').value==='Echo' && $('rt-from').value==='Echo' && state.misc.map.plan.from==='Echo' && state.misc.map.route.from==='Echo'"), "Start from here fills the Jump planner's and the Route's From")
+    # Travel planning is its own panel: folded, the map stays; Route to here opens it again
+    await pg.click("#trv-title"); await asyncio.sleep(0.2)
+    t.ok(await t.js("$('trv-panel').classList.contains('folded') && !$('map-wrap').closest('.panel').classList.contains('folded') && $('map-wrap').offsetHeight>0"), "the planners fold away from the map")
+    await t.js("mapSelect(30000007, true)"); await asyncio.sleep(0.2)
+    b = t.show("panel buttons", await t.js("[...document.querySelectorAll('#map-info .map-sel button')].map(b=>b.textContent)"))
+    t.ok("Jump here from Echo" in b and "Route to here from Echo" in b, "the system panel offers a jump and a route from the start", b)
+    await pg.click("#map-info [data-map-rtdest]"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[...document.querySelectorAll('#rt-out tbody tr')].map(r=>r.cells[1].innerText.split(' ')[0])"), ["Echo", "Delta", "Charlie", "Golf"], "Route to here plans from the start to that system")
+    t.ok(await t.js("!$('trv-panel').classList.contains('folded')"), "Route to here unfolds Travel planning")
+    t.ok(await t.js("$('rt-from').value==='Echo' && $('rt-to').value==='Golf'"), "the route's systems are filled in")
+    # Wormholes: Turnur (Charlie in the fake data) ↔ Foxtrot from EVE-Scout; a Thera ↔ Foxtrot hole added here (Bravo has one)
+    t.ok(await t.until("!!scout", 8), "EVE-Scout read")
+    await t.js("()=>scout.links.push({a:31000005, an:'Thera', b:30000006, bn:'Foxtrot', size:'medium', exp:Date.now()+3600e3}, {a:31000005, an:'Thera', b:30000001, bn:'Alpha', size:'small', exp:Date.now()-60e3})")
+    rows = "[...document.querySelectorAll('#rt-out tbody tr')].map(r=>r.cells[1].textContent.trim())"
+    await pg.fill("#rt-from", "Foxtrot"); await pg.click("#rt-form button[type=submit]"); await asyncio.sleep(0.3)
+    t.eq(await t.js("[...document.querySelectorAll('#rt-out tbody tr')].length"), 5, "without the wormholes: 4 gates from Foxtrot to Golf")
+    await pg.check("[data-rt-via=turnur]"); await asyncio.sleep(0.3)
+    w = t.show("turnur", await t.js(f"({{rows:{rows}, tiles:[...document.querySelectorAll('#rt-out .slot-tile .muted')].map(x=>x.textContent)[0], drawn:mapUI.route}})"))
+    t.ok(len(w["rows"]) == 3 and "by wormhole, up to freighters" in w["rows"][1] and "1 wormhole (up to freighters)" in w["tiles"] and w["drawn"] == [30000006, 30000003, 30000007], "Turnur ticked: through its wormhole to Charlie, then a gate", w)
+    await pg.uncheck("[data-rt-via=turnur]"); await pg.check("[data-rt-via=thera]"); await pg.fill("#rt-from", "Bravo"); await pg.fill("#rt-to", "Foxtrot"); await pg.click("#rt-form button[type=submit]"); await asyncio.sleep(0.3)
+    th = t.show("thera", await t.js(f"({{rows:{rows}, drawn:mapUI.route, note:$('rt-out').innerText}})"))
+    t.ok(len(th["rows"]) == 3 and th["rows"][1].startswith("Thera wormhole space") and "up to cruisers" in th["rows"][2] and th["drawn"] == [30000002, 31000005, 30000006] and "EVE-Scout" in th["note"] and "+ 2 wormholes (up to cruisers)" in th["note"], "Thera ticked: in at Bravo, out at Foxtrot (the closed hole to Alpha isn't used)", th)
+    # Zarzakh (played by Delta here): only flown through when ticked, with a word about its gate lock
+    await pg.uncheck("[data-rt-via=thera]"); await t.js("()=>mapIndex().byName.set('zarzakh', mapIndex().byName.get('delta'))")
+    await pg.fill("#rt-from", "Echo"); await pg.fill("#rt-to", "Golf"); await pg.click("#rt-form button[type=submit]"); await asyncio.sleep(0.3)
+    t.ok("No route" in await t.js("$('rt-out').innerText"), "Zarzakh unticked: not flown through")
+    await pg.check("[data-rt-via=zarzakh]"); await asyncio.sleep(0.3)
+    t.ok("6 hours" in await t.js("$('rt-out').innerText") and await t.js("[...document.querySelectorAll('#rt-out tbody tr')].length") == 4, "Zarzakh ticked: through it, with its gate lock", await t.js("$('rt-out').innerText"))
+    t.eq(await t.js("state.misc.map.route.via"), {"thera": False, "turnur": False, "zarzakh": True}, "the ticks are kept")
+
 async def contracts_browser(t):
     """Contracts browser: ended contracts kept, every contract's items read once (given and asked), sides, worth in a pricing, filters, details."""
     p = t.show("past", await t.js("""(()=>{const now=Date.now(), iso=(t)=>new Date(t).toISOString(); state.contracts['char:9001']={at:now-1000,list:[],past:[{id:800,type:'item_exchange',status:'finished',issuer:9001,done:now-80*864e5,issued:now-81*864e5,expires:0,items:[[34,1,0]],ask:[]},{id:801,type:'item_exchange',status:'deleted',issuer:9001,done:0,issued:now-100*864e5,expires:now-95*864e5}]};
@@ -1571,6 +1635,16 @@ async def market_browser(t):
     t.ok(await t.js("(()=>{const x=document.querySelector('#mb-top').innerText; return x.includes(iskFull((100*3.5+205*4)/305)) && x.includes(iskFull(3.8)) && x.includes((6100).toLocaleString()) && x.includes((10500).toLocaleString())})()"), "Sell (5%) and Buy (5%) average the best 5% of the units; for sale and wanted", top)
     t.ok(await t.js("document.getElementById('mb-hist-panel').hidden && document.getElementById('mb-hubs-panel').hidden && !document.getElementById('mb-books').hidden"), "sellers and buyers show; history and the comparison wait behind their buttons")
     t.ok(not await t.js("(document.querySelector('#mb-top').innerText||'').includes('Citadel markets permission')"), "no note about citadels whose market can't be read")
+    sh = t.show("short prices", await t.js("[1.6e9, 999950, 250e6, 12500, 3.5].map(mbShort)"))
+    t.eq(sh, await t.js("[[1.6,'B'],[1,'M'],[250,'M'],[12.5,'K']].map(([v,u])=>v.toLocaleString()+u+' ISK').concat(iskFull(3.5))"), "the lowest / highest lines are short: 1.6B, 1M (not 1,000K), 250M, 12.5K ISK; under a thousand to the cent")
+    # citadel markets: the other pages read at once, a citadel without a market (403) not asked again for 30 minutes
+    cm = t.show("citadel market", await t.js("""(async()=>{ const sv={m:esiMarket,f:freshAccess,c:state.chars,k:ls.get('eve-industry-esi-tokens',{})}, calls=[];
+      try { ls.set('eve-industry-esi-tokens',{9:{}}); freshAccess=async()=>({access:'x'}); state.chars=[{esiId:9,scopes:MARKET_SCOPE}];
+        esiMarket=async(u)=>{ calls.push(u); const p=+u.match(/page=(\d+)/)[1]; if(u.includes('/1000000000001/')) return new Response('',{status:403}); return new Response(JSON.stringify([{type_id:34,price:p,volume_remain:1,is_buy_order:false,order_id:p}]),{headers:{'X-Pages':'3'}}); };
+        const a=await structOrders('1000000000002'); let e=null; await structOrders('1000000000001').catch(()=>0); const n=calls.length; await structOrders('1000000000001').catch(x=>e=x.message);
+        return [a.get(34), structBooks['1000000000002'].sells.get(34).length, n, calls.length, e];
+      } finally { esiMarket=sv.m; freshAccess=sv.f; state.chars=sv.c; ls.set('eve-industry-esi-tokens',sv.k); delete structMarket['1000000000002']; delete structBooks['1000000000002']; delete structNo['1000000000001']; } })()"""))
+    t.eq(cm, [1, 3, 4, 4, "its market can't be read"], "a citadel's 3 pages are read, and one that refuses isn't asked again")
     hh = t.show("item panel height", await t.js("document.getElementById('mb-head').getBoundingClientRect().height")); t.ok(hh < 200, "the item panel stays short", hh)
     await t.js("document.querySelector('.mb').scrollIntoView()"); await asyncio.sleep(0.2); await t.pg.screenshot(path=SP + "trading_board.png")
     await t.pg.click("[data-mb-view=hubs]"); await asyncio.sleep(0.2)
@@ -1586,7 +1660,14 @@ async def market_browser(t):
     box = await t.pg.locator("#mb-hist svg").bounding_box(); await t.pg.mouse.move(box["x"] + box["width"] - 20, box["y"] + 100); await asyncio.sleep(0.2)
     tip = t.show("tooltip", await t.text("#mb-hist .mb-tip")); t.ok(tip and "Average" in tip and "Volume" in tip and "Orders" in tip and await t.js("document.querySelector('#mb-hist .mb-cx').style.display!=='none'"), "pointing at the chart shows that day's numbers", tip)
     t.ok(await t.js("(()=>{const x=document.querySelector('#mb-hist .mb-tip').innerText; const d=new Date(Date.now()-864e5).toISOString().slice(0,10); return x.includes(d)})()"), "the last day is under the pointer at the right edge", tip)
-    t.ok(await t.js("[...document.querySelectorAll('#mb-hist svg text')].some(x=>x.textContent==='Volume' && +x.getAttribute('x')>900)"), "the volume has its own scale on the right")
+    cross = t.show("crosshair", await t.js("['.yl text','.xl text'].map(s=>document.querySelector('#mb-hist .mb-cx '+s).textContent)"))
+    t.ok(cross[1] == await t.js("document.querySelector('#mb-hist')._geo.rows.at(-1).date") and cross[0] and cross[0][0].isdigit() and await t.js("+document.querySelector('#mb-hist .mb-cx .h').getAttribute('y1')>0"), "a crosshair: the day's date at the bottom, the price at the pointer's height on the left", cross)
+    await t.pg.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] - 40); await asyncio.sleep(0.2)
+    t.ok(await t.js("(()=>{const G=document.querySelector('#mb-hist')._geo, r=document.querySelector('#mb-hist .mb-cx .yl rect'); return +r.getAttribute('x')>=G.W-G.R0})()"), "over the bars it reads the volume on the right")
+    await t.pg.mouse.move(box["x"] + box["width"] * 0.4, box["y"] + 120); await asyncio.sleep(0.2); await t.pg.screenshot(path=SP + "trading_history.png")
+    t.ok(await t.js("(()=>{const sv=document.querySelector('#mb-hist svg'), G=document.querySelector('#mb-hist')._geo, p=document.getElementById('mb-hist-panel'); return [...sv.querySelectorAll('text')].some(x=>x.textContent==='Volume' && +x.getAttribute('x')>G.W-G.R0) && sv.getBoundingClientRect().height>300 && p.scrollHeight<=p.clientHeight+1})()"), "the volume has its own scale on the right; the chart fills the panel without a scrollbar")
+    tl = t.show("chart labels", await t.js("(()=>{const E=[...document.querySelectorAll('#mb-hist svg > text')], T=E.map(x=>x.getBBox()), o=[]; for(let a=0;a<T.length;a++) for(let b=a+1;b<T.length;b++){const A=T[a],B=T[b]; if(A.x<B.x+B.width&&B.x<A.x+A.width&&A.y<B.y+B.height&&B.y<A.y+A.height) o.push(E[a].textContent+' / '+E[b].textContent)} return [T.length,o.length,o]})()"))
+    t.ok(tl[1] == 0, "no two labels of the chart overlap", tl)
     t.eq(await t.js("[...document.querySelectorAll('#mb-span option')].map(o=>o.textContent)"), ["7 days", "14 days", "30 days", "3 months", "6 months", "1 year", "Everything"], "more spans for the history")
     await t.pg.select_option("#mb-span", "7"); await asyncio.sleep(0.4)
     t.eq(await t.js("document.querySelector('#mb-hist')._geo.rows.length"), 7, "7 days shows 7 days")
@@ -1620,7 +1701,8 @@ async def market_browser(t):
     t.ok(fit[0] <= fit[1] and fit[0] >= fit[1] - 40 and all(fit[2:]), "the board is one screen tall and nothing spills out", fit)
     t.ok(await t.js("(()=>{scrollTo(0,0); const T=$('mb-tree'); T.style.maxHeight='40px'; const n=T.querySelector('[aria-current]'); T.scrollTop=0; mbTreeTo(n, true); const r=[scrollY, T.scrollTop>0 || n.offsetTop<40]; T.style.maxHeight=''; return r[0]===0 && r[1]})()"), "showing a market tree row scrolls the tree, never the page")
     t.eq(await t.js("['#mb-tree','#mb-sells .scroller'].map(s=>getComputedStyle(document.querySelector(s)).overscrollBehaviorY)"), ["contain", "contain"], "reaching a list's end doesn't scroll the page")
-    t.ok(await t.js("document.querySelector('.mb-left .mb-views [data-mb-view=hist]')!=null"), "Show history and Show markets comparison sit on the left, under the Market panel")
+    t.ok(await t.js("document.querySelector('#mb-top .mb-stats .mb-views [data-mb-view=hist]')!=null && !document.querySelector('.mb-left [data-mb-view]')"), "Show history and Show markets comparison sit in the item panel, after the numbers")
+    t.ok(await t.js("(()=>{const x=document.querySelector('#mb-top .mb-stats').textContent; return x.includes('Sell volume') && x.includes('Buy volume') && !/For sale|Wanted/i.test(x)})()"), "Sell volume and Buy volume share one column")
     # a clicked row stays highlighted; another click on it lets go
     await t.pg.click("#mb-sells tbody tr:nth-child(2) td:first-child"); await asyncio.sleep(0.1)
     t.eq(await t.js("[...document.querySelectorAll('#mb-sells tbody tr.sel')].map(r=>+r.dataset.mbO)"), [1001], "a clicked seller stays highlighted")
@@ -1793,12 +1875,12 @@ async def sovereignty(t):
     await t.tab("sov", 0.3)
     t.ok(await t.until("!sovRun && !!sov && sovHist.snaps.length===2", 15), "reading sovereignty, alliances and corporations", await t.text("#sov-status"))
     rows = t.show("ranking", await t.js("[...document.querySelectorAll('#sov-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
-    t.eq(rows, [["1", "Alpha Alliance [AA] Map", "2 (67%)", "40", "2"], ["2", "Beta Alliance [BB] Map", "1 (33%)", "50", "1"]], "alliances ranked by systems, with members and corporations (factions left out)")
+    t.eq(rows, [["1", "Alpha Alliance [AA]", "2 (67%)", "40", "2"], ["2", "Beta Alliance [BB]", "1 (33%)", "50", "1"]], "alliances ranked by systems, with members and corporations (factions left out)")
     await t.pg.fill("#sovc-name", "Test coalition"); await t.pg.click("#sovc-form button[type=submit]"); await asyncio.sleep(0.2)
     cid = await t.js("sovCfg().coals[0].id")
     for a in ("99000001", "99000002"): await t.pg.select_option(f"[data-sov-of='{a}']", cid); await asyncio.sleep(0.2)
     co = t.show("coalition", await t.js("[...document.querySelectorAll('#sovc-table tbody tr')].map(r=>[...r.cells].slice(0,5).map(c=>c.innerText.trim()))"))
-    t.ok(len(co) == 1 and co[0][0] == "Test coalition Map" and co[0][2:] == ["3 (100%)", "90", "3"] and "AA" in co[0][1] and "BB" in co[0][1], "a coalition adds up its alliances' systems, members and corporations", co)
+    t.ok(len(co) == 1 and co[0][0] == "Test coalition" and co[0][2:] == ["3 (100%)", "90", "3"] and "AA" in co[0][1] and "BB" in co[0][1], "a coalition adds up its alliances' systems, members and corporations", co)
     t.ok(co[0][1].index("BB") < co[0][1].index("AA"), "a coalition lists its alliances by members, most first", co)
     ch = t.show("sov changes", await t.js("[...document.querySelectorAll('#sovx-table tbody tr')].map(r=>[...r.cells].map(c=>c.innerText.trim()))"))
     t.eq(ch, [["Alpha Alliance [AA]", "+2", "0", "+2"], ["Beta Alliance [BB]", "0", "−2", "−2"]], "sov changes: systems gained and lost since the snapshot")
@@ -1821,7 +1903,8 @@ async def sovereignty(t):
     t.ok(mp["a"] == [99000001, 99000002] and mp["none"] == 0, "Map allies: your pilots' coalition by default, removable", mp)
     t.ok(mp["same"], "colour by sovereignty: one coalition, one colour", mp)
     # Map buttons: an alliance's or a coalition's systems highlighted on the map
-    t.ok(await t.js("document.querySelectorAll('#sov-table [data-sov-map]').length===2 && document.querySelectorAll('#sovc-table [data-sov-map]').length===1"), "a Map button by every alliance holding sov and by the coalition")
+    t.ok(await t.js("document.querySelectorAll('#sov-table [data-sov-map]').length===2 && document.querySelectorAll('#sovc-table [data-sov-map]').length===1"), "a map button by every alliance holding sov and by the coalition")
+    t.ok(await t.js("[...document.querySelectorAll('#sov-table [data-sov-map]')].every(b=>b.querySelector('svg circle') && !b.textContent.trim() && b.getAttribute('aria-label').startsWith('Show ') && Math.abs(b.offsetWidth-b.offsetHeight)<=1)"), "it is a square button with a constellation icon")
     await t.pg.click("#sovc-table [data-sov-map]"); await asyncio.sleep(0.3)
     fm = t.show("map focus", await t.js("({page:!document.getElementById('page-map').hidden, n:mapUI.focus&&mapUI.focus.n, ids:mapUI.focus&&[...mapUI.focus.ids].sort(), item:mapSysItems({id:30000003}).join(' '), other:mapSysItems({id:30000005}).join(' ')})"))
     t.ok(fm["page"] and fm["n"] == "Test coalition" and fm["ids"] == [99000001, 99000002] and "Highlighted: Test coalition" in fm["item"] and "Highlighted" not in fm["other"], "the coalition's Map button opens the map with its alliances' systems highlighted", fm)
