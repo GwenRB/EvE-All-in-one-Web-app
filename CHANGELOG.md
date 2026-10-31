@@ -9,7 +9,7 @@ How entries are kept:
 
 ---
 
-## 2026-10-31 — Route planner on the Map (Thera, Turnur, Zarzakh), Travel planning panel
+## 2026-10-31 · efa74a6 — Route planner on the Map (Thera, Turnur, Zarzakh), Travel planning panel
 
 ### Added
 - Map: **Route**, under the Jump planner: the fewest-gates route between two systems, like the game's autopilot, drawn on the map. Untick high-sec, low-sec or null-sec to keep the route out of it. Lists every system with its security, region and kills in the last hour, and counts the dangerous ones.
