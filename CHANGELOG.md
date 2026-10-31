@@ -9,6 +9,21 @@ How entries are kept:
 
 ---
 
+## 2026-10-31 — Route planner on the Map (Thera, Turnur, Zarzakh), Travel planning panel
+
+### Added
+- Map: **Route**, under the Jump planner: the fewest-gates route between two systems, like the game's autopilot, drawn on the map. Untick high-sec, low-sec or null-sec to keep the route out of it. Lists every system with its security, region and kills in the last hour, and counts the dangerous ones.
+- Map, Route: tick **Thera** or **Turnur** to take their wormholes (open ones from EVE-Scout, with the biggest ship each takes), and **Zarzakh** to fly through it (you're then locked to the gate you came in by for 6 hours).
+- Map: a system's panel has **Route to here from …** next to **Jump here from …**.
+
+### Changed
+- Map: **Jump from here** is now **Start from here** (and **Jump from** above the map is **Start from**): the start counts for jump range, the Jump planner and routes. Picking a start (button, box or home) also fills the Jump planner's and the Route's **From**.
+- Map: the Jump planner, Route and Gather items moved to their own **Travel planning** panel under the map, so you can fold them away and keep the map.
+- Map, Route: the gates tile names the biggest ship the route's wormholes take (the smallest wormhole sets it).
+
+### Fixed
+- Map: routes by gate no longer go through Zarzakh unless you allow it (its gate lock keeps you there for 6 hours).
+
 ## 2026-10-31 · bb637f3 — Trading board top bar, history crosshair, faster citadel reads; Sovereignty map icon
 
 ### Changed

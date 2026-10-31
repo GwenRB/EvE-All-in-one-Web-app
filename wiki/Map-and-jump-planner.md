@@ -1,13 +1,13 @@
-<!-- tracks: Map, jump planner, Gather items, kills, danger, Citadels, structures, sovereignty, incursions, markers, legend, hover, Thera, Turnur, wormholes -->
+<!-- tracks: Map, Route, jump planner, Gather items, kills, danger, Citadels, structures, sovereignty, incursions, markers, legend, hover, Thera, Turnur, wormholes -->
 
-The **Map** tab holds the map of New Eden, the jump planner, Gather items, the [Supply chain](Supply-chain), and your list of citadels.
+The **Map** tab holds the map of New Eden, the **Travel planning** panel (jump planner, Route, Gather items; fold it from its title to keep only the map), the [Supply chain](Supply-chain), and your list of citadels.
 
 ## The map
 - **3D** (the real layout, seen from above) or **2D** (the game's schematic map): **Switch to 2D map**.
 - Scroll to zoom, drag to move, **click a system** for its details. **Find a system** jumps to it; **Reset view** goes back.
 - **Colour by** security or sovereignty. Add alliances or [coalitions](Sovereignty#coalitions) under **Allies**: their space shows in dark blue. The coalition your pilots' alliance is in is allied by default (remove it with ✕). Other coalitions' alliances share one colour.
 - **Markers:** your pilots' last location (cyan ticks around the system's dot; needs the **Character location** permission, read at each sync; hover or click the system to see who is there, docked or in space, and when they were seen; the **Pilots** tick box hides them), your citadels (a gold diamond under the system's dot), friendly structures (a hollow pale diamond), stations with your hangar stock, planet systems, capital ships (the game's overview brackets; jump freighters shown, freighters hidden), jump clones, homes, incursions, Thera and Turnur wormholes (a violet swirl on each system with one, from [EVE-Scout](https://www.eve-scout.com/); Turnur's are joined by a dashed line; click or hover the system for the signatures, the biggest ship that fits and the time left; Thera itself isn't on the map), and a green ring on the systems of an alliance or coalition picked with the map button (a constellation) on the [Sovereignty](Sovereignty) page (the rest dimmed; **Hide** in the legend clears it). The map, its legend, the selected system's panel and the hover box all use the same icons and colours. **Click a line of the legend** to hide those markers (it's struck out) and again to show them; the tick boxes above the map do the same.
-- **Jump range:** pick a system in **Jump from** and a **Range** to see what's in reach. High-sec can't be jumped into, so it's never highlighted.
+- **Jump range:** pick a system in **Start from** (or click a system, then **Start from here**) and a **Range**. The start also goes into the **From** of the Jump planner and Route to see what's in reach. High-sec can't be jumped into, so it's never highlighted.
 
 ### Kills in the last hour
 Read every 10 minutes while the Map is open. Each system with kills gets a ring that grows with ships and pods killed. It turns red from **Danger from N kills** (default 5). Click the system for ships, pods and NPCs killed.
@@ -24,6 +24,17 @@ Plans a capital jump route that waits out jump fatigue in the best places.
 Incursion systems are avoided (cynos can't be lit there), except with a **Black Ops**, which jumps to covert cynos.
 
 Fatigue follows the game's rules: after a jump, fatigue = max(10, F) × (1 + ly), up to 300 min; the jump timer = max(1 + ly, F ÷ 10), up to 30 min.
+
+## Route
+The fewest-gates route between two systems, like the game's autopilot. It's under the Jump planner.
+1. **From** and **To**: two systems.
+2. **Security:** untick high-sec, low-sec or null-sec to keep the route out of it (the start and destination always count). With all three ticked it's the shortest route.
+3. **Through:** tick **Thera** or **Turnur** to take their wormholes, as listed by [EVE-Scout](https://www.eve-scout.com/) right now (each one shows the biggest ship it takes, and the gates tile the biggest ship the whole route takes; they can close before you get there). Tick **Zarzakh** to fly through it: once in, you can only leave by the gate you came in by for 6 hours.
+4. **Plan route.** The route is drawn on the map (it replaces a jump route, and planning a jump route replaces it). The tiles show the gates, the lowest security on the way and how many systems are dangerous; the table lists every system with its security, region and kills in the last hour.
+
+**Clear** removes it from the map.
+
+Shortcut: click a system, **Start from here**, then click another system and **Route to here from …** (next to **Jump here from …**).
 
 ## Gather items
 Plans a trip through the gates to collect items spread over several systems. It's under the Jump planner.

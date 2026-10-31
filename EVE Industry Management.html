@@ -1250,7 +1250,7 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div class="bp-head"><div><h2 id="map-title">Map of New Eden</h2><p class="muted" style="margin:4px 0 0">Known space with its stargates, coloured by security or sovereignty, in the real (3D, seen from above) layout or the game's 2D schematic map. Scroll to zoom, drag to move, click a system for details. Your citadels, stations with hangar stock, planet systems and homes are marked, and space held by the alliances you mark as allies is shown in dark blue. Pick a jump origin and a pilot's ship to see what's in jump range (high-sec systems can't be jumped into, so they're never highlighted).</p></div><span class="muted" id="map-status"></span></div>
       <div class="toolbar" id="map-tools">
         <input type="search" id="map-find" list="map-names" placeholder="Find a system" aria-label="Find a system" style="width:180px"><datalist id="map-names"></datalist>
-        <label class="label" for="map-origin">Jump from</label><input type="text" id="map-origin" list="map-names" placeholder="System" style="width:140px" aria-label="Jump origin system">
+        <label class="label" for="map-origin">Start from</label><input type="text" id="map-origin" list="map-names" placeholder="System" style="width:140px" aria-label="Jump origin system">
         <label class="label" for="map-ship">Range</label><select id="map-ship" aria-label="Pilot and ship for jump range"></select><input type="text" id="map-range" inputmode="decimal" style="width:70px" aria-label="Custom jump range in light years" hidden>
         <span class="map-layers"><label><input type="checkbox" data-ml="gates"> Gates</label><label><input type="checkbox" data-ml="structs"> Citadels</label><label><input type="checkbox" data-ml="stations"> Stations</label><label><input type="checkbox" data-ml="pi"> Planets</label><label><input type="checkbox" data-ml="pilots"> Pilots</label><label><input type="checkbox" data-ml="clones"> Clones</label><label><input type="checkbox" data-ml="friendly"> Friendly</label><label><input type="checkbox" data-ml="keepstars"> Keepstars</label><label><input type="checkbox" data-ml="npc"> NPC stations</label><label><input type="checkbox" data-ml="caps"> Capitals</label><label><input type="checkbox" data-ml="danger"> Kills (last hour)</label><label><input type="checkbox" data-ml="incursions"> Incursions</label><label><input type="checkbox" data-ml="homes"> Homes</label><label><input type="checkbox" data-ml="scout"> Thera / Turnur</label><label title="Ships and pods killed in the last hour that make a system dangerous (supply chain gate legs warn about them)">Danger from <input type="text" id="map-danger" inputmode="numeric" style="width:44px" aria-label="Kills that make a system dangerous"> kills</label></span>
         <button type="button" id="map-reset">Reset view</button>
@@ -1265,6 +1265,9 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
       <div id="map-wrap" class="map-wrap"><canvas id="map-canvas" aria-label="Map of New Eden" role="img"></canvas><div id="map-hover" class="map-hover" hidden></div><div id="map-empty" class="map-empty"></div></div>
       <div class="map-legend" id="map-legend"></div>
       <div id="map-info"></div>
+    </section>
+    <section class="panel" aria-labelledby="trv-title" id="trv-panel">
+      <div class="bp-head"><div><h2 id="trv-title">Travel planning</h2><p class="muted" style="margin:4px 0 0">The Jump planner, routes by gate and gathering items from your hangars. What you plan is drawn on the map above.</p></div></div>
       <div class="jp" id="jp">
         <h3 style="margin:0">Jump planner</h3>
         <p class="muted" style="margin:0;font-size:.85rem">Jump-only route for the ship you pick: ships found in your pilots' hangars come first, then every jump-capable hull by class; ✓ means one of your pilots can fly it (the best of them is used, and a hull nobody flies yet is planned with every skill at V). It's the same choice as Range above, fewest jumps first (then fewest light years). With Citadels set to Prefer or Only, stops favour or require a structure the hull can dock in, from your corporation's citadels and the imported friendly ones: jump freighters and Black Ops dock anywhere, other capitals need a Fortizar, Keepstar or Sotiyo, supercarriers and titans a Keepstar. Midpoints are low-sec or null-sec systems of the kinds you tick; the destination can be any low-sec or null-sec system. Fatigue assumes you jump again as soon as each jump timer ends (untick "Any low/null" to limit the stops).</p>
@@ -1286,6 +1289,18 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         </form>
         <div id="jp-out"></div>
       </div>
+      <div class="jp" id="rt">
+        <h3 style="margin:0">Route</h3>
+        <p class="muted" style="margin:0;font-size:.85rem">The fewest-gates route between two systems, like the game's autopilot. Untick a security level to keep the route out of it. Tick Thera or Turnur to take their wormholes (from EVE-Scout), Zarzakh to fly through it.</p>
+        <form id="rt-form" class="toolbar" style="margin-top:6px">
+          <label class="label" for="rt-from">From</label><input type="text" id="rt-from" list="map-names" placeholder="System" style="width:140px" aria-label="Start system">
+          <label class="label" for="rt-to">To</label><input type="text" id="rt-to" list="map-names" placeholder="System" style="width:140px" aria-label="Destination system">
+          <span class="label">Security</span><span class="map-layers"><label><input type="checkbox" data-rt-sec="h"> High-sec</label><label><input type="checkbox" data-rt-sec="l"> Low-sec</label><label><input type="checkbox" data-rt-sec="n"> Null-sec</label></span>
+          <span class="label">Through</span><span class="map-layers"><label><input type="checkbox" data-rt-via="thera"> Thera</label><label><input type="checkbox" data-rt-via="turnur"> Turnur</label><label><input type="checkbox" data-rt-via="zarzakh"> Zarzakh</label></span>
+          <button type="submit" class="primary">Plan route</button><button type="button" id="rt-clear" class="link">Clear</button>
+        </form>
+        <div id="rt-out"></div>
+      </div>
       <div class="jp" id="gr">
         <h3 style="margin:0">Gather items</h3>
         <p class="muted" style="margin:0;font-size:.85rem">The shortest trip that stops in every system where your hangars (Assets) hold some of the items you pick, or that empties the stations you pick, from the system you start in. With a cargo hold, the ship goes back to the start to unload when it's full. Stops are numbered on the map.</p>
@@ -1301,7 +1316,6 @@ footer summary { cursor: pointer; width: max-content } footer summary:hover { co
         </form>
         <div id="gr-out"></div>
       </div>
-
     </section>
     <section class="panel" aria-labelledby="sc-title"><div class="bp-head"><div><h2 id="sc-title">Supply chain</h2><p class="muted" style="margin:4px 0 0">Every move your planned builds, reactions and PI need, grouped into trips for your jump freighters and Rorquals: who flies what, from where, when each trip can start, and the routes on the map.</p></div></div><div id="sc-box" style="margin-top:8px"></div></section>
     <section class="panel" aria-labelledby="cit-title">
@@ -2254,7 +2268,7 @@ const CF_NOTE = "Filters: open Filters under a table, add conditions on its colu
 const HOWTO = {
   forecast: "Active contracts count what they will pay you (+) or cost you (−) once completed (a courier you haul pays back its reward and its collateral); contracts between your own pilots are ignored. Actual profit comes from the Profit and loss page: every counted wallet entry (Left out ones aren't), cumulative from the start of the span shown (or the first entry kept), and per week over the last 30 days kept; it's for comparing with the planned profit and isn't added to the total, which already holds that ISK. Planned orders are the Orders management builds not Done: each adds what it's worth less its build cost on the day it should be finished (In progress: from when you set it In progress plus the plan's timeline, or a running job making the item if it ends later; Planned: from today plus the timeline). Builds with no price for the item or a material, or sent before plans kept a timeline, are left out. The forecast records one point per day (ISK from your wallets plus your stock value); the history, stock list and activities are saved in backups. Net worth: each recorded day keeps your wallets, the ticked hangars plus the stock you entered by hand (Assets), your open market orders (sell orders at their price × what's left, before sales tax; buy orders' escrow, the ISK they already hold; Market orders permission), active contracts, and what running manufacturing and reaction jobs will deliver (runs × what a run makes × the price Assets uses; a product without a price is left out and named), and what each pilot and corporation held, so you can pick owners (contracts and stock entered by hand have no owner, so they're left out then). A day is recorded at each sync and when the Overview opens. Days in between show your wallets from the wallet journals' balances (Profit and loss keeps them) when every wallet counted is covered: within ESI's 30 days a wallet without an entry keeps the balance it started from. Market orders and escrow are also on the Forecast's Total value.",
   omega: "Omega dates are entered by hand because ESI doesn't provide them.",
-  map: "Gather items: the items are found in every hangar Assets read (counted or not, blueprint copies left out). Stops in a security you didn't tick are left out and no leg flies through one. By gates, legs count gates; with jumps, each leg takes the gate route or the jump route (gates to and from high-sec ends) for the ship under Range, whichever is quicker at 3 min a jump and 1.5 min a gate (fatigue not counted; fuel without economizers). Stations to empty: everything the hangars hold there. Cargo: items count at their packaged volume (read from the game data); a stop's goods ride together unless they don't fit an empty hold, and a full hold goes back to the start to unload. The ship under Range is fitted with Expanded Cargoholds and its pilot's skills; a ship from your hangars counts its bare hold. The order: the nearest system first, then stretches of the trip are reversed while that saves gates, so it's very short but not proven the shortest. Items in a structure whose system isn't known, or in a system with no gate route from the start (wormholes), are named and left out. Dangerous systems use the Map's kills of the last hour.",
+  map: "Route: the fewest gates from one system to the other, flying only through the security levels you ticked (the start and the destination always count). Thera and Turnur: their wormholes open now (EVE-Scout, read every 10 minutes while the Map is open) count as one jump each, like a gate. Zarzakh is only flown through when ticked (its 6-hour gate lock). Gather items: the items are found in every hangar Assets read (counted or not, blueprint copies left out). Stops in a security you didn't tick are left out and no leg flies through one. By gates, legs count gates; with jumps, each leg takes the gate route or the jump route (gates to and from high-sec ends) for the ship under Range, whichever is quicker at 3 min a jump and 1.5 min a gate (fatigue not counted; fuel without economizers). Stations to empty: everything the hangars hold there. Cargo: items count at their packaged volume (read from the game data); a stop's goods ride together unless they don't fit an empty hold, and a full hold goes back to the start to unload. The ship under Range is fitted with Expanded Cargoholds and its pilot's skills; a ship from your hangars counts its bare hold. The order: the nearest system first, then stretches of the trip are reversed while that saves gates, so it's very short but not proven the shortest. Items in a structure whose system isn't known, or in a system with no gate route from the start (wormholes), are named and left out. Dangerous systems use the Map's kills of the last hour.",
   corp: "Structures and fuel come from ESI's list of your corporation's structures (one linked pilot with the Station Manager role and the Corporation structures permission), read at each sync or with Refresh. Fuel blocks per hour = each online service's module once (copying, ME and TE research share one research lab) at its fuel use from CCP's game data, less the structure's own role bonus on its kind of modules (engineering complexes on engineering services, citadels on citadel services, refineries on reprocessing and reactions); per day = × 24, per month = × 30 × one fuel block's price in your pricing (the block you pick, or the cheapest of the four). A service whose module isn't known isn't counted and the total shows ≥. Fuel runs out = ESI's fuel date; To reach 30 days = the blocks to add so it lasts 30 days from now at today's use. The To-Do page lists the structures running out within your warning. Moon mining needs the Corporation moon mining permission: extractions with the Station Manager role, the moon drills' mining ledgers with the Accountant role. Your pilots' own mining (Mining ledger permission) is on the Misc page, with the same period and valuation. ESI gives the last 30 days; what's read is kept in this browser for 90 days (not in backups). Value = the units × one unit's worth: its minerals at the best possible yield (Settings → Ore reprocessing) in your pricing, or the ore's own price there; an ore with no price is left out of the values and named.",
   intel: "Most violent systems and Low-sec systems: ships and pods killed in the last 3 hours, top 10 by ships + pods, from ESI's kills per system (public, covers the last hour, read again after an hour). The tool keeps each new hourly reading for 4 hours in this browser and adds up the readings of the last 3 hours, so until it has been open for three readings it says how many hours it counts. Null-sec = security 0.0 and below in known space (wormholes left out); low-sec = 0.1 to 0.4. System names, security and regions come from the map (load it once on the Map page). Notifications (listed on the Misc page) come from ESI at each sync and with Refresh (Notifications permission on each pilot; ESI keeps a pilot's recent notifications, so read often). One that several pilots received shows once, with who got it. They're kept in this browser for 90 days (not in backups). Needs attention lists the last 3 days' structure attacks, lost shields or armour, low fuel, low power or services offline, wars declared and moon chunks ready, until you mark them seen; the Intel tab shows how many. Names come from ESI (characters, corporations, systems, moons); a structure's name only when it's one of the structures known to the tool. " + CF_NOTE,
   stock: "Values use the pricing chosen at the top: Jita prices are read live from ESI's orders and kept 6 hours; a citadel pricing only uses that citadel's own orders. An item without a price is shown empty and left out of the totals; blueprint copies count as zero. The search and the filters look in every hangar, ticked or not, and also find what sits in ship cargo, Deliveries and your open contracts (marked not counted); a filter's conditions test each stack (one item in one hangar or container), so Value more than 1b means a stack worth that much. " + CF_NOTE,
@@ -7561,6 +7575,8 @@ function mapRange() {
   const all = mapShips(), sh = all.find(x => x.key === key) || all.find(x => x.n === key.split("|")[1]) || defaultShip(all);
   return sh ? { range: sh.range, sh, label: sh.c.virtual ? sh.n : `${sh.c.name} · ${sh.n}${sh.has ? "" : " (not in a hangar)"}` } : { range: 0 };
 }
+// The start (jump range origin) also goes into the Jump planner's and the Route's From
+function setStart(id) { const mm = state.misc.map = state.misc.map || {}, m = mapIndex(), s = id && m ? m.byId.get(id) : null; mm.origin = id; if (s) { (mm.plan = mm.plan || {}).from = s.n; rtCfg().from = s.n; } }
 function mapOrigin() { const m = mapIndex(), o = (state.misc.map || {}).origin; return m && o ? m.byId.get(o) || null : null; }
 function mapMarkers() {
   const m = mapIndex(); if (!m) return { structs: new Map(), stations: new Map(), pi: new Map(), clones: new Map(), friendly: new Map() };
@@ -7782,10 +7798,10 @@ function drawMapNow() {
   }
   // Planned jump route
   if (mapUI.route && mapUI.route.length > 1) {
-    const pts = mapUI.route.map(id => m.byId.get(id)).filter(Boolean);
+    const all = mapUI.route.map(id => m.byId.get(id)), pts = all.filter(Boolean);
     g.strokeStyle = MK.route.c; g.lineWidth = 2.5; g.setLineDash([]); g.beginPath(); pts.forEach((s, i) => i ? g.lineTo(X(s), Y(s)) : g.moveTo(X(s), Y(s))); g.stroke();
     g.font = "700 10px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-    pts.forEach((s, i) => { if (!i) return; const x = X(s), y = Y(s); g.fillStyle = MK.route.c; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = "#0b1220"; g.fillText(String(i), x, y + 0.5); });
+    all.forEach((s, i) => { if (!i || !s) return; const x = X(s), y = Y(s); g.fillStyle = MK.route.c; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = "#0b1220"; g.fillText(String(i), x, y + 0.5); });
   }
   // Labels: region names when zoomed out, system names when close
   g.textAlign = "center"; g.textBaseline = "middle";
@@ -7817,7 +7833,7 @@ function renderMapInfo() {
     if (sel.st) loadNpcNames(sel.st);
     const o = sov && sov.bySys.get(sel.id), owner = o ? (o.a ? sov.names[o.a] || "Alliance " + o.a : sov.names[o.f] || "") : "";
     html += `<div class="map-sel"><div>${homes.includes(sel.id) ? mkIco("home") + " " : ""}<b style="font-size:1.05rem">${esc(sel.n)}</b> <span class="num" style="color:${secColor(sel.s)}">${secLabel(sel.s)}</span> <span class="muted">· ${esc((mapData.cons[sel.c] || {}).n || "")} · ${esc((m.regions[sel.r] || {}).n || "")}</span>${owner ? ` <span class="muted">· sovereignty: </span><span style="${o.a && allyIds().has(o.a) ? `color:${ALLY_COLOR};font-weight:600` : ""}">${esc(owner)}</span>` : ""}${origin && origin !== sel ? ` <span class="muted">· ${lyBetween(origin, sel).toFixed(2)} ly from ${esc(origin.n)}</span>` : ""}</div>
-      ${inIncursion(sel) ? `<div style="font-size:.85rem">${mkIco("incursion")} <span class="pill bad">Incursion here: cynos can't be lit, so you can't jump in (Black Ops can, on covert cynos)</span></div>` : ""}${kills ? (() => { const k = kills.by.get(sel.id); return `<div style="font-size:.85rem">${k && (k.s || k.p) ? mkIco("kills", isDanger(sel.id) ? "bad" : "") + " " : ""}${isDanger(sel.id) ? `<span class="pill bad">Dangerous</span> ` : ""}${k && (k.s || k.p || k.n) ? `Last hour: ${k.s} ship${k.s === 1 ? "" : "s"}, ${k.p} pod${k.p === 1 ? "" : "s"}, ${k.n} NPC${k.n === 1 ? "" : "s"} killed` : `<span class="muted">No kills in the last hour</span>`} <span class="muted">· read ${ago(kills.at)}</span></div>`; })() : ""}<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-map-origin="${sel.id}">${origin === sel ? "Jump origin ✓" : "Jump from here"}</button>${origin && origin !== sel ? `<button type="button" class="primary" data-map-dest="${sel.id}">Jump here from ${esc(origin.n)}</button>` : ""}<button type="button" data-map-home="${sel.id}">${homes.includes(sel.id) ? "⌂ Home ✓ (remove)" : "⌂ Set as home"}</button></div>${here.length ? `<div style="font-size:.85rem">${here.join("<br>")}</div>` : ""}</div>`;
+      ${inIncursion(sel) ? `<div style="font-size:.85rem">${mkIco("incursion")} <span class="pill bad">Incursion here: cynos can't be lit, so you can't jump in (Black Ops can, on covert cynos)</span></div>` : ""}${kills ? (() => { const k = kills.by.get(sel.id); return `<div style="font-size:.85rem">${k && (k.s || k.p) ? mkIco("kills", isDanger(sel.id) ? "bad" : "") + " " : ""}${isDanger(sel.id) ? `<span class="pill bad">Dangerous</span> ` : ""}${k && (k.s || k.p || k.n) ? `Last hour: ${k.s} ship${k.s === 1 ? "" : "s"}, ${k.p} pod${k.p === 1 ? "" : "s"}, ${k.n} NPC${k.n === 1 ? "" : "s"} killed` : `<span class="muted">No kills in the last hour</span>`} <span class="muted">· read ${ago(kills.at)}</span></div>`; })() : ""}<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-map-origin="${sel.id}">${origin === sel ? "Start ✓" : "Start from here"}</button>${origin && origin !== sel ? `<button type="button" class="primary" data-map-dest="${sel.id}">Jump here from ${esc(origin.n)}</button><button type="button" class="primary" data-map-rtdest="${sel.id}">Route to here from ${esc(origin.n)}</button>` : ""}<button type="button" data-map-home="${sel.id}">${homes.includes(sel.id) ? "⌂ Home ✓ (remove)" : "⌂ Set as home"}</button></div>${here.length ? `<div style="font-size:.85rem">${here.join("<br>")}</div>` : ""}</div>`;
   }
   if (origin && rg.range > 0) {
     // Your destinations in range, closest first, with fuel for the chosen pilot and ship
@@ -7832,7 +7848,7 @@ function renderMapInfo() {
       const hs = secRound(d.s.s) >= 0.5, cost = perLy * d.ly * price;
       return `<tr><th scope="row">${d.kind} ${esc(d.names.slice(0, 2).join(", "))}${d.names.length > 2 ? ` +${d.names.length - 2}` : ""}</th><td><button type="button" class="link" data-map-goto="${d.s.id}">${esc(d.s.n)}</button> <span class="num" style="color:${secColor(d.s.s)}">${secLabel(d.s.s)}</span>${hs ? ` <span class="pill bad" title="Jump drives can't target high-sec systems">High-sec, gate in</span>` : ""}</td><td class="num">${d.ly.toFixed(2)} ly</td>${sh ? `<td class="num">${Math.round(perLy * d.ly).toLocaleString()}</td><td class="num">${price ? isk(cost) : "—"}</td><td class="num"><b>${price ? isk(cost * 2) : "—"}</b></td>` : ""}</tr>`; }).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0">None of your citadels, stations or homes are in range.</p>`) + `</details>`;
   } else if (origin) html += `<p class="muted" style="margin:10px 0 0;font-size:.85rem">Choose a pilot's ship or a custom range to see what's within jump range of ${esc(origin.n)}.</p>`;
-  else html += `<p class="muted" style="margin:10px 0 0;font-size:.85rem">Pick a system as jump origin (type it above, click a home, or click a system then "Jump from here") to see what's in range.</p>`;
+  else html += `<p class="muted" style="margin:10px 0 0;font-size:.85rem">Pick a system as jump origin (type it above, click a home, or click a system then "Start from here") to see what's in range.</p>`;
   if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; paintMarks(box); }   // unchanged: keep the buttons, so a click isn't lost to a re-render
 }
 document.addEventListener("toggle", (e) => { if (e.target.classList && e.target.classList.contains("jr-box")) mapUI.rangeOpen = e.target.open; }, true);
@@ -7890,9 +7906,9 @@ function renderMap() {
     const o = mapOrigin(); if (document.activeElement !== $("map-origin")) $("map-origin").value = o ? o.n : "";
     $("map-status").textContent = `${mapData.systems.length.toLocaleString()} systems · loaded ${ago(mapData.at)}${m.has2d ? "" : " · no 2D layout"} · showing the ${m.layout === "2d" ? "2D schematic" : "3D (seen from above)"} map`;
     const lg = (k) => `data-ml-leg="${k}" role="button" tabindex="0" aria-pressed="${L[k] !== false}" title="Click to ${L[k] !== false ? "hide" : "show"} on the map"${L[k] !== false ? "" : ` class="off"`}`;   // a legend line with a layer shows or hides it
-    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span ${lg("structs")}>${mkIco("struct")} Your citadels</span><span ${lg("friendly")}>${mkIco("friendly")} Friendly (imported)</span><span ${lg("keepstars")}>${mkIco("keepstar")} Keepstar</span><span ${lg("caps")}>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span ${lg("npc")}>${mkIco("npc")} NPC station (zoom in)</span><span ${lg("stations")}>${mkIco("station")} Station with your stock</span><span ${lg("pi")}>${mkIco("pi")} Your planets</span><span ${lg("gates")}><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span ${lg("homes")}>${mkIco("home")} Home (left of the system)</span><span ${lg("pilots")}>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span ${lg("clones")}>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Jump origin</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.focus ? `<span>${mkIco("focus")} ${esc(mapUI.focus.n)}${sov ? ` (${sov.list.filter(([, a]) => mapUI.focus.ids.includes(a)).length} systems)` : ""} <button type="button" class="link" id="map-focus-clear">Hide</button></span>` : ""}${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span ${lg("danger")}>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span ${lg("incursions")}>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><span ${lg("scout")}>${mkIco("scout")} Thera / Turnur wormhole (EVE-Scout)${scout ? ` · ${scout.by.size} system${scout.by.size === 1 ? "" : "s"} · read ${ago(scout.at)}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
+    $("map-legend").innerHTML = `<span><i style="background:${SEC_COLORS[10]}"></i><i style="background:${SEC_COLORS[5]}"></i> High-sec</span><span><i style="background:${SEC_COLORS[4]}"></i><i style="background:${SEC_COLORS[1]}"></i> Low-sec</span><span><i style="background:${SEC_COLORS[0]}"></i> Null-sec</span><span ${lg("structs")}>${mkIco("struct")} Your citadels</span><span ${lg("friendly")}>${mkIco("friendly")} Friendly (imported)</span><span ${lg("keepstars")}>${mkIco("keepstar")} Keepstar</span><span ${lg("caps")}>${mkIco("cap", "dreadnought")} Your capitals (ship class icon)</span><span ${lg("npc")}>${mkIco("npc")} NPC station (zoom in)</span><span ${lg("stations")}>${mkIco("station")} Station with your stock</span><span ${lg("pi")}>${mkIco("pi")} Your planets</span><span ${lg("gates")}><b style="color:${MK.gates.c}">—</b> Gate between regions</span><span><i style="background:${ALLY_COLOR}"></i> Allied sovereignty</span><span ${lg("homes")}>${mkIco("home")} Home (left of the system)</span><span ${lg("pilots")}>${mkIco("pilot")} Your pilots (last location${(() => { const n = state.chars.filter(c => c.esiId && !(c.loc && c.loc.sys)).length; return n ? `; ${n} without one: allow "Character location" on the ESI login` : ""; })()})</span><span ${lg("clones")}>${mkIco("clone")} Jump clone</span><span>${mkIco("origin")} Start</span><span><b style="color:${MK.route.c}">—</b> Planned route</span>${mapUI.focus ? `<span>${mkIco("focus")} ${esc(mapUI.focus.n)}${sov ? ` (${sov.list.filter(([, a]) => mapUI.focus.ids.includes(a)).length} systems)` : ""} <button type="button" class="link" id="map-focus-clear">Hide</button></span>` : ""}${mapUI.haul ? `<span><b style="color:${MK.haul.c}">—</b> Hauling trips (${esc(mapUI.haulLabel || "")}) <button type="button" class="link" id="map-haul-clear">Hide</button></span>` : ""}<span ${lg("danger")}>${mkIco("kills")} ${mkIco("kills", "bad")} Kills in the last hour (filled: dangerous, ${dangerMin()}+)${kills ? ` · read ${ago(kills.at)}` : ""}</span><span ${lg("incursions")}>${mkIco("incursion")} Incursion (no cynos)${incursions ? ` · ${incursions.sys.size} system${incursions.sys.size === 1 ? "" : "s"}` : ""}</span><span ${lg("scout")}>${mkIco("scout")} Thera / Turnur wormhole (EVE-Scout)${scout ? ` · ${scout.by.size} system${scout.by.size === 1 ? "" : "s"} · read ${ago(scout.at)}` : ""}</span><button type="button" class="link" id="map-reload">Reload map data</button>`; paintMarks($("map-legend"));
   } else { $("map-legend").innerHTML = ""; $("map-status").textContent = ""; }
-  renderPlanner(); renderGather(); drawMap(); renderMapInfo();
+  renderPlanner(); renderRoute(); renderGather(); drawMap(); renderMapInfo();
 }
 // ---------- jump planner ----------
 const NO_JUMP_REGIONS = new Set([10000070, 10000004, 10000017, 10000019]);   // Pochven and the unreachable Jove regions
@@ -7914,12 +7930,13 @@ async function loadScout(force) {
   scoutTry = Date.now();
   try {
     const r = await fetch("https://api.eve-scout.com/v2/public/signatures"); if (!r.ok) throw new Error("EVE-Scout " + r.status);
-    const by = new Map(), lines = [];
+    const by = new Map(), lines = [], links = [];
     for (const x of await r.json()) { if (x.signature_type !== "wormhole" || !x.in_system_id || !x.out_system_id) continue;
       const e = { size: x.max_ship_size, exp: Date.parse(x.expires_at) || 0 }, ends = [[x.in_system_id, x.in_signature, x.out_system_name, x.out_signature], [x.out_system_id, x.out_signature, x.in_system_name, x.in_signature]];
       for (const [id, sig, to, far] of ends) if (id < 31000000) (by.get(id) || by.set(id, []).get(id)).push({ ...e, to, sig, far });
-      if (x.in_system_id < 31000000 && x.out_system_id < 31000000) lines.push([x.out_system_id, x.in_system_id]); }
-    scout = { at: Date.now(), by, lines };
+      if (x.in_system_id < 31000000 && x.out_system_id < 31000000) lines.push([x.out_system_id, x.in_system_id]);
+      links.push({ a: x.in_system_id, an: x.in_system_name, b: x.out_system_id, bn: x.out_system_name, size: x.max_ship_size, exp: e.exp }); }
+    scout = { at: Date.now(), by, lines, links };
   } catch (e) {}
   if (!$("page-map").hidden) renderMap();
 }
@@ -8296,6 +8313,58 @@ $("gr-from").addEventListener("input", (e) => { grCfg().from = e.target.value.tr
 $("gr-form").addEventListener("click", (e) => { const b = e.target.closest("[data-gr-del],[data-gr-delp]"); if (!b) return; const G = grCfg();
   if (b.dataset.grDel) G.items = G.items.filter(t => t !== +b.dataset.grDel); else G.places = G.places.filter(l => l !== +b.dataset.grDelp); saveMisc(); renderGather(); if ($("gr-out").innerHTML) planGather(); });
 $("gr-clear").addEventListener("click", () => { grRun++; $("gr-out").innerHTML = ""; if (mapUI.haulLabel === GR_LABEL) { mapUI.haul = null; renderMap(); } });
+/* Route (Map page): the fewest-gates route from one system to another (state.misc.map.route: from, to, sec {h, l, n} = securities flown through,
+   via {thera, turnur, zarzakh}: Thera's and Turnur's wormholes (EVE-Scout) taken, Zarzakh flown through) */
+function rtCfg() { const M = state.misc.map = state.misc.map || {}, r = M.route = M.route || {}; r.sec = { h: true, l: true, n: true, ...(r.sec || {}) }; r.via = { thera: false, turnur: false, zarzakh: false, ...(r.via || {}) }; return r; }
+// The wormholes ticked, open now: extra links (id → systems) and each link's wormhole by "a>b"; Thera isn't on the map, so it's a stand-in system
+function rtHoles(R, m) {
+  const extra = new Map(), hole = new Map(), now = Date.now(); let thera = null;
+  const add = (x, y, l) => { (extra.get(x.id) || extra.set(x.id, []).get(x.id)).push(y); hole.set(x.id + ">" + y.id, l); };
+  for (const l of (scout && scout.links) || []) {
+    const hub = l.an === "Thera" || l.bn === "Thera" ? "thera" : l.an === "Turnur" || l.bn === "Turnur" ? "turnur" : null;
+    if (!hub || !R.via[hub] || (l.exp && l.exp < now)) continue;
+    const [x, y] = [[l.a, l.an], [l.b, l.bn]].map(([id, n]) => m.byId.get(id) || (n === "Thera" ? (thera = thera || { id, n, s: -1, wh: true }) : null));
+    if (x && y) { add(x, y, l); add(y, x, l); }
+  }
+  return { extra, hole };
+}
+let rtIds = null;   // the route drawn on the map, while the Jump planner hasn't replaced it
+const rtMine = () => !!rtIds && mapUI.route === rtIds;
+function renderRoute() {
+  const R = rtCfg();
+  if (document.activeElement !== $("rt-from")) $("rt-from").value = R.from || (mapOrigin() ? mapOrigin().n : "");
+  if (document.activeElement !== $("rt-to")) $("rt-to").value = R.to || "";
+  for (const i of document.querySelectorAll("[data-rt-sec]")) i.checked = !!R.sec[i.dataset.rtSec];
+  for (const i of document.querySelectorAll("[data-rt-via]")) i.checked = !!R.via[i.dataset.rtVia];
+}
+function planRoute() {
+  const m = mapIndex(), out = $("rt-out"), R = rtCfg(); if (!m) return;
+  const warn = (t) => { out.innerHTML = `<div class="notice" style="color:var(--bad);border-color:var(--bad)">${t}</div>`; if (rtMine()) { mapUI.route = null; drawMap(); } };
+  const a = m.byName.get(String(R.from || "").toLowerCase()), b = m.byName.get(String(R.to || "").toLowerCase());
+  if (!a || !b) return warn("Pick the systems you fly from and to.");
+  if (!Object.values(R.sec).some(Boolean)) return warn("Tick at least one security level.");
+  // Zarzakh only when ticked (its own tick, whatever its security); Thera when ticked (it's only linked then)
+  const zz = m.byName.get("zarzakh"), allSec = Object.values(R.sec).every(Boolean), { extra, hole } = rtHoles(R, m), wh = R.via.thera || R.via.turnur;
+  const p = gatePath(a, b, (s) => s.wh || (s === zz ? R.via.zarzakh : !!R.sec[secKind(s)]), extra);
+  if (!p) return warn(`No route from ${esc(a.n)} to ${esc(b.n)}${allSec ? "" : " through the security levels you ticked"}${wh ? "" : " by gates"}.`);
+  const adj = gateAdj(), via = p.map((s, i) => i && !(adj.get(p[i - 1].id) || []).includes(s) ? hole.get(p[i - 1].id + ">" + s.id) : null), holes = via.filter(Boolean).length, gates = p.length - 1 - holes;
+  const sizes = Object.keys(SCOUT_SIZE), tight = via.filter(l => l && sizes.includes(l.size)).map(l => l.size).sort((x, y) => sizes.indexOf(x) - sizes.indexOf(y))[0];   // the smallest wormhole sets the biggest ship
+  const onMap = p.filter(s => !s.wh), risky = kills ? p.filter(s => isDanger(s.id)) : [], low = onMap.reduce((x, s) => secRound(s.s) < secRound(x.s) ? s : x, onMap[0]);
+  mapUI.route = rtIds = p.map(s => s.id); drawMap();
+  const sys = (s) => s.wh ? `${esc(s.n)} <span class="muted">wormhole space</span>` : `<button type="button" class="link" data-map-goto="${s.id}">${esc(s.n)}</button> <span class="num" style="color:${secColor(s.s)}">${secLabel(s.s)}</span>${kills && isDanger(s.id) ? ` <span class="pill bad">Dangerous</span>` : ""}`;
+  const by = (l) => l ? ` <span class="muted">· by wormhole${SCOUT_SIZE[l.size] ? `, up to ${SCOUT_SIZE[l.size]}` : ""}</span>` : "";
+  out.innerHTML = `${wh && !scout ? `<div class="notice">Thera and Turnur's wormholes aren't read yet (EVE-Scout), so they aren't used.</div>` : ""}
+    ${holes ? `<div class="notice">Wormholes from EVE-Scout, read ${ago(scout.at)}: they can close or shrink before you get there.</div>` : ""}
+    ${zz && p.slice(1, -1).includes(zz) ? `<div class="notice">Through Zarzakh: once in, you can only leave by the gate you came in by for 6 hours.</div>` : ""}
+    <div class="slot-tiles" style="margin-top:8px"><div class="slot-tile"><div class="label">Gates</div><span class="big-num">${gates}</span><div class="muted">${esc(a.n)} to ${esc(b.n)}${holes ? ` + ${holes} wormhole${holes === 1 ? "" : "s"}${tight ? ` (up to ${SCOUT_SIZE[tight]})` : ""}` : ""}</div></div>
+      <div class="slot-tile"><div class="label">Lowest security</div><span class="big-num" style="color:${secColor(low.s)}">${secLabel(low.s)}</span><div class="muted">${esc(low.n)}</div></div>
+      <div class="slot-tile"><div class="label">Dangerous systems</div><span class="big-num"${risky.length ? ` style="color:var(--bad)"` : ""}>${kills ? risky.length : "—"}</span><div class="muted">${kills ? `${dangerMin()}+ ships and pods killed in the last hour` : "kills not read yet"}</div></div></div>
+    <div class="scroller"><table class="bp-table" data-sorted=""><thead><tr><th scope="col" class="num">Jump</th><th scope="col">System</th><th scope="col">Region</th>${kills ? `<th scope="col" class="num">Killed (1 h)</th>` : ""}</tr></thead><tbody>${p.map((s, i) => `<tr><td class="num">${i || "Start"}</td><td>${sys(s)}${by(via[i])}</td><td>${esc((m.regions[s.r] || {}).n || "")}</td>${kills ? `<td class="num">${killsIn(s.id) || ""}</td>` : ""}</tr>`).join("")}</tbody></table></div>`;
+}
+$("rt-form").addEventListener("submit", (e) => { e.preventDefault(); const R = rtCfg(); R.from = $("rt-from").value.trim(); R.to = $("rt-to").value.trim(); saveMisc(); planRoute(); });
+$("rt-form").addEventListener("input", (e) => { const R = rtCfg(); if (e.target.id === "rt-from") R.from = e.target.value.trim(); else if (e.target.id === "rt-to") R.to = e.target.value.trim(); else return; saveMisc(); });
+$("rt-form").addEventListener("change", (e) => { const R = rtCfg(), k = e.target.dataset.rtSec, v = e.target.dataset.rtVia; if (k) R.sec[k] = e.target.checked; else if (v) R.via[v] = e.target.checked; else return; saveMisc(); if ($("rt-out").innerHTML) planRoute(); });
+$("rt-clear").addEventListener("click", () => { $("rt-out").innerHTML = ""; if (rtMine()) { mapUI.route = null; drawMap(); } });
 async function readFatigue(c, access) {
   const f = await esiAuthGet(`/characters/${c.esiId}/fatigue/`, access);
   c.fatigue = { expire: f.jump_fatigue_expire_date ? Date.parse(f.jump_fatigue_expire_date) : 0, last: f.last_jump_date ? Date.parse(f.last_jump_date) : 0, at: Date.now() };
@@ -8322,7 +8391,7 @@ async function readFatigue(c, access) {
   window.addEventListener("resize", () => drawMap());
   $("map-reset").addEventListener("click", () => { view.k = null; drawMap(); });
   $("map-find").addEventListener("change", (e) => { const m = mapIndex(); const s = m && m.byName.get(e.target.value.trim().toLowerCase()); if (s) mapSelect(s.id, true); else if (e.target.value) toast("No system by that name"); });
-  $("map-origin").addEventListener("change", (e) => { const m = mapIndex(); const v = e.target.value.trim(); const s = m && m.byName.get(v.toLowerCase()); state.misc.map = state.misc.map || {}; if (s && s.id === state.misc.map.origin) return; if (s || !v) { state.misc.map.origin = s ? s.id : null; if (s) mapUI.sel = s.id; saveMisc(); renderMap(); } else toast("No system by that name"); });
+  $("map-origin").addEventListener("change", (e) => { const m = mapIndex(); const v = e.target.value.trim(); const s = m && m.byName.get(v.toLowerCase()); state.misc.map = state.misc.map || {}; if (s && s.id === state.misc.map.origin) return; if (s || !v) { setStart(s ? s.id : null); if (s) mapUI.sel = s.id; saveMisc(); renderMap(); } else toast("No system by that name"); });
   $("map-ship").addEventListener("change", (e) => { state.misc.map = state.misc.map || {}; state.misc.map.ship = e.target.value; saveMisc(); renderMap(); });
   $("map-range").addEventListener("change", (e) => { state.misc.map = state.misc.map || {}; state.misc.map.range = parseFloat(e.target.value.replace(",", ".")) || 0; saveMisc(); renderMap(); });
   $("map-tools").addEventListener("change", (e) => { if (e.target.id === "map-danger") { state.misc.map = state.misc.map || {}; state.misc.map.danger = Math.max(1, Math.round(rxNum(e.target.value, 5))); saveMisc(); e.target.blur(); renderMap(); renderSupply(); } });
@@ -8348,16 +8417,18 @@ async function readFatigue(c, access) {
   });
   document.addEventListener("click", (e) => {
     const dst = e.target.closest && e.target.closest("[data-map-dest]");
-    if (dst) { const m = mapIndex(), o = mapOrigin(), d = m && m.byId.get(+dst.dataset.mapDest); if (o && d) { const P = state.misc.map.plan = state.misc.map.plan || {}; P.from = o.n; P.to = d.n; saveMisc(); renderPlanner(); planJumps(); $("jp").scrollIntoView({ behavior: "smooth", block: "nearest" }); } return; }
+    const rd = e.target.closest && e.target.closest("[data-map-rtdest]");
+    if (rd) { const m = mapIndex(), o = mapOrigin(), d = m && m.byId.get(+rd.dataset.mapRtdest); if (o && d) { const R = rtCfg(); R.from = o.n; R.to = d.n; saveMisc(); renderRoute(); planRoute(); panelFold($("trv-panel"), false); $("rt").scrollIntoView({ behavior: "smooth", block: "nearest" }); } return; }
+    if (dst) { const m = mapIndex(), o = mapOrigin(), d = m && m.byId.get(+dst.dataset.mapDest); if (o && d) { const P = state.misc.map.plan = state.misc.map.plan || {}; P.from = o.n; P.to = d.n; saveMisc(); renderPlanner(); planJumps(); panelFold($("trv-panel"), false); $("jp").scrollIntoView({ behavior: "smooth", block: "nearest" }); } return; }
     const t = e.target.closest && e.target.closest("[data-ally-del],[data-ally-coal-del],[data-map-home],[data-map-homego]"); if (!t) return;
     const mm = state.misc.map = state.misc.map || {};
     if (t.dataset.allyCoalDel) mm.allyCoals = allyCoals().filter(id => id !== t.dataset.allyCoalDel);
     else if (t.dataset.allyDel) mm.allies = (mm.allies || []).filter(a => a !== +t.dataset.allyDel);
     else if (t.dataset.mapHome) { const id = +t.dataset.mapHome, h = mm.homes || []; mm.homes = h.includes(id) ? h.filter(x => x !== id) : [...h, id]; }
-    else if (t.dataset.mapHomego) { mm.origin = +t.dataset.mapHomego; mapUI.sel = mm.origin; }
+    else if (t.dataset.mapHomego) { setStart(+t.dataset.mapHomego); mapUI.sel = mm.origin; }
     saveMisc(); renderMap();
   });
-  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-map-origin]"); if (b) { state.misc.map = state.misc.map || {}; state.misc.map.origin = +b.dataset.mapOrigin; saveMisc(); renderMap(); } if (e.target.id === "map-haul-clear") { mapUI.haul = null; renderMap(); } if (e.target.id === "map-focus-clear") { mapUI.focus = null; renderMap(); } if (e.target.id === "map-reload") { mapData = null; mapIdx = null; loadMapData(); } });
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-map-origin]"); if (b) { setStart(+b.dataset.mapOrigin); saveMisc(); renderMap(); } if (e.target.id === "map-haul-clear") { mapUI.haul = null; renderMap(); } if (e.target.id === "map-focus-clear") { mapUI.focus = null; renderMap(); } if (e.target.id === "map-reload") { mapData = null; mapIdx = null; loadMapData(); } });
 })();
 
 /* ---------- owned blueprints ---------- */
@@ -9485,12 +9556,12 @@ document.addEventListener("click", (e) => { const t = e.target; if (!t.closest |
 });
 // Stargate route (fewest gates), optionally through high-sec only
 function gateAdj() { const m = mapIndex(); if (!m.adj) { m.adj = new Map(); for (const [x, y] of m.edges) { (m.adj.get(x.id) || m.adj.set(x.id, []).get(x.id)).push(y); (m.adj.get(y.id) || m.adj.set(y.id, []).get(y.id)).push(x); } } return m.adj; }
-// hsOnly: true = only through high-sec, or a function = only through the systems it passes (the destination always counts)
-function gatePath(a, b, hsOnly) {
+// hsOnly: true = only through high-sec, or a function = only through the systems it passes (the destination always counts); extra: more links (id → systems), e.g. wormholes
+function gatePath(a, b, hsOnly, extra) {
   const m = mapIndex(); gateAdj();
   if (a === b) return [a];
   const prev = new Map([[a.id, null]]), q = [a];
-  for (let i = 0; i < q.length; i++) { const s = q[i]; for (const n of m.adj.get(s.id) || []) { if (prev.has(n.id)) continue; if (hsOnly && n !== b && (typeof hsOnly === "function" ? !hsOnly(n) : secRound(n.s) < 0.5)) continue; prev.set(n.id, s); if (n === b) { const p = [b]; for (let x = s; x; x = prev.get(x.id)) p.unshift(x); return p; } q.push(n); } }
+  for (let i = 0; i < q.length; i++) { const s = q[i]; for (const n of extra ? [...(m.adj.get(s.id) || []), ...(extra.get(s.id) || [])] : m.adj.get(s.id) || []) { if (prev.has(n.id)) continue; if (hsOnly && n !== b && (typeof hsOnly === "function" ? !hsOnly(n) : secRound(n.s) < 0.5)) continue; prev.set(n.id, s); if (n === b) { const p = [b]; for (let x = s; x; x = prev.get(x.id)) p.unshift(x); return p; } q.push(n); } }
   return null;
 }
 // One move between two systems: gates when short enough, otherwise jumps (gates to and from high-sec or incursion ends)
